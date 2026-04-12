@@ -19,6 +19,10 @@ import AdminAddPlanScreen from '../screens/admin/AdminAddPlanScreen';
 import AdminLiveRosterScreen from '../screens/admin/AdminLiveRosterScreen';
 import AdminSeeUserProfileScreen from "../screens/admin/AdminSeeUserProfileScreen"
 import AdminUsersDetailScreen from '../screens/admin/AdminUsersDetailScreen'; 
+// App.js / Navigator file mein
+import MembersProfileScreen from '../screens/admin/MembersProfileScreen';
+
+// Stack mein
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -56,6 +60,8 @@ const AppNavigator = () => {
   name="AdminLiveRoster" 
   component={AdminLiveRosterScreen} 
 />
+<Stack.Screen name="MembersProfile" component={MembersProfileScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

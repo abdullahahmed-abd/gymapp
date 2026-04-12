@@ -1,11 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
 import Header from '../../components/shared/Header';
 import OTPInput from '../auth/OTPInput';
 import GlassButton from '../../components/shared/GlassButton';
 import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
+
+const { width, height } = Dimensions.get('window');
 
 const LoginOTPScreen = ({ navigation }) => {
   const handleOTPComplete = (code) => {
@@ -14,7 +24,9 @@ const LoginOTPScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48' }}
+      source={{
+        uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
+      }}
       style={styles.background}
       blurRadius={10}
     >
@@ -23,10 +35,12 @@ const LoginOTPScreen = ({ navigation }) => {
         style={styles.gradient}
       >
         <Header showMenu={false} />
-        
+
         <View style={styles.container}>
           <View style={styles.content}>
+
             <Text style={styles.title}>VERIFICATION</Text>
+
             <Text style={styles.subtitle}>
               Transmission sent.{'\n'}Enter the 6-digit code.
             </Text>
@@ -34,10 +48,11 @@ const LoginOTPScreen = ({ navigation }) => {
             <OTPInput length={6} onComplete={handleOTPComplete} />
 
             <Text style={styles.resendText}>Resend code in 0:45</Text>
+
           </View>
 
           <View style={styles.buttonContainer}>
-            <GlassButton 
+            <GlassButton
               variant="primary"
               onPress={() => navigation.navigate('LoginPassword')}
             >
@@ -51,48 +66,65 @@ const LoginOTPScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // ─────────────────────────────────────────
+  // BACKGROUND & GRADIENT
+  // ─────────────────────────────────────────
   background: {
     flex: 1,
+    width: width,
+    height: height,
   },
   gradient: {
     flex: 1,
   },
+
+  // ─────────────────────────────────────────
+  // LAYOUT
+  // ─────────────────────────────────────────
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: scale(24),
     justifyContent: 'space-between',
   },
   content: {
-    paddingTop: 40,
+    paddingTop: verticalScale(40),
   },
+
+  // ─────────────────────────────────────────
+  // TEXT
+  // ─────────────────────────────────────────
   title: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: 24,
+    fontSize: RFValue(20),
     color: Colors.white,
-    letterSpacing: 4.8,
-    marginBottom: 8,
+    letterSpacing: scale(4),
+    marginBottom: verticalScale(8),
   },
   subtitle: {
     fontFamily: Fonts.montserrat.regular,
-    fontSize: 10,
+    fontSize: RFValue(8),
     color: Colors.zinc[400],
-    letterSpacing: 2,
+    letterSpacing: scale(1.8),
     textTransform: 'uppercase',
-    marginBottom: 32,
-    lineHeight: 18,
+    marginBottom: verticalScale(32),
+    lineHeight: RFValue(16),
   },
   resendText: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: 10,
+    fontSize: RFValue(8),
     color: Colors.zinc[500],
-    letterSpacing: 2,
+    letterSpacing: scale(1.8),
     textTransform: 'uppercase',
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: verticalScale(24),
   },
+
+  // ─────────────────────────────────────────
+  // BUTTON
+  // ─────────────────────────────────────────
   buttonContainer: {
-    paddingBottom: 48,
-  }
+    paddingBottom: verticalScale(48),
+  },
 });
 
 export default LoginOTPScreen;

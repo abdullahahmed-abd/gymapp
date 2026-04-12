@@ -1,5 +1,16 @@
+// AdminDashboardScreen.js - FINAL UPDATED VERSION
+
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  ImageBackground, 
+  TouchableOpacity, 
+  Image,
+  Platform 
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFValue } from 'react-native-responsive-fontsize';
@@ -10,39 +21,62 @@ import GlassButton from '../../components/shared/GlassButton';
 import BottomNav from '../../components/shared/BottomNav';
 import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
-import { HugeiconsIcon } from "@hugeicons/react-native";
 import gymlogoimg from "../user/gymlogoimg.png";
+
+import { HugeiconsIcon } from "@hugeicons/react-native";
 import {
   ArrowRight01Icon,
   UserAdd01Icon,
-  Search01Icon,
-  ChartBarLineIcon,
   Package01Icon,
   PercentIcon,
   UserGroupIcon,
   AlertCircleIcon,
-  Activity01Icon,
   Clock01Icon,
   CheckmarkCircle02Icon,
-  Logout01Icon,
   MoneyReceiveCircleIcon,
-  UserIcon,
 } from "@hugeicons/core-free-icons";
-const AdminDashboardScreen = ({ navigation }) => {
-  const roster = [
-    { name: "ALEX CHEN", status: "Active", time: "08:42 AM", alert: false },
-    { name: "SARAH JENNINGS", status: "Active", time: "09:15 AM", alert: false },
-    { name: "DAVID MILLER", status: "Expired", time: "10:05 AM", alert: true }
-  ];
 
+// ═══════════════════════════════════════════════════════════════
+// LIVE ROSTER DATA (This will come from API/Context in real app)
+// ═══════════════════════════════════════════════════════════════
+const LIVE_ROSTER_STATS = {
+  totalLive: 15,
+  avgSession: '38m',
+  eliteCount: 9,
+  legendaryCount: 6,
+  activeCount: 8,
+  expiredCount: 4,
+  trialCount: 3,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ALL MEMBERS STATS (For top card)
+// ═══════════════════════════════════════════════════════════════
+const ALL_MEMBERS_STATS = {
+  totalMembers: 128,
+  trialCount: 18,
+  expiredCount: 20,
+  eliteCount: 65,
+  legendaryCount: 43,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TIER COLORS
+// ═══════════════════════════════════════════════════════════════
+const TIER_COLORS = {
+  ELITE: '#EAB308',
+  LEGENDARY: '#a855f7',
+};
+
+const AdminDashboardScreen = ({ navigation }) => {
   return (
     <ImageBackground
       source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48' }}
       style={styles.background}
-      blurRadius={20}
+      blurRadius={9}
     >
       <LinearGradient
-        colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.85)', '#000000']}
+               colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000000']}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['']}>
@@ -59,7 +93,9 @@ const AdminDashboardScreen = ({ navigation }) => {
               <Text style={styles.welcomeName}>CONTROL PANEL</Text>
             </View>
 
-            {/* Live Stats Card */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* ALL MEMBERS STATS CARD - UPDATED */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <LinearGradient
               colors={['rgba(113, 113, 122, 0.3)', 'rgba(24, 24, 27, 0.8)', '#000000']}
               style={styles.statsGradient}
@@ -69,68 +105,187 @@ const AdminDashboardScreen = ({ navigation }) => {
                   <View>
                     <View style={styles.liveBadge}>
                       <View style={styles.liveDot} />
-                      <Text style={styles.liveBadgeText}>Live Now</Text>
+                      <Text style={styles.liveBadgeText}>Overview</Text>
                     </View>
-                    <Text style={styles.liveStatsTitle}>GYM TRAFFIC</Text>
+                    <Text style={styles.liveStatsTitle}>ALL MEMBERS</Text>
                   </View>
                   <View style={styles.liveCountContainer}>
-                    <Text style={styles.liveCount}>128</Text>
-                    <Text style={styles.liveCountLabel}>Members</Text>
+                    <Text style={styles.liveCount}>{ALL_MEMBERS_STATS.totalMembers}</Text>
+                    <Text style={styles.liveCountLabel}>Total</Text>
                   </View>
                 </View>
 
                 <View style={styles.divider} />
 
-                {/* Stats Row */}
+                {/* Stats Row - Updated with Trial, Expired, Elite, Legendary */}
                 <View style={styles.statsRow}>
+                  {/* Trial - Blue */}
                   <View style={styles.statItem}>
-                    <View style={styles.statIconWrapper}>
-                      <HugeiconsIcon
-                        icon={CheckmarkCircle02Icon}
-                        size={moderateScale(14)}
-                        color={Colors.green}
-                      />
+                    <View style={[styles.statIconWrapper, styles.trialIconWrapper]}>
+                      <View style={styles.trialDot} />
                     </View>
                     <View>
-                      <Text style={styles.statItemValue}>24</Text>
-                      <Text style={styles.statItemLabel}>Check-ins</Text>
+                      <Text style={[styles.statItemValue, styles.trialValue]}>{ALL_MEMBERS_STATS.trialCount}</Text>
+                      <Text style={styles.statItemLabel}>Trial</Text>
                     </View>
                   </View>
 
                   <View style={styles.statDivider} />
 
+                  {/* Expired - Red with Alert Icon */}
                   <View style={styles.statItem}>
-                    <View style={styles.statIconWrapper}>
-                      <HugeiconsIcon
-                        icon={Logout01Icon}
-                        size={moderateScale(14)}
-                        color={Colors.zinc[400]}
-                      />
-                    </View>
-                    <View>
-                      <Text style={styles.statItemValue}>12</Text>
-                      <Text style={styles.statItemLabel}>Check-outs</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.statDivider} />
-
-                  <View style={styles.statItem}>
-                    <View style={[styles.statIconWrapper, styles.alertIconWrapper]}>
+                    <View style={[styles.statIconWrapper, styles.expiredIconWrapper]}>
                       <HugeiconsIcon
                         icon={AlertCircleIcon}
                         size={moderateScale(14)}
-                        color="#ef4444"
+                        color="#EF4444"
                       />
                     </View>
                     <View>
-                      <Text style={[styles.statItemValue, styles.alertValue]}>03</Text>
-                      <Text style={styles.statItemLabel}>Alerts</Text>
+                      <Text style={[styles.statItemValue, styles.expiredValue]}>{ALL_MEMBERS_STATS.expiredCount}</Text>
+                      <Text style={[styles.statItemLabel, styles.expiredLabel]}>Expired</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.statDivider} />
+
+                  {/* Elite Tier - Gold */}
+                  <View style={styles.statItem}>
+                    <View style={[styles.statIconWrapper, styles.eliteIconWrapper]}>
+                      <View style={styles.eliteDot} />
+                    </View>
+                    <View>
+                      <Text style={[styles.statItemValue, styles.eliteValue]}>{ALL_MEMBERS_STATS.eliteCount}</Text>
+                      <Text style={styles.statItemLabel}>Elite</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.statDivider} />
+
+                  {/* Legendary Tier - Purple */}
+                  <View style={styles.statItem}>
+                    <View style={[styles.statIconWrapper, styles.legendaryIconWrapper]}>
+                      <View style={styles.legendaryDot} />
+                    </View>
+                    <View>
+                      <Text style={[styles.statItemValue, styles.legendaryValue]}>{ALL_MEMBERS_STATS.legendaryCount}</Text>
+                      <Text style={styles.statItemLabel}>Legendary</Text>
                     </View>
                   </View>
                 </View>
               </GlassCard>
             </LinearGradient>
+
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* LIVE ROSTER HERO CARD - COMPACT & TRANSPARENT */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => navigation.navigate('AdminLiveRoster')}
+            >
+              <View style={styles.liveRosterHeroCard}>
+                {/* Background Icon */}
+                <View style={styles.heroBgIcon}>
+                  <HugeiconsIcon
+                    icon={UserGroupIcon}
+                    size={moderateScale(70)}
+                    color="rgba(34, 197, 94, 0.08)"
+                    strokeWidth={0.5}
+                  />
+                </View>
+
+                {/* Left Accent */}
+                {/* <LinearGradient
+                  colors={['red', 'black', 'yellow']}
+                  style={styles.heroLeftAccent}
+                /> */}
+
+                <View style={styles.heroContent}>
+                  {/* Main Stats Row */}
+                  <View style={styles.heroMainRow}>
+                    {/* Left - Live Count */}
+                    <View style={styles.heroLiveSection}>
+                      <View style={styles.heroPulseContainer}>
+                        <View style={styles.heroPulseRing} />
+                        <View style={styles.heroPulseDot} />
+                      </View>
+                      <View style={styles.heroLiveInfo}>
+                        <Text style={styles.heroLiveCount}>{LIVE_ROSTER_STATS.totalLive}</Text>
+                        <Text style={styles.heroLiveLabel}>ACTIVE NOW</Text>
+                      </View>
+                    </View>
+
+                    {/* Divider */}
+                    <View style={styles.heroVerticalDivider} />
+
+                    {/* Right - Stats */}
+                    <View style={styles.heroRightSection}>
+                      {/* Avg Session */}
+                      <View style={styles.heroAvgBox}>
+                        <HugeiconsIcon icon={Clock01Icon} size={moderateScale(14)} color="#EAB308" />
+                        <Text style={styles.heroAvgValue}>{LIVE_ROSTER_STATS.avgSession}</Text>
+                        <Text style={styles.heroAvgLabel}>AVG</Text>
+                      </View>
+
+                      {/* Tier Pills */}
+                      <View style={styles.heroTierRow}>
+                        <View style={[styles.heroTierPill, { backgroundColor: 'rgba(234, 179, 8, 0.15)', borderColor: 'rgba(234, 179, 8, 0.3)' }]}>
+                          <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.ELITE }]} />
+                          <Text style={[styles.heroTierCount, { color: TIER_COLORS.ELITE }]}>{LIVE_ROSTER_STATS.eliteCount}</Text>
+                        </View>
+                        <View style={[styles.heroTierPill, { backgroundColor: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.3)' }]}>
+                          <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.LEGENDARY }]} />
+                          <Text style={[styles.heroTierCount, { color: '#c084fc' }]}>{LIVE_ROSTER_STATS.legendaryCount}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Divider */}
+                  <View style={styles.heroDivider} />
+
+                  {/* Status Row */}
+                  <View style={styles.heroStatusRow}>
+                    <View style={styles.heroStatusItem}>
+                      <View style={[styles.heroStatusDot, { backgroundColor: '#22C55E' }]} />
+                      <Text style={styles.heroStatusLabel}>Active</Text>
+                      <Text style={[styles.heroStatusCount, { color: '#22C55E' }]}>{LIVE_ROSTER_STATS.activeCount}</Text>
+                    </View>
+                    <View style={styles.heroStatusDivider} />
+                    <View style={styles.heroStatusItem}>
+                      <View style={[styles.heroStatusDot, { backgroundColor: '#EF4444' }]} />
+                      <Text style={styles.heroStatusLabel}>Expired</Text>
+                      <Text style={[styles.heroStatusCount, { color: '#EF4444' }]}>{LIVE_ROSTER_STATS.expiredCount}</Text>
+                    </View>
+                    <View style={styles.heroStatusDivider} />
+                    <View style={styles.heroStatusItem}>
+                      <View style={[styles.heroStatusDot, { backgroundColor: '#3B82F6' }]} />
+                      <Text style={styles.heroStatusLabel}>Trial</Text>
+                      <Text style={[styles.heroStatusCount, { color: '#3B82F6' }]}>{LIVE_ROSTER_STATS.trialCount}</Text>
+                    </View>
+                  </View>
+
+                  {/* View All Button */}
+                  <View style={styles.heroViewAllRow}>
+                    <View style={styles.heroViewAllContent}>
+                      <HugeiconsIcon icon={UserGroupIcon} size={moderateScale(14)} color="#22C55E" />
+                      <Text style={styles.heroViewAllText}>View All Live Members</Text>
+                    </View>
+                    <View style={styles.heroViewAllArrow}>
+                      <HugeiconsIcon icon={ArrowRight01Icon} size={moderateScale(14)} color="rgba(255,255,255,0.5)" />
+                    </View>
+                  </View>
+                </View>
+
+                {/* Bottom Accent */}
+                {/* <LinearGradient
+                  colors={['#22C55E', 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.heroBottomAccent}
+                /> */}
+              </View>
+            </TouchableOpacity>
 
             {/* Revenue Card */}
             <GlassCard>
@@ -143,21 +298,19 @@ const AdminDashboardScreen = ({ navigation }) => {
                   />
                   <Text style={styles.revenueTitleText}>Today's Revenue</Text>
                 </View>
-                 <View style={styles.cardLogoContainer}>
+                <View style={styles.cardLogoContainer}>
                   <Image
                     source={gymlogoimg}
                     style={styles.cardLogo}
                     resizeMode="contain"
                   />
                 </View>
-               
               </View>
-                <Text style={styles.revenueLabel}>Total Collection</Text>
+              <Text style={styles.revenueLabel}>Total Collection</Text>
             
               <View style={styles.revenueStats}>
-                
                 <Text style={styles.revenueNumber}>₹45,200</Text>
-                 <View style={styles.trendBadge}>
+                <View style={styles.trendBadge}>
                   <Text style={styles.trendText}>+12%</Text>
                 </View>
               </View>
@@ -251,108 +404,6 @@ const AdminDashboardScreen = ({ navigation }) => {
               </View>
             </View>
 
-            {/* Live Roster */}
-            <GlassCard>
-              <View style={styles.rosterHeader}>
-                <View style={styles.rosterTitleSection}>
-                  <HugeiconsIcon
-                    icon={UserGroupIcon}
-                    size={moderateScale(16)}
-                    color={Colors.zinc[400]}
-                  />
-                  <Text style={styles.rosterTitle}>Live Roster</Text>
-                </View>
-                <View style={styles.rosterActions}>
-                  <TouchableOpacity style={styles.rosterActionButton}>
-                    <HugeiconsIcon
-                      icon={Search01Icon}
-                      size={moderateScale(14)}
-                      color={Colors.zinc[500]}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.rosterActionButton}>
-                    <HugeiconsIcon
-                      icon={ChartBarLineIcon}
-                      size={moderateScale(14)}
-                      color={Colors.zinc[500]}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View style={styles.rosterList}>
-                {roster.map((member, index) => (
-                  <TouchableOpacity 
-                    key={index}
-                    style={[
-                      styles.rosterCard,
-                      member.alert && styles.rosterCardAlert,
-                      index !== roster.length - 1 && styles.rosterCardBorder
-                    ]}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.rosterAvatar}>
-                      <HugeiconsIcon
-                        icon={UserIcon}
-                        size={moderateScale(16)}
-                        color={member.alert ? '#fca5a5' : Colors.zinc[400]}
-                      />
-                    </View>
-                    <View style={styles.rosterInfo}>
-                      <Text style={styles.rosterName}>{member.name}</Text>
-                      <View style={styles.rosterMeta}>
-                        <View style={styles.statusContainer}>
-                          <View style={[
-                            styles.statusDot,
-                            member.alert ? styles.statusDotAlert : styles.statusDotActive
-                          ]} />
-                          <Text style={[
-                            styles.rosterStatus,
-                            member.alert && styles.rosterStatusAlert
-                          ]}>
-                            {member.status}
-                          </Text>
-                        </View>
-                        <Text style={styles.rosterTime}>In: {member.time}</Text>
-                      </View>
-                    </View>
-                    <HugeiconsIcon
-                      icon={ArrowRight01Icon}
-                      size={moderateScale(16)}
-                      color={Colors.zinc[600]}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* View All Live Roster Button - FIXED */}
-              <View style={styles.rosterFooter}>
-                <TouchableOpacity
-                  style={styles.viewLiveButton}
-                  onPress={() => navigation.navigate('AdminLiveRoster')}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.viewLiveContent}>
-                    <HugeiconsIcon
-                      icon={UserGroupIcon}
-                      size={moderateScale(16)}
-                      color={Colors.green}
-                    />
-                    <Text style={styles.viewLiveText}>View All Live Roster</Text>
-                    <View style={styles.liveCountBadge}>
-                      <View style={styles.liveCountDot} />
-                      <Text style={styles.liveCountBadgeText}>15</Text>
-                    </View>
-                  </View>
-                  <HugeiconsIcon
-                    icon={ArrowRight01Icon}
-                    size={moderateScale(16)}
-                    color={Colors.zinc[500]}
-                  />
-                </TouchableOpacity>
-              </View>
-            </GlassCard>
-
             {/* Quick Actions */}
             <View style={styles.actionButtons}>
               <GlassButton variant="glass" style={styles.actionButton}>
@@ -385,17 +436,15 @@ const AdminDashboardScreen = ({ navigation }) => {
             </View>
           </ScrollView>
 
-         
-      <BottomNav 
-        activeTab="dashboard" 
-        onTabChange={(tab) => {
-          if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-          if (tab === 'membership') navigation.navigate('AdminMembership');
-          if (tab === 'profile') navigation.navigate('AdminProfile');
-          if (tab === 'usersdetail') navigation.navigate('AdminUsersDetail'); // ✅ Ye add karo
-        }} 
-      />
-
+          <BottomNav 
+            activeTab="dashboard" 
+            onTabChange={(tab) => {
+              if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+              if (tab === 'membership') navigation.navigate('AdminMembership');
+              if (tab === 'profile') navigation.navigate('AdminProfile');
+              if (tab === 'usersdetail') navigation.navigate('AdminUsersDetail');
+            }} 
+          />
         </SafeAreaView>
       </LinearGradient>
     </ImageBackground>
@@ -441,7 +490,9 @@ const styles = StyleSheet.create({
     letterSpacing: scale(3.6),
   },
 
-  // Live Stats Card
+  // ═══════════════════════════════════════════════════════════════
+  // ALL MEMBERS STATS CARD
+  // ═══════════════════════════════════════════════════════════════
   statsGradient: {
     borderRadius: moderateScale(16),
     padding: scale(1),
@@ -451,20 +502,6 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     backgroundColor: '#000000',
     overflow: 'hidden',
-  },
-  cardLogoContainer: {
-    position: 'absolute',
-    top: scale(27),
-    right: 0,
-    bottom: 0,
-    left: scale(230),
-    justifyContent: 'center',
-    alignItems: "center",
-    paddingRight: scale(10),
-  },
-  cardLogo: {
-    width: moderateScale(120),
-    height: moderateScale(120),
   },
   liveStatsHeader: {
     flexDirection: 'row',
@@ -532,26 +569,74 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(8),
+    gap: scale(6),
   },
   statIconWrapper: {
-    width: moderateScale(21),
+    width: moderateScale(15),
     height: moderateScale(21),
     borderRadius: moderateScale(14),
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  alertIconWrapper: {
+  
+  // Trial - Blue
+  trialIconWrapper: {
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+  },
+  trialDot: {
+    width: moderateScale(5),
+    height: moderateScale(5),
+    borderRadius: moderateScale(2.5),
+    backgroundColor: '#3B82F6',
+  },
+  trialValue: {
+    color: '#3B82F6',
+  },
+
+  // Expired - Red
+  expiredIconWrapper: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
+  expiredValue: {
+    color: '#EF4444',
+  },
+  expiredLabel: {
+    color: '#EF4444',
+  },
+
+  // Elite - Gold
+  eliteIconWrapper: {
+    backgroundColor: 'rgba(234, 179, 8, 0.15)',
+  },
+  eliteDot: {
+     width: moderateScale(5),
+    height: moderateScale(5),
+    borderRadius: moderateScale(2.5),
+    backgroundColor: '#EAB308',
+  },
+  eliteValue: {
+    color: '#EAB308',
+  },
+
+  // Legendary - Purple
+  legendaryIconWrapper: {
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+  },
+  legendaryDot: {
+      width: moderateScale(6),
+    height: moderateScale(6),
+    borderRadius: moderateScale(3),
+    backgroundColor: '#a855f7',
+  },
+  legendaryValue: {
+    color: '#c084fc',
+  },
+
   statItemValue: {
     fontFamily: Fonts.orbitron.bold,
     fontSize: RFValue(11),
     color: Colors.white,
-  },
-  alertValue: {
-    color: '#fca5a5',
   },
   statItemLabel: {
     fontFamily: Fonts.rajdhani.regular,
@@ -564,10 +649,226 @@ const styles = StyleSheet.create({
     width: scale(1),
     height: verticalScale(30),
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginHorizontal: scale(8),
+    marginHorizontal: scale(4),
   },
 
-  // Revenue Card
+  // ═══════════════════════════════════════════════════════════════
+  // LIVE ROSTER HERO CARD - COMPACT & TRANSPARENT
+  // ═══════════════════════════════════════════════════════════════
+  liveRosterHeroCard: {
+    backgroundColor: 'black',
+    borderRadius: moderateScale(18),
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.25)',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  heroBgIcon: {
+    position: 'absolute',
+    top: -moderateScale(5),
+    right: -moderateScale(15),
+    opacity: 1,
+  },
+  heroLeftAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: moderateScale(3),
+  },
+  heroBottomAccent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    // width: '50%',
+    height: moderateScale(2),
+  },
+  heroContent: {
+    padding: moderateScale(14),
+  },
+
+  // Main Row
+  heroMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heroLiveSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(8),
+  },
+  heroPulseContainer: {
+    width: moderateScale(24),
+    height: moderateScale(24),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroPulseRing: {
+    position: 'absolute',
+    width: moderateScale(24),
+    height: moderateScale(24),
+    borderRadius: moderateScale(12),
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+  },
+  heroPulseDot: {
+    width: moderateScale(10),
+    height: moderateScale(10),
+    borderRadius: moderateScale(5),
+    backgroundColor: '#22C55E',
+  },
+  heroLiveInfo: {
+    alignItems: 'flex-start',
+  },
+  heroLiveCount: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(24),
+    color: '#FFFFFF',
+    lineHeight: RFValue(28),
+  },
+  heroLiveLabel: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: RFValue(7),
+    color: '#22C55E',
+    letterSpacing: scale(1.2),
+  },
+  heroVerticalDivider: {
+    width: 1,
+    height: verticalScale(40),
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginHorizontal: scale(14),
+  },
+  heroRightSection: {
+    flex: 1,
+  },
+  heroAvgBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(5),
+    marginBottom: verticalScale(6),
+  },
+  heroAvgValue: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(14),
+    color: '#FFFFFF',
+  },
+  heroAvgLabel: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: RFValue(7),
+    color: 'rgba(255,255,255,0.4)',
+    letterSpacing: scale(0.8),
+  },
+  heroTierRow: {
+    flexDirection: 'row',
+    gap: scale(6),
+  },
+  heroTierPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: scale(8),
+    paddingVertical: verticalScale(3),
+    borderRadius: moderateScale(6),
+    borderWidth: 1,
+    gap: scale(4),
+  },
+  heroTierDot: {
+    width: moderateScale(5),
+    height: moderateScale(5),
+    borderRadius: moderateScale(2.5),
+  },
+  heroTierCount: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(10),
+  },
+
+  // Divider
+  heroDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    marginVertical: verticalScale(10),
+  },
+
+  // Status Row
+  heroStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: verticalScale(10),
+  },
+  heroStatusItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(5),
+  },
+  heroStatusDot: {
+    width: moderateScale(5),
+    height: moderateScale(5),
+    borderRadius: moderateScale(2.5),
+  },
+  heroStatusLabel: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: RFValue(8),
+    color: 'rgba(255,255,255,0.5)',
+  },
+  heroStatusCount: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(10),
+  },
+  heroStatusDivider: {
+    width: 1,
+    height: verticalScale(16),
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+
+  // View All Button
+  heroViewAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'black',
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: scale(12),
+    borderRadius: moderateScale(10),
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.2)',
+  },
+  heroViewAllContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(6),
+  },
+  heroViewAllText: {
+    fontFamily: Fonts.rajdhani.bold,
+    fontSize: RFValue(9),
+    color: '#FFFFFF',
+    letterSpacing: scale(0.8),
+    textTransform: 'uppercase',
+  },
+  heroViewAllArrow: {
+    width: moderateScale(24),
+    height: moderateScale(24),
+    borderRadius: moderateScale(12),
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // REVENUE CARD
+  // ═══════════════════════════════════════════════════════════════
+  cardLogoContainer: {
+    position: 'absolute',
+    top: scale(27),
+    right: 0,
+    bottom: 0,
+    left: scale(230),
+    justifyContent: 'center',
+    alignItems: "center",
+    paddingRight: scale(10),
+  },
+  cardLogo: {
+    width: moderateScale(120),
+    height: moderateScale(120),
+  },
   revenueHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -708,170 +1009,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     textAlign: 'center',
     fontWeight: '600',
-  },
-
-  // Roster
-  rosterHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: verticalScale(16),
-  },
-  rosterTitleSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(8),
-  },
-  rosterTitle: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
-    color: Colors.white,
-    letterSpacing: scale(2.4),
-    textTransform: 'uppercase',
-    fontWeight: '600',
-  },
-  rosterActions: {
-    flexDirection: 'row',
-    gap: scale(8),
-  },
-  rosterActionButton: {
-    width: moderateScale(32),
-    height: moderateScale(32),
-    borderRadius: moderateScale(16),
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: scale(1),
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  rosterList: {
-    gap: verticalScale(0),
-  },
-  rosterCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: verticalScale(14),
-    gap: scale(12),
-  },
-  rosterCardBorder: {
-    borderBottomWidth: scale(1),
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  rosterCardAlert: {
-    backgroundColor: 'rgba(239, 68, 68, 0.05)',
-    marginHorizontal: scale(-16),
-    paddingHorizontal: scale(16),
-    borderRadius: moderateScale(8),
-  },
-  rosterAvatar: {
-    width: moderateScale(36),
-    height: moderateScale(36),
-    borderRadius: moderateScale(18),
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: scale(1),
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  rosterInfo: {
-    flex: 1,
-  },
-  rosterName: {
-    fontFamily: Fonts.orbitron.regular,
-    fontSize: RFValue(9),
-    color: Colors.white,
-    letterSpacing: scale(2),
-    marginBottom: verticalScale(4),
-  },
-  rosterMeta: {
-    flexDirection: 'row',
-    gap: scale(12),
-    alignItems: 'center',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(6),
-  },
-  statusDot: {
-    width: scale(6),
-    height: scale(6),
-    borderRadius: scale(3),
-  },
-  statusDotActive: {
-    backgroundColor: Colors.green,
-  },
-  statusDotAlert: {
-    backgroundColor: '#ef4444',
-  },
-  rosterStatus: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
-    color: Colors.zinc[500],
-    letterSpacing: scale(1.8),
-    textTransform: 'uppercase',
-    fontWeight: '600',
-  },
-  rosterStatusAlert: {
-    color: '#fca5a5',
-  },
-  rosterTime: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
-    color: Colors.zinc[600],
-    letterSpacing: scale(1.8),
-    textTransform: 'uppercase',
-  },
-  rosterFooter: {
-    marginTop: verticalScale(16),
-    paddingTop: verticalScale(16),
-    borderTopWidth: scale(1),
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
-  },
-
-  // View Live Button - NEW STYLES
-  viewLiveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(34, 197, 94, 0.08)',
-    paddingVertical: verticalScale(14),
-    paddingHorizontal: scale(16),
-    borderRadius: moderateScale(12),
-    borderWidth: scale(1),
-    borderColor: 'rgba(34, 197, 94, 0.2)',
-  },
-  viewLiveContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(5),
-  },
-  viewLiveText: {
-    fontFamily: Fonts.rajdhani.bold,
-    fontSize: RFValue(8),
-    color: Colors.white,
-    letterSpacing: scale(1.5),
-    textTransform: 'uppercase',
-  },
-  liveCountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-    paddingHorizontal: scale(10),
-    paddingVertical: verticalScale(4),
-    borderRadius: moderateScale(10),
-    gap: scale(5),
-  },
-  liveCountDot: {
-    width: scale(6),
-    height: scale(6),
-    borderRadius: scale(3),
-    backgroundColor: Colors.green,
-  },
-  liveCountBadgeText: {
-    fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(10),
-    color: Colors.green,
   },
 
   // Action Buttons

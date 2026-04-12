@@ -20,15 +20,361 @@ import { BlurView } from '@react-native-community/blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import { HugeiconsIcon } from '@hugeicons/react-native';
+import {
+  Shield01Icon,
+  Activity01Icon,
+  Dumbbell01Icon,
+  CheckmarkCircle02Icon,
+  AlertCircleIcon,
+  Timer01Icon,
+  Call02Icon,
+  WhatsappIcon,
+  Clock01Icon,
+  Login01Icon,
+  SmartPhone01Icon,
+  UserRemove01Icon,
+  Cancel01Icon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons';
 import Icon from 'react-native-vector-icons/Feather';
 import Header from '../../components/shared/Header';
 import BottomNav from '../../components/shared/BottomNav';
 import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
 import { useMembershipRequests } from '../../context/MembershipRequestsContext';
+import { Linking } from 'react-native';
+
+const s = (size) => scale(size);
+const ms = (size) => moderateScale(size, 0.25);
+const vs = (size) => verticalScale(size);
+const rf = (size) => RFValue(size);
 
 // ═══════════════════════════════════════════════════════════════
-// TAB BUTTON COMPONENT
+// TIER + STATUS CONFIGS
+// ═══════════════════════════════════════════════════════════════
+const TIER_TEMPLATES = {
+  'ELITE TIER': {
+    badge: 'ELITE',
+    iconColor: '#EAB308',
+    textColor: '#EAB308',
+    bgColor: 'rgba(234, 179, 8, 0.15)',
+    borderColor: 'rgba(234, 179, 8, 0.35)',
+  },
+  'LEGENDARY TIER': {
+    badge: 'LEGENDARY',
+    iconColor: '#a855f7',
+    textColor: '#c084fc',
+    bgColor: 'rgba(168, 85, 247, 0.15)',
+    borderColor: 'rgba(168, 85, 247, 0.35)',
+  },
+};
+
+const TRIAL_CONFIG = {
+  iconColor: '#3B82F6',
+  textColor: '#60A5FA',
+  bgColor: 'rgba(59, 130, 246, 0.15)',
+  borderColor: 'rgba(59, 130, 246, 0.35)',
+  badge: 'TRIAL',
+};
+
+const STATUS_CONFIG = {
+  active: { label: 'ACTIVE', color: '#22C55E', bgColor: 'rgba(34,197,94,0.15)', borderColor: 'rgba(34,197,94,0.3)', icon: CheckmarkCircle02Icon },
+  expired: { label: 'EXPIRED', color: '#EF4444', bgColor: 'rgba(239,68,68,0.15)', borderColor: 'rgba(239,68,68,0.3)', icon: AlertCircleIcon },
+  trial: { label: 'TRIAL', color: '#3B82F6', bgColor: 'rgba(59,130,246,0.15)', borderColor: 'rgba(59,130,246,0.3)', icon: Timer01Icon },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 30 DUMMY MEMBERS - LIVE + OFFLINE
+// ═══════════════════════════════════════════════════════════════
+const DUMMY_MEMBERS = [
+  // ── LIVE MEMBERS (15) ──────────────────────────────────────
+  {
+    id: 'm1', name: 'Abdullah Ahmed', avatar: 'AA', memberId: 'GYM001',
+    phone: '+918817159218', email: 'abdullah@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '6:30 AM', duration: '45 min', lastCheckout: '8:15 AM',
+    joinDate: '2024-01-15', expiryDate: '2025-02-15', daysLeft: 25,
+    totalVisits: 156, currentStreak: 12, paidAmount: 2500,
+  },
+  {
+    id: 'm2', name: 'Priya Patel', avatar: 'PP', memberId: 'GYM002',
+    phone: '+919876543211', email: 'priya@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'expired',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '6:45 AM', duration: '32 min', lastCheckout: null,
+    joinDate: '2024-03-10', expiryDate: '2025-01-10', daysLeft: 0,
+    totalVisits: 89, currentStreak: 0, paidAmount: 3500,
+  },
+  {
+    id: 'm3', name: 'Rahul Verma', avatar: 'RV', memberId: 'GYM003',
+    phone: '+919876543212', email: 'rahul@example.com',
+    membershipType: null, membershipStatus: 'trial',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '6:15 AM', duration: '58 min', lastCheckout: null,
+    joinDate: '2025-01-15', expiryDate: '2025-01-22', daysLeft: 5,
+    totalVisits: 5, currentStreak: 5, paidAmount: 0,
+  },
+  {
+    id: 'm4', name: 'Sneha Gupta', avatar: 'SG', memberId: 'GYM004',
+    phone: '+919876543213', email: 'sneha@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '6:50 AM', duration: '40 min', lastCheckout: null,
+    joinDate: '2024-06-01', expiryDate: '2025-03-05', daysLeft: 45,
+    totalVisits: 210, currentStreak: 28, paidAmount: 3500,
+  },
+  {
+    id: 'm5', name: 'Vikram Singh', avatar: 'VS', memberId: 'GYM005',
+    phone: '+919876543214', email: 'vikram@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'expired',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '7:00 AM', duration: '25 min', lastCheckout: null,
+    joinDate: '2024-02-20', expiryDate: '2025-01-05', daysLeft: 0,
+    totalVisits: 67, currentStreak: 0, paidAmount: 2500,
+  },
+  {
+    id: 'm6', name: 'Ananya Reddy', avatar: 'AR', memberId: 'GYM006',
+    phone: '+919876543215', email: 'ananya@example.com',
+    membershipType: null, membershipStatus: 'trial',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '6:20 AM', duration: '50 min', lastCheckout: null,
+    joinDate: '2025-01-17', expiryDate: '2025-01-24', daysLeft: 3,
+    totalVisits: 3, currentStreak: 3, paidAmount: 0,
+  },
+  {
+    id: 'm7', name: 'Karan Malhotra', avatar: 'KM', memberId: 'GYM007',
+    phone: '+919876543216', email: 'karan@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '6:40 AM', duration: '35 min', lastCheckout: null,
+    joinDate: '2024-05-15', expiryDate: '2025-03-20', daysLeft: 60,
+    totalVisits: 178, currentStreak: 22, paidAmount: 2500,
+  },
+  {
+    id: 'm8', name: 'Meera Iyer', avatar: 'MI', memberId: 'GYM008',
+    phone: '+919876543217', email: 'meera@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'expired',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '6:10 AM', duration: '55 min', lastCheckout: null,
+    joinDate: '2024-04-01', expiryDate: '2025-01-08', daysLeft: 0,
+    totalVisits: 134, currentStreak: 0, paidAmount: 3500,
+  },
+  {
+    id: 'm9', name: 'Aditya Kumar', avatar: 'AK', memberId: 'GYM009',
+    phone: '+919876543218', email: 'aditya@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '6:55 AM', duration: '28 min', lastCheckout: null,
+    joinDate: '2024-08-10', expiryDate: '2025-02-05', daysLeft: 15,
+    totalVisits: 95, currentStreak: 8, paidAmount: 2500,
+  },
+  {
+    id: 'm10', name: 'Riya Chopra', avatar: 'RC', memberId: 'GYM010',
+    phone: '+919876543219', email: 'riya@example.com',
+    membershipType: null, membershipStatus: 'trial',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '6:35 AM', duration: '42 min', lastCheckout: null,
+    joinDate: '2025-01-13', expiryDate: '2025-01-20', daysLeft: 7,
+    totalVisits: 7, currentStreak: 7, paidAmount: 0,
+  },
+  {
+    id: 'm11', name: 'Rohan Desai', avatar: 'RD', memberId: 'GYM011',
+    phone: '+919876543220', email: 'rohan@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '6:25 AM', duration: '38 min', lastCheckout: null,
+    joinDate: '2024-07-20', expiryDate: '2025-02-20', daysLeft: 30,
+    totalVisits: 145, currentStreak: 15, paidAmount: 2500,
+  },
+  {
+    id: 'm12', name: 'Nisha Joshi', avatar: 'NJ', memberId: 'GYM012',
+    phone: '+919876543221', email: 'nisha@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '7:05 AM', duration: '22 min', lastCheckout: null,
+    joinDate: '2024-09-01', expiryDate: '2025-02-10', daysLeft: 20,
+    totalVisits: 112, currentStreak: 10, paidAmount: 3500,
+  },
+  {
+    id: 'm13', name: 'Amit Thakur', avatar: 'AT', memberId: 'GYM013',
+    phone: '+919876543222', email: 'amit@example.com',
+    membershipType: null, membershipStatus: 'trial',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '6:48 AM', duration: '30 min', lastCheckout: null,
+    joinDate: '2025-01-18', expiryDate: '2025-01-25', daysLeft: 2,
+    totalVisits: 2, currentStreak: 2, paidAmount: 0,
+  },
+  {
+    id: 'm14', name: 'Pooja Nair', avatar: 'PN', memberId: 'GYM014',
+    phone: '+919876543223', email: 'pooja@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'expired',
+    workoutType: 'weights_only', isLive: true,
+    checkinTime: '7:10 AM', duration: '15 min', lastCheckout: null,
+    joinDate: '2024-05-05', expiryDate: '2025-01-12', daysLeft: 0,
+    totalVisits: 78, currentStreak: 0, paidAmount: 3500,
+  },
+  {
+    id: 'm15', name: 'Sanjay Mehta', avatar: 'SM', memberId: 'GYM015',
+    phone: '+919876543224', email: 'sanjay@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: true,
+    checkinTime: '7:08 AM', duration: '18 min', lastCheckout: null,
+    joinDate: '2024-10-01', expiryDate: '2025-03-01', daysLeft: 40,
+    totalVisits: 88, currentStreak: 18, paidAmount: 2500,
+  },
+
+  // ── OFFLINE MEMBERS (15) ────────────────────────────────────
+  {
+    id: 'm16', name: 'Divya Sharma', avatar: 'DS', memberId: 'GYM016',
+    phone: '+919876543225', email: 'divya@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '5:30 PM',
+    joinDate: '2024-03-01', expiryDate: '2025-02-28', daysLeft: 38,
+    totalVisits: 167, currentStreak: 20, paidAmount: 2500,
+  },
+  {
+    id: 'm17', name: 'Akash Patel', avatar: 'AP', memberId: 'GYM017',
+    phone: '+919876543226', email: 'akash@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '6:00 PM',
+    joinDate: '2024-04-15', expiryDate: '2025-04-15', daysLeft: 85,
+    totalVisits: 200, currentStreak: 35, paidAmount: 3500,
+  },
+  {
+    id: 'm18', name: 'Kavya Menon', avatar: 'KM', memberId: 'GYM018',
+    phone: '+919876543227', email: 'kavya@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'expired',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '4:45 PM',
+    joinDate: '2024-01-10', expiryDate: '2025-01-10', daysLeft: 0,
+    totalVisits: 145, currentStreak: 0, paidAmount: 2500,
+  },
+  {
+    id: 'm19', name: 'Suresh Babu', avatar: 'SB', memberId: 'GYM019',
+    phone: '+919876543228', email: 'suresh@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '7:00 PM',
+    joinDate: '2024-06-20', expiryDate: '2025-06-20', daysLeft: 150,
+    totalVisits: 280, currentStreak: 45, paidAmount: 3500,
+  },
+  {
+    id: 'm20', name: 'Preethi Raj', avatar: 'PR', memberId: 'GYM020',
+    phone: '+919876543229', email: 'preethi@example.com',
+    membershipType: null, membershipStatus: 'trial',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '5:00 PM',
+    joinDate: '2025-01-16', expiryDate: '2025-01-23', daysLeft: 4,
+    totalVisits: 4, currentStreak: 4, paidAmount: 0,
+  },
+  {
+    id: 'm21', name: 'Harish Kumar', avatar: 'HK', memberId: 'GYM021',
+    phone: '+919876543230', email: 'harish@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '8:00 AM',
+    joinDate: '2024-09-15', expiryDate: '2025-03-15', daysLeft: 55,
+    totalVisits: 120, currentStreak: 14, paidAmount: 2500,
+  },
+  {
+    id: 'm22', name: 'Lakshmi Devi', avatar: 'LD', memberId: 'GYM022',
+    phone: '+919876543231', email: 'lakshmi@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'expired',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '6:30 AM',
+    joinDate: '2024-02-01', expiryDate: '2025-01-01', daysLeft: 0,
+    totalVisits: 190, currentStreak: 0, paidAmount: 3500,
+  },
+  {
+    id: 'm23', name: 'Nikhil Jain', avatar: 'NJ', memberId: 'GYM023',
+    phone: '+919876543232', email: 'nikhil@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '9:00 AM',
+    joinDate: '2024-11-01', expiryDate: '2025-04-30', daysLeft: 100,
+    totalVisits: 75, currentStreak: 30, paidAmount: 2500,
+  },
+  {
+    id: 'm24', name: 'Swathi Reddy', avatar: 'SR', memberId: 'GYM024',
+    phone: '+919876543233', email: 'swathi@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '10:00 AM',
+    joinDate: '2024-07-01', expiryDate: '2025-07-01', daysLeft: 161,
+    totalVisits: 195, currentStreak: 40, paidAmount: 3500,
+  },
+  {
+    id: 'm25', name: 'Tarun Bhat', avatar: 'TB', memberId: 'GYM025',
+    phone: '+919876543234', email: 'tarun@example.com',
+    membershipType: null, membershipStatus: 'trial',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '11:00 AM',
+    joinDate: '2025-01-19', expiryDate: '2025-01-26', daysLeft: 1,
+    totalVisits: 1, currentStreak: 1, paidAmount: 0,
+  },
+  {
+    id: 'm26', name: 'Usha Kumari', avatar: 'UK', memberId: 'GYM026',
+    phone: '+919876543235', email: 'usha@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'expired',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '5:00 AM',
+    joinDate: '2024-01-20', expiryDate: '2025-01-15', daysLeft: 0,
+    totalVisits: 230, currentStreak: 0, paidAmount: 2500,
+  },
+  {
+    id: 'm27', name: 'Venkat Rao', avatar: 'VR', memberId: 'GYM027',
+    phone: '+919876543236', email: 'venkat@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '4:30 PM',
+    joinDate: '2024-08-20', expiryDate: '2025-08-20', daysLeft: 210,
+    totalVisits: 150, currentStreak: 25, paidAmount: 3500,
+  },
+  {
+    id: 'm28', name: 'Waqar Ahmed', avatar: 'WA', memberId: 'GYM028',
+    phone: '+919876543237', email: 'waqar@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '3:00 PM',
+    joinDate: '2024-12-01', expiryDate: '2025-05-31', daysLeft: 130,
+    totalVisits: 55, currentStreak: 45, paidAmount: 2500,
+  },
+  {
+    id: 'm29', name: 'Xena Singh', avatar: 'XS', memberId: 'GYM029',
+    phone: '+919876543238', email: 'xena@example.com',
+    membershipType: 'LEGENDARY TIER', membershipStatus: 'active',
+    workoutType: 'weights_only', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '2:00 PM',
+    joinDate: '2024-10-15', expiryDate: '2025-10-15', daysLeft: 268,
+    totalVisits: 90, currentStreak: 60, paidAmount: 3500,
+  },
+  {
+    id: 'm30', name: 'Yash Trivedi', avatar: 'YT', memberId: 'GYM030',
+    phone: '+919876543239', email: 'yash@example.com',
+    membershipType: 'ELITE TIER', membershipStatus: 'active',
+    workoutType: 'cardio_weights', isLive: false,
+    checkinTime: null, duration: null, lastCheckout: '1:00 PM',
+    joinDate: '2024-11-20', expiryDate: '2025-05-20', daysLeft: 119,
+    totalVisits: 62, currentStreak: 55, paidAmount: 2500,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// HELPER - Get tier/trial config
+// ═══════════════════════════════════════════════════════════════
+const getMemberTierConfig = (member) => {
+  if (member.membershipStatus === 'trial') return TRIAL_CONFIG;
+  return TIER_TEMPLATES[member.membershipType] || TIER_TEMPLATES['ELITE TIER'];
+};
+
+const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.active;
+
+// ═══════════════════════════════════════════════════════════════
+// TAB BUTTON
 // ═══════════════════════════════════════════════════════════════
 const TabButton = ({ title, count, isActive, onPress, color }) => (
   <TouchableOpacity
@@ -48,365 +394,306 @@ const TabButton = ({ title, count, isActive, onPress, color }) => (
 );
 
 // ═══════════════════════════════════════════════════════════════
-// REQUEST CARD COMPONENT - With Dynamic Plan Colors
+// REQUEST CARD - UI fix
 // ═══════════════════════════════════════════════════════════════
 const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
-  // Get template from request - this comes from the plan user selected
   const template = request.planTemplate || {
-    colors: ['rgba(113, 113, 122, 0.3)', 'rgba(24, 24, 27, 0.8)', '#000000'],
     iconColor: Colors.gold,
     textColor: Colors.gold,
     badge: 'PLAN',
   };
-
   const iconColor = template.iconColor || Colors.gold;
   const textColor = template.textColor || Colors.gold;
-  const gradientColors = template.colors || ['rgba(113, 113, 122, 0.3)', 'rgba(24, 24, 27, 0.8)', '#000000'];
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.requestCardGradient}
-    >
-      <View style={styles.requestCard}>
-        {/* Background Shield Icon */}
-        <Icon
-          name="shield"
-          size={RFValue(80)}
-          color={`${iconColor}10`}
-          style={styles.cardBgIcon}
-        />
+    <TouchableOpacity activeOpacity={0.95} style={[styles.requestCardWrapper, { borderColor: `${iconColor}30` }]}>
+      {/* Subtle overlay */}
+      <LinearGradient
+        colors={[`${iconColor}10`, `${iconColor}05`, 'transparent']}
+        style={StyleSheet.absoluteFill}
+      />
 
-        {/* Header */}
-        <View style={styles.requestHeader}>
-          <View style={styles.userInfo}>
-            <View style={[styles.userAvatar, { backgroundColor: `${iconColor}25` }]}>
-              <Text style={[styles.userAvatarText, { color: iconColor }]}>
-                {request.userName?.charAt(0).toUpperCase() || 'U'}
-              </Text>
-            </View>
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>{request.userName}</Text>
-              <Text style={styles.userPhone}>{request.userPhone}</Text>
-            </View>
-          </View>
-          <View style={[styles.requestStatusBadge, { backgroundColor: `${iconColor}20`, borderColor: `${iconColor}40` }]}>
-            <Icon name="clock" size={RFValue(10)} color={iconColor} />
-            <Text style={[styles.requestStatusText, { color: iconColor }]}>PENDING</Text>
-          </View>
-        </View>
+      {/* Background Shield */}
+      <View style={styles.cardBgIconContainer}>
+        <HugeiconsIcon icon={Shield01Icon} size={ms(70)} color={`${iconColor}15`} strokeWidth={0.5} />
+      </View>
 
-        <View style={styles.requestDivider} />
-
-        {/* Plan Info */}
-        <View style={styles.planInfoSection}>
-          <View style={styles.planInfoHeader}>
-            <View style={styles.planBadge}>
-              <View style={[styles.planBadgeDot, { backgroundColor: iconColor }]} />
-              <Text style={[styles.planBadgeText, { color: iconColor }]}>
-                {template.badge || 'PLAN'}
-              </Text>
-            </View>
-            <Text style={[styles.planNameText, { color: textColor }]}>
-              {request.planName}
+      {/* Header */}
+      <View style={styles.reqHeader}>
+        <View style={styles.reqAvatarRow}>
+          {/* Avatar */}
+          <View style={[styles.reqAvatar, { borderColor: `${iconColor}60`, backgroundColor: `${iconColor}15` }]}>
+            <Text style={[styles.reqAvatarText, { color: textColor }]}>
+              {request.userName?.slice(0, 2).toUpperCase() || 'UN'}
             </Text>
           </View>
 
-          {/* Workout Type */}
-          <View style={[styles.workoutTypeBadge, { backgroundColor: `${iconColor}15` }]}>
-            <Icon 
-              name={request.workoutType === 'cardio_weights' ? 'activity' : 
-                    request.workoutType === 'weights_only' ? 'target' : 'heart'} 
-              size={RFValue(12)} 
-              color={iconColor} 
-            />
-            <Text style={[styles.workoutTypeText, { color: iconColor }]}>
-              {request.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' :
-               request.workoutType === 'weights_only' ? 'WEIGHTS ONLY' : 'CARDIO ONLY'}
-            </Text>
-          </View>
-
-          {/* Price & Duration */}
-          <View style={styles.priceRow}>
-            <View style={styles.priceInfo}>
-              {request.hasOffer && (
-                <Text style={styles.originalPrice}>${request.planOriginalPrice}</Text>
-              )}
-              <Text style={[styles.finalPrice, { color: textColor }]}>${request.planPrice}</Text>
-              <Text style={styles.priceDuration}>/ {request.planDuration}</Text>
-            </View>
-            {request.hasOffer && request.offerText && (
-              <View style={[styles.offerTag, { backgroundColor: `${iconColor}20` }]}>
-                <Icon name="zap" size={RFValue(8)} color={iconColor} />
-                <Text style={[styles.offerTagText, { color: iconColor }]}>{request.offerText}</Text>
+          {/* Name + Phone */}
+          <View style={styles.reqNameBox}>
+            {/* Tier Badge + Status Badge */}
+            <View style={styles.reqBadgeRow}>
+              <View style={[styles.reqTierBadge, { backgroundColor: `${iconColor}20`, borderColor: `${iconColor}40` }]}>
+                <View style={[styles.reqTierDot, { backgroundColor: iconColor }]} />
+                <Text style={[styles.reqTierText, { color: iconColor }]}>{template.badge || 'PLAN'}</Text>
               </View>
-            )}
+              <View style={[styles.reqStatusBadge, { backgroundColor: 'rgba(234,179,8,0.15)', borderColor: 'rgba(234,179,8,0.3)' }]}>
+                <HugeiconsIcon icon={Clock01Icon} size={ms(10)} color={Colors.gold} />
+                <Text style={[styles.reqStatusText, { color: Colors.gold }]}>PENDING</Text>
+              </View>
+            </View>
+
+            <Text style={styles.reqName}>{request.userName}</Text>
+
+            {/* Workout Badge */}
+            <View style={[styles.reqWorkoutBadge, { backgroundColor: `${iconColor}15` }]}>
+              <HugeiconsIcon
+                icon={request.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
+                size={ms(10)}
+                color={iconColor}
+              />
+              <Text style={[styles.reqWorkoutText, { color: iconColor }]}>
+                {request.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
+              </Text>
+            </View>
+
+            {/* Time Row */}
+            <View style={styles.reqTimeRow}>
+              <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color="rgba(255,255,255,0.4)" />
+              <Text style={styles.reqTimeText}>
+                {new Date(request.requestedAt).toLocaleString('en-US', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                })}
+              </Text>
+            </View>
           </View>
         </View>
+      </View>
 
-        <View style={styles.requestDivider} />
+      {/* Divider */}
+      <View style={[styles.reqDivider, { backgroundColor: `${iconColor}25` }]} />
 
-        {/* Features Preview */}
-        {request.planFeatures && request.planFeatures.length > 0 && (
-          <>
-            <View style={styles.featuresPreview}>
-              {request.planFeatures.slice(0, 3).map((feature, idx) => (
-                <View key={idx} style={styles.featureItem}>
-                  <Icon name="check" size={RFValue(10)} color={Colors.green} />
-                  <Text style={styles.featureText}>{feature}</Text>
-                </View>
-              ))}
-              {request.planFeatures.length > 3 && (
-                <Text style={styles.moreFeatures}>
-                  +{request.planFeatures.length - 3} more features
-                </Text>
-              )}
-            </View>
-            <View style={styles.requestDivider} />
-          </>
-        )}
+      {/* Plan + Price */}
+      <View style={styles.reqPlanRow}>
+        <View style={styles.reqPlanInfo}>
+          <Text style={styles.reqPlanLabel}>PLAN</Text>
+          <Text style={[styles.reqPlanName, { color: textColor }]}>{request.planName}</Text>
+        </View>
+        <View style={styles.reqPriceBox}>
+          {request.hasOffer && (
+            <Text style={styles.reqOriginalPrice}>${request.planOriginalPrice}</Text>
+          )}
+          <Text style={[styles.reqFinalPrice, { color: textColor }]}>${request.planPrice}</Text>
+          <Text style={styles.reqDuration}>/ {request.planDuration}</Text>
+        </View>
+      </View>
 
-        {/* Request Time */}
-        <View style={styles.requestTimeRow}>
-          <Icon name="calendar" size={RFValue(12)} color={Colors.zinc[500]} />
-          <Text style={styles.requestTimeText}>
-            Requested: {new Date(request.requestedAt).toLocaleString()}
-          </Text>
+      {/* Phone + Actions */}
+      <View style={styles.reqBottomRow}>
+        {/* Phone */}
+        <View style={styles.reqPhoneBox}>
+          <View style={[styles.reqPhoneIcon, { backgroundColor: `${iconColor}12` }]}>
+            <HugeiconsIcon icon={SmartPhone01Icon} size={ms(14)} color={iconColor} />
+          </View>
+          <Text style={styles.reqPhoneText}>{request.userPhone}</Text>
         </View>
 
         {/* Action Buttons */}
-        <View style={styles.actionButtonsRow}>
+        <View style={styles.reqActions}>
           <TouchableOpacity
-            style={[styles.rejectButton, isProcessing && styles.buttonDisabled]}
+            style={[styles.rejectBtn, isProcessing && { opacity: 0.5 }]}
             onPress={() => onReject(request)}
             disabled={isProcessing}
             activeOpacity={0.8}
           >
-            {isProcessing ? (
-              <ActivityIndicator size="small" color={Colors.red} />
-            ) : (
-              <>
-                <Icon name="x" size={RFValue(14)} color={Colors.red} />
-                <Text style={styles.rejectButtonText}>REJECT</Text>
-              </>
-            )}
+            <Icon name="x" size={rf(14)} color="#EF4444" />
+            <Text style={styles.rejectBtnText}>REJECT</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.approveButton, isProcessing && styles.buttonDisabled]}
+            style={[styles.approveBtn, isProcessing && { opacity: 0.5 }]}
             onPress={() => onApprove(request)}
             disabled={isProcessing}
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={[Colors.green, 'rgba(34, 197, 94, 0.8)']}
-              style={styles.approveButtonGradient}
+              colors={['rgba(34,197,94,0.25)', 'rgba(34,197,94,0.10)']}
+              style={styles.approveBtnGradient}
             >
               {isProcessing ? (
-                <ActivityIndicator size="small" color={Colors.white} />
+                <ActivityIndicator size="small" color="#22C55E" />
               ) : (
                 <>
-                  <Icon name="check" size={RFValue(14)} color={Colors.white} />
-                  <Text style={styles.approveButtonText}>APPROVE</Text>
+                  <Icon name="check" size={rf(14)} color="#22C55E" />
+                  <Text style={styles.approveBtnText}>APPROVE</Text>
                 </>
               )}
             </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
-    </LinearGradient>
+    </TouchableOpacity>
   );
 };
 
 // ═══════════════════════════════════════════════════════════════
-// MEMBER CARD COMPONENT - With Dynamic Plan Colors
+// MEMBER CARD - LiveRoster style
 // ═══════════════════════════════════════════════════════════════
-const MemberCard = ({ member }) => {
-  // Get template from member - this is the plan they were approved for
-  const template = member.template || {
-    colors: ['rgba(34, 197, 94, 0.2)', 'rgba(24, 24, 27, 0.8)', '#000000'],
-    iconColor: Colors.green,
-    textColor: Colors.green,
+const MemberCard = ({ member, onPress }) => {
+  const isTrial = member.membershipStatus === 'trial';
+  const tierConfig = isTrial ? TRIAL_CONFIG : (TIER_TEMPLATES[member.membershipType] || TIER_TEMPLATES['ELITE TIER']);
+  const statusConfig = getStatusConfig(member.membershipStatus);
+  const cardAccentColor = tierConfig.iconColor;
+
+  const handleCall = (e) => {
+    e.stopPropagation();
+    Linking.openURL(`tel:${member.phone.replace(/\D/g, '')}`);
+  };
+  const handleWhatsApp = (e) => {
+    e.stopPropagation();
+    Linking.openURL(`whatsapp://send?phone=${member.phone.replace(/\D/g, '')}`);
   };
 
-  const iconColor = template.iconColor || Colors.green;
-  const textColor = template.textColor || Colors.green;
-  const gradientColors = template.colors || ['rgba(34, 197, 94, 0.2)', 'rgba(24, 24, 27, 0.8)', '#000000'];
-
-  // Calculate if membership is expiring soon (within 7 days)
-  const daysLeft = member.daysLeft || 0;
-  const isExpiringSoon = daysLeft <= 7 && daysLeft > 0;
-  const isExpired = daysLeft <= 0;
-
   return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.memberCardGradient}
+    <TouchableOpacity
+      style={[styles.memberCardWrapper, { borderColor: `${cardAccentColor}30` }]}
+      onPress={() => onPress(member)}
+      activeOpacity={0.9}
     >
-      <View style={styles.memberCard}>
-        {/* Background Shield Icon */}
-        <Icon
-          name="award"
-          size={RFValue(80)}
-          color={`${iconColor}10`}
-          style={styles.cardBgIcon}
-        />
+      {/* Subtle overlay */}
+      <LinearGradient
+        colors={[`${cardAccentColor}10`, `${cardAccentColor}04`, 'transparent']}
+        style={StyleSheet.absoluteFill}
+      />
 
-        {/* Header */}
-        <View style={styles.memberHeader}>
-          <View style={styles.userInfo}>
-            <View style={[styles.userAvatar, { backgroundColor: `${iconColor}25` }]}>
-              <Text style={[styles.userAvatarText, { color: iconColor }]}>
-                {member.name?.charAt(0).toUpperCase() || 'M'}
-              </Text>
-            </View>
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>{member.name}</Text>
-              <Text style={styles.userPhone}>{member.phone}</Text>
-            </View>
-          </View>
+      {/* Background Shield */}
+      <View style={styles.cardBgIconContainer}>
+        <HugeiconsIcon icon={Shield01Icon} size={ms(70)} color={`${cardAccentColor}15`} strokeWidth={0.5} />
+      </View>
+
+      <View style={styles.memberCardContent}>
+        {/* Top Section */}
+        <View style={styles.memberTopSection}>
+          {/* Avatar */}
           <View style={[
-            styles.memberStatusBadge, 
-            { 
-              backgroundColor: isExpired 
-                ? 'rgba(239, 68, 68, 0.15)' 
-                : isExpiringSoon 
-                  ? 'rgba(234, 179, 8, 0.15)' 
-                  : `${Colors.green}15`,
-              borderColor: isExpired 
-                ? 'rgba(239, 68, 68, 0.3)' 
-                : isExpiringSoon 
-                  ? 'rgba(234, 179, 8, 0.3)' 
-                  : 'rgba(34, 197, 94, 0.3)',
-            }
+            styles.memberAvatar,
+            {
+              borderColor: `${cardAccentColor}60`,
+              backgroundColor: `${cardAccentColor}15`,
+            },
           ]}>
-            <View style={[
-              styles.memberStatusDot, 
-              { 
-                backgroundColor: isExpired 
-                  ? Colors.red 
-                  : isExpiringSoon 
-                    ? Colors.gold 
-                    : Colors.green 
-              }
-            ]} />
-            <Text style={[
-              styles.memberStatusText, 
-              { 
-                color: isExpired 
-                  ? Colors.red 
-                  : isExpiringSoon 
-                    ? Colors.gold 
-                    : Colors.green 
-              }
-            ]}>
-              {isExpired ? 'EXPIRED' : isExpiringSoon ? 'EXPIRING' : 'ACTIVE'}
-            </Text>
+            <Text style={styles.memberAvatarText}>{member.avatar}</Text>
+            {/* Live dot */}
+            {member.isLive && (
+              <View style={styles.liveDotWrapper}>
+                <View style={styles.liveDotInner} />
+              </View>
+            )}
           </View>
-        </View>
 
-        <View style={styles.requestDivider} />
-
-        {/* Plan Name */}
-        <View style={styles.memberPlanRow}>
-          <View style={styles.planBadge}>
-            <View style={[styles.planBadgeDot, { backgroundColor: iconColor }]} />
-            <Text style={[styles.planBadgeText, { color: iconColor }]}>
-              {template.badge || 'MEMBER'}
-            </Text>
-          </View>
-          <Text style={[styles.memberTierName, { color: textColor }]}>
-            {member.tierName}
-          </Text>
-        </View>
-
-        {/* Workout Type Badge */}
-        <View style={[styles.workoutTypeBadge, { backgroundColor: `${iconColor}15`, alignSelf: 'flex-start' }]}>
-          <Icon 
-            name={member.workoutType === 'cardio_weights' ? 'activity' : 
-                  member.workoutType === 'weights_only' ? 'target' : 'heart'} 
-            size={RFValue(10)} 
-            color={iconColor} 
-          />
-          <Text style={[styles.workoutTypeText, { color: iconColor, fontSize: RFValue(8) }]}>
-            {member.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' :
-             member.workoutType === 'weights_only' ? 'WEIGHTS ONLY' : 'CARDIO ONLY'}
-          </Text>
-        </View>
-
-        <View style={styles.requestDivider} />
-
-        {/* Member Info Grid */}
-        <View style={styles.memberInfoGrid}>
-          <View style={styles.memberInfoItem}>
-            <Text style={styles.memberInfoLabel}>DAYS LEFT</Text>
-            <Text style={[
-              styles.memberInfoValue, 
-              { 
-                color: isExpired 
-                  ? Colors.red 
-                  : isExpiringSoon 
-                    ? Colors.gold 
-                    : Colors.white 
-              }
-            ]}>
-              {daysLeft}
-            </Text>
-          </View>
-          <View style={styles.memberInfoItem}>
-            <Text style={styles.memberInfoLabel}>PAID</Text>
-            <Text style={[styles.memberInfoValue, { color: textColor }]}>
-              ${member.paidAmount}
-            </Text>
-          </View>
-          <View style={styles.memberInfoItem}>
-            <Text style={styles.memberInfoLabel}>DURATION</Text>
-            <Text style={styles.memberInfoValue}>{member.duration}</Text>
-          </View>
-          <View style={styles.memberInfoItem}>
-            <Text style={styles.memberInfoLabel}>JOINED</Text>
-            <Text style={styles.memberInfoValue}>
-              {new Date(member.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </Text>
-          </View>
-        </View>
-
-        {/* Features */}
-        {member.features && member.features.length > 0 && (
-          <>
-            <View style={styles.requestDivider} />
-            <View style={styles.memberFeatures}>
-              {member.features.slice(0, 2).map((feature, idx) => (
-                <View key={idx} style={styles.featureChip}>
-                  <Icon name="check" size={RFValue(8)} color={iconColor} />
-                  <Text style={[styles.featureChipText, { color: Colors.zinc[400] }]}>{feature}</Text>
+          {/* Info */}
+          <View style={styles.memberInfoBox}>
+            {/* Badge Row */}
+            <View style={styles.memberBadgeRow}>
+              {/* Tier Badge - only non-trial */}
+              {!isTrial && (
+                <View style={[styles.memberTierBadge, { backgroundColor: `${cardAccentColor}20`, borderColor: `${cardAccentColor}40` }]}>
+                  <View style={[styles.memberTierDot, { backgroundColor: cardAccentColor }]} />
+                  <Text style={[styles.memberTierText, { color: cardAccentColor }]}>{tierConfig.badge}</Text>
                 </View>
-              ))}
-            </View>
-          </>
-        )}
+              )}
 
-        {/* Footer */}
-        <View style={styles.memberFooter}>
-          <View style={styles.memberFooterLeft}>
-            <Icon name="calendar" size={RFValue(10)} color={Colors.zinc[600]} />
-            <Text style={styles.memberFooterText}>
-              Expires: {new Date(member.expiryDate).toLocaleDateString('en-US', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-              })}
-            </Text>
-          </View>
-          {isExpiringSoon && !isExpired && (
-            <View style={styles.renewBadge}>
-              <Icon name="alert-circle" size={RFValue(10)} color={Colors.gold} />
-              <Text style={styles.renewBadgeText}>Renew Soon</Text>
+              {/* Status Badge */}
+              <View style={[styles.memberStatusBadge, { backgroundColor: statusConfig.bgColor, borderColor: statusConfig.borderColor }]}>
+                <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
+                <Text style={[styles.memberStatusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
+              </View>
+
+              {/* Live Badge */}
+              {member.isLive ? (
+                <View style={styles.liveChip}>
+                  <View style={styles.liveChipDot} />
+                  <Text style={styles.liveChipText}>LIVE</Text>
+                </View>
+              ) : (
+                <View style={styles.offlineChip}>
+                  <Text style={styles.offlineChipText}>OFFLINE</Text>
+                </View>
+              )}
             </View>
-          )}
+
+            {/* Name */}
+            <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
+
+            {/* Workout Badge - only non-trial */}
+            {!isTrial && (
+              <View style={[styles.memberWorkoutBadge, { backgroundColor: `${cardAccentColor}15` }]}>
+                <HugeiconsIcon
+                  icon={member.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
+                  size={ms(10)}
+                  color={cardAccentColor}
+                />
+                <Text style={[styles.memberWorkoutText, { color: 'white' }]}>
+                  {member.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
+                </Text>
+              </View>
+            )}
+
+            {/* Time Row */}
+            <View style={styles.memberTimeRow}>
+              {member.isLive && member.checkinTime ? (
+                <>
+                  <View style={styles.memberTimeItem}>
+                    <HugeiconsIcon icon={Login01Icon} size={ms(11)} color="#22C55E" />
+                    <Text style={styles.memberTimeText}>{member.checkinTime}</Text>
+                  </View>
+                  <View style={styles.memberTimeDot} />
+                  <View style={styles.memberTimeItem}>
+                    <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color={cardAccentColor} />
+                    <Text style={styles.memberTimeText}>{member.duration}</Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.memberTimeItem}>
+                  <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color="rgba(255,255,255,0.3)" />
+                  <Text style={[styles.memberTimeText, { color: 'rgba(255,255,255,0.4)' }]}>
+                    Last: {member.lastCheckout || 'N/A'}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Divider */}
+        <View style={[styles.memberDivider, { backgroundColor: `${cardAccentColor}25` }]} />
+
+        {/* Bottom - Phone + Actions */}
+        <View style={styles.memberBottomRow}>
+          <View style={styles.memberPhoneBox}>
+            <View style={[styles.memberPhoneIcon, { backgroundColor: `${cardAccentColor}12` }]}>
+              <HugeiconsIcon icon={SmartPhone01Icon} size={ms(14)} color={cardAccentColor} />
+            </View>
+            <View>
+              <Text style={styles.memberPhoneLabel}>CONTACT</Text>
+              <Text style={styles.memberPhoneText}>{member.phone}</Text>
+            </View>
+          </View>
+
+          <View style={styles.memberActionBtns}>
+            <TouchableOpacity style={styles.memberActionBtn} onPress={handleCall} activeOpacity={0.7}>
+              <LinearGradient colors={['rgba(34,197,94,0.20)', 'rgba(34,197,94,0.08)']} style={styles.memberActionGradient}>
+                <HugeiconsIcon icon={Call02Icon} size={ms(18)} color="#22C55E" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.memberActionBtn} onPress={handleWhatsApp} activeOpacity={0.7}>
+              <LinearGradient colors={['rgba(37,211,102,0.20)', 'rgba(37,211,102,0.08)']} style={styles.memberActionGradient}>
+                <HugeiconsIcon icon={WhatsappIcon} size={ms(18)} color="#25D366" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </LinearGradient>
+    </TouchableOpacity>
   );
 };
 
@@ -415,7 +702,6 @@ const MemberCard = ({ member }) => {
 // ═══════════════════════════════════════════════════════════════
 const RejectionModal = ({ visible, onClose, onSubmit, request }) => {
   const [reason, setReason] = useState('');
-
   const template = request?.planTemplate || {};
   const iconColor = template.iconColor || Colors.gold;
 
@@ -425,31 +711,23 @@ const RejectionModal = ({ visible, onClose, onSubmit, request }) => {
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <Pressable style={styles.rejectionModalOverlay} onPress={onClose}>
-        <Pressable style={styles.rejectionModalContent} onPress={() => {}}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <Pressable style={styles.modalContent} onPress={() => {}}>
           <BlurView
             style={StyleSheet.absoluteFill}
             blurType={Platform.OS === 'ios' ? 'ultraThinMaterialDark' : 'dark'}
             blurAmount={20}
-            reducedTransparencyFallbackColor="rgba(12,12,16,0.98)"
           />
-          
-          <View style={styles.rejectionModalInner}>
-            <View style={[styles.modalIconCircle, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
-              <Icon name="x-circle" size={RFValue(30)} color={Colors.red} />
+          <View style={styles.modalInner}>
+            <View style={styles.modalIconCircle}>
+              <Icon name="x-circle" size={rf(28)} color="#EF4444" />
             </View>
-            
-            <Text style={styles.rejectionModalTitle}>Reject Request</Text>
-            
-            <View style={styles.modalUserInfo}>
-              <View style={[styles.modalUserAvatar, { backgroundColor: `${iconColor}25` }]}>
-                <Text style={[styles.modalUserAvatarText, { color: iconColor }]}>
+            <Text style={styles.modalTitle}>Reject Request</Text>
+
+            <View style={styles.modalUserRow}>
+              <View style={[styles.modalAvatar, { backgroundColor: `${iconColor}25` }]}>
+                <Text style={[styles.modalAvatarText, { color: iconColor }]}>
                   {request?.userName?.charAt(0).toUpperCase() || 'U'}
                 </Text>
               </View>
@@ -460,7 +738,7 @@ const RejectionModal = ({ visible, onClose, onSubmit, request }) => {
             </View>
 
             <TextInput
-              style={styles.rejectionInput}
+              style={styles.modalInput}
               placeholder="Reason for rejection (optional)"
               placeholderTextColor={Colors.zinc[600]}
               value={reason}
@@ -469,17 +747,14 @@ const RejectionModal = ({ visible, onClose, onSubmit, request }) => {
               numberOfLines={3}
             />
 
-            <View style={styles.rejectionButtonsRow}>
-              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>CANCEL</Text>
+            <View style={styles.modalBtnsRow}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={onClose}>
+                <Text style={styles.modalCancelText}>CANCEL</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmRejectButton} onPress={handleSubmit}>
-                <LinearGradient
-                  colors={[Colors.red, 'rgba(239, 68, 68, 0.8)']}
-                  style={styles.confirmRejectGradient}
-                >
-                  <Icon name="x" size={RFValue(14)} color={Colors.white} />
-                  <Text style={styles.confirmRejectButtonText}>REJECT</Text>
+              <TouchableOpacity style={styles.modalRejectBtn} onPress={handleSubmit}>
+                <LinearGradient colors={['rgba(239,68,68,0.25)', 'rgba(239,68,68,0.10)']} style={styles.modalRejectGradient}>
+                  <Icon name="x" size={rf(14)} color="#EF4444" />
+                  <Text style={styles.modalRejectText}>REJECT</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -509,9 +784,30 @@ const AdminUsersDetailScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [memberFilter, setMemberFilter] = useState('all'); // all, live, offline
 
   const pendingRequests = getPendingRequests();
   const activeMembers = getActiveMembers();
+
+  // Filter dummy members
+  const filteredMembers = DUMMY_MEMBERS.filter(m => {
+    const matchesSearch =
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.memberId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.phone.includes(searchQuery);
+
+    const matchesFilter =
+      memberFilter === 'all' ||
+      (memberFilter === 'live' && m.isLive) ||
+      (memberFilter === 'offline' && !m.isLive);
+
+    return matchesSearch && matchesFilter;
+  });
+
+  const liveCount = DUMMY_MEMBERS.filter(m => m.isLive).length;
+  const offlineCount = DUMMY_MEMBERS.filter(m => !m.isLive).length;
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -520,9 +816,6 @@ const AdminUsersDetailScreen = ({ navigation }) => {
   };
 
   const handleApprove = async (request) => {
-    const template = request.planTemplate || {};
-    const planColor = template.textColor || Colors.gold;
-
     Alert.alert(
       'Approve Request',
       `Approve ${request.userName}'s request for ${request.planName}?`,
@@ -534,13 +827,9 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             setProcessingId(request.id);
             try {
               await approveRequest(request.id);
-              Alert.alert(
-                'Success! ✓', 
-                `${request.userName} is now a ${request.planName} member!`
-              );
+              Alert.alert('Success! ✓', `${request.userName} is now a ${request.planName} member!`);
             } catch (error) {
               Alert.alert('Error', 'Failed to approve request');
-              console.error(error);
             } finally {
               setProcessingId(null);
             }
@@ -563,15 +852,18 @@ const AdminUsersDetailScreen = ({ navigation }) => {
       Alert.alert('Rejected', `${request.userName}'s request has been rejected.`);
     } catch (error) {
       Alert.alert('Error', 'Failed to reject request');
-      console.error(error);
     } finally {
       setProcessingId(null);
       setSelectedRequest(null);
     }
   };
 
+  const handleMemberPress = (member) => {
+    navigation.navigate('MembersProfile', { member });
+  };
+
   const renderContent = () => {
-    if (loading) {
+    if (loading && activeTab === 'pending') {
       return (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.white} />
@@ -580,49 +872,100 @@ const AdminUsersDetailScreen = ({ navigation }) => {
       );
     }
 
-    switch (activeTab) {
-      case 'pending':
-        return pendingRequests.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconCircle}>
-              <Icon name="inbox" size={RFValue(40)} color={Colors.zinc[600]} />
-            </View>
-            <Text style={styles.emptyTitle}>No Pending Requests</Text>
-            <Text style={styles.emptySubtitle}>
-              New membership requests will appear here for approval
-            </Text>
+    if (activeTab === 'pending') {
+      return pendingRequests.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyIconCircle}>
+            <Icon name="inbox" size={rf(40)} color={Colors.zinc[600]} />
           </View>
-        ) : (
-          pendingRequests.map((request) => (
-            <RequestCard
-              key={request.id}
-              request={request}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              isProcessing={processingId === request.id}
+          <Text style={styles.emptyTitle}>No Pending Requests</Text>
+          <Text style={styles.emptySubtitle}>New membership requests will appear here</Text>
+        </View>
+      ) : (
+        pendingRequests.map((request) => (
+          <RequestCard
+            key={request.id}
+            request={request}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            isProcessing={processingId === request.id}
+          />
+        ))
+      );
+    }
+
+    if (activeTab === 'members') {
+      return (
+        <>
+          {/* Search Bar */}
+          <View style={[styles.searchBar, isSearchFocused && styles.searchBarFocused]}>
+            <HugeiconsIcon icon={Search01Icon} size={ms(18)} color={isSearchFocused ? '#fff' : 'rgba(255,255,255,0.4)'} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search name, ID, or phone..."
+              placeholderTextColor="rgba(255,255,255,0.3)"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
-          ))
-        );
-
-      case 'members':
-        return activeMembers.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconCircle}>
-              <Icon name="users" size={RFValue(40)} color={Colors.zinc[600]} />
-            </View>
-            <Text style={styles.emptyTitle}>No Active Members</Text>
-            <Text style={styles.emptySubtitle}>
-              Approved members will appear here with their plan details
-            </Text>
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} activeOpacity={0.7}>
+                <HugeiconsIcon icon={Cancel01Icon} size={ms(14)} color="rgba(255,255,255,0.5)" />
+              </TouchableOpacity>
+            )}
           </View>
-        ) : (
-          activeMembers.map((member) => (
-            <MemberCard key={member.id} member={member} />
-          ))
-        );
 
-      default:
-        return null;
+          {/* Live / Offline Filter */}
+          <View style={styles.filterRow}>
+            {[
+              { label: 'All', value: 'all', count: DUMMY_MEMBERS.length },
+              { label: 'Live', value: 'live', count: liveCount, color: '#22C55E' },
+              { label: 'Offline', value: 'offline', count: offlineCount, color: 'rgba(255,255,255,0.4)' },
+            ].map(f => (
+              <TouchableOpacity
+                key={f.value}
+                style={[styles.filterChip, memberFilter === f.value && styles.filterChipActive]}
+                onPress={() => setMemberFilter(f.value)}
+                activeOpacity={0.7}
+              >
+                {f.color && <View style={[styles.filterDot, { backgroundColor: f.color }]} />}
+                <Text style={[styles.filterChipText, memberFilter === f.value && styles.filterChipTextActive]}>
+                  {f.label} ({f.count})
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Section header */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {searchQuery ? 'Search Results' : memberFilter === 'live' ? 'Live Members' : memberFilter === 'offline' ? 'Offline Members' : 'All Members'}
+            </Text>
+            <View style={styles.sectionCount}>
+              <Text style={styles.sectionCountText}>{filteredMembers.length}</Text>
+            </View>
+          </View>
+
+          {filteredMembers.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <HugeiconsIcon icon={UserRemove01Icon} size={ms(48)} color="rgba(255,255,255,0.3)" />
+              <Text style={styles.emptyTitle}>No Members Found</Text>
+              <Text style={styles.emptySubtitle}>Try adjusting your search or filter</Text>
+            </View>
+          ) : (
+            filteredMembers.map(member => (
+              <MemberCard
+                key={member.id}
+                member={member}
+                onPress={handleMemberPress}
+              />
+            ))
+          )}
+        </>
+      );
     }
   };
 
@@ -640,31 +983,32 @@ const AdminUsersDetailScreen = ({ navigation }) => {
           <Header title="MEMBERS" showMenu={false} />
 
           {/* Stats Row */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: Colors.gold }]}>
-                {pendingRequests.length}
-              </Text>
-              <Text style={styles.statLabel}>PENDING</Text>
+          <View style={styles.statsTopRow}>
+            <View style={styles.statTopItem}>
+              <Text style={[styles.statTopNumber, { color: Colors.gold }]}>{pendingRequests.length}</Text>
+              <Text style={styles.statTopLabel}>PENDING</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: Colors.green }]}>
-                {activeMembers.length}
-              </Text>
-              <Text style={styles.statLabel}>ACTIVE</Text>
+            <View style={styles.statTopDivider} />
+            <View style={styles.statTopItem}>
+              <Text style={[styles.statTopNumber, { color: '#22C55E' }]}>{liveCount}</Text>
+              <Text style={styles.statTopLabel}>LIVE</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{requests.length}</Text>
-              <Text style={styles.statLabel}>TOTAL</Text>
+            <View style={styles.statTopDivider} />
+            <View style={styles.statTopItem}>
+              <Text style={[styles.statTopNumber, { color: 'rgba(255,255,255,0.5)' }]}>{offlineCount}</Text>
+              <Text style={styles.statTopLabel}>OFFLINE</Text>
+            </View>
+            <View style={styles.statTopDivider} />
+            <View style={styles.statTopItem}>
+              <Text style={styles.statTopNumber}>{DUMMY_MEMBERS.length}</Text>
+              <Text style={styles.statTopLabel}>TOTAL</Text>
             </View>
           </View>
 
           {/* Tabs */}
           <View style={styles.tabsContainer}>
             <TabButton
-              title="Pending"
+              title="Requests"
               count={pendingRequests.length}
               isActive={activeTab === 'pending'}
               onPress={() => setActiveTab('pending')}
@@ -672,10 +1016,10 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             />
             <TabButton
               title="Members"
-              count={activeMembers.length}
+              count={DUMMY_MEMBERS.length}
               isActive={activeTab === 'members'}
               onPress={() => setActiveTab('members')}
-              color={Colors.green}
+              color="#22C55E"
             />
           </View>
 
@@ -684,12 +1028,9 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor={Colors.white}
-              />
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={Colors.white} />
             }
           >
             {renderContent()}
@@ -704,13 +1045,9 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             }}
           />
 
-          {/* Rejection Modal */}
           <RejectionModal
             visible={showRejectModal}
-            onClose={() => {
-              setShowRejectModal(false);
-              setSelectedRequest(null);
-            }}
+            onClose={() => { setShowRejectModal(false); setSelectedRequest(null); }}
             onSubmit={confirmReject}
             request={selectedRequest}
           />
@@ -721,614 +1058,734 @@ const AdminUsersDetailScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  
-  // Stats Row
-  statsRow: {
+  background: { flex: 1 },
+  gradient: { flex: 1 },
+  safeArea: { flex: 1 },
+
+  // Stats Top Row
+  statsTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: verticalScale(16),
-    marginHorizontal: scale(20),
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: moderateScale(12),
+    paddingVertical: vs(12),
+    marginHorizontal: s(20),
+    backgroundColor: '#000000',
+    borderRadius: ms(12),
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    marginBottom: verticalScale(16),
+    borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: vs(12),
   },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
+  statTopItem: { alignItems: 'center', flex: 1 },
+  statTopNumber: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(22),
+    fontSize: rf(18),
     color: Colors.white,
   },
-  statLabel: {
+  statTopLabel: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
+    fontSize: rf(7),
     color: Colors.zinc[500],
-    letterSpacing: scale(1.5),
-    marginTop: verticalScale(4),
+    letterSpacing: s(1.2),
+    marginTop: vs(2),
   },
-  statDivider: {
+  statTopDivider: {
     width: 1,
-    height: verticalScale(30),
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    height: vs(28),
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
 
   // Tabs
   tabsContainer: {
     flexDirection: 'row',
-    marginHorizontal: scale(20),
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: moderateScale(10),
-    padding: scale(4),
-    marginBottom: verticalScale(16),
+    marginHorizontal: s(20),
+    backgroundColor: '#000000',
+    borderRadius: ms(10),
+    padding: s(4),
+    marginBottom: vs(12),
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   tabButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: verticalScale(10),
-    borderRadius: moderateScale(8),
-    gap: scale(6),
+    paddingVertical: vs(10),
+    borderRadius: ms(8),
+    gap: s(6),
   },
-  tabButtonActive: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
+  tabButtonActive: { backgroundColor: 'rgba(255,255,255,0.08)' },
   tabButtonText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(10),
+    fontSize: rf(10),
     color: Colors.zinc[500],
-    letterSpacing: scale(1),
+    letterSpacing: s(1),
   },
   tabBadge: {
-    paddingHorizontal: scale(6),
-    paddingVertical: verticalScale(2),
-    borderRadius: moderateScale(10),
-    minWidth: scale(20),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(10),
+    minWidth: s(20),
     alignItems: 'center',
   },
   tabBadgeText: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(8),
-    color: Colors.black,
+    fontSize: rf(8),
+    color: '#000000',
   },
 
   // Scroll
-  scrollView: {
-    flex: 1,
-  },
+  scrollView: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: scale(20),
-    paddingBottom: verticalScale(100),
-    gap: verticalScale(14),
+    paddingHorizontal: s(20),
+    paddingBottom: vs(100),
+    gap: vs(12),
   },
 
-  // Center Container
+  // Center / Empty
   centerContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: verticalScale(80),
+    paddingVertical: vs(80),
   },
   loadingText: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(10),
+    fontSize: rf(10),
     color: Colors.zinc[500],
-    marginTop: verticalScale(12),
+    marginTop: vs(12),
   },
-
-  // Empty State
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: verticalScale(60),
+    paddingVertical: vs(60),
+    gap: vs(12),
   },
   emptyIconCircle: {
-    width: moderateScale(80),
-    height: moderateScale(80),
-    borderRadius: moderateScale(40),
+    width: ms(80),
+    height: ms(80),
+    borderRadius: ms(40),
     backgroundColor: 'rgba(255,255,255,0.03)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: verticalScale(16),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.05)',
   },
   emptyTitle: {
     fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(14),
+    fontSize: rf(14),
     color: Colors.zinc[400],
   },
   emptySubtitle: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(10),
+    fontSize: rf(10),
     color: Colors.zinc[600],
-    marginTop: verticalScale(8),
     textAlign: 'center',
-    paddingHorizontal: scale(20),
+    paddingHorizontal: s(20),
   },
 
-  // Card Background Icon
-  cardBgIcon: {
-    position: 'absolute',
-    right: -scale(15),
-    top: -scale(15),
-  },
-
-  // Request Card
-  requestCardGradient: {
-    borderRadius: moderateScale(16),
-    padding: scale(1),
-  },
-  requestCard: {
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    borderRadius: moderateScale(15),
-    padding: scale(16),
+  // ═══════════════════════════════════════════════
+  // REQUEST CARD STYLES
+  // ═══════════════════════════════════════════════
+  requestCardWrapper: {
+    borderRadius: ms(16),
     overflow: 'hidden',
+    backgroundColor: '#000000',
+    borderWidth: 1,
     position: 'relative',
+    padding: ms(14),
   },
-  requestHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  cardBgIconContainer: {
+    position: 'absolute',
+    top: -ms(5),
+    right: -ms(10),
+    opacity: 0.8,
   },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(12),
-  },
-  userAvatar: {
-    width: moderateScale(46),
-    height: moderateScale(46),
-    borderRadius: moderateScale(23),
+  reqHeader: { marginBottom: vs(8) },
+  reqAvatarRow: { flexDirection: 'row', alignItems: 'flex-start', gap: s(12) },
+  reqAvatar: {
+    width: ms(50),
+    height: ms(50),
+    borderRadius: ms(25),
+    borderWidth: scale(2),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  userAvatarText: {
+  reqAvatarText: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(16),
+    fontSize: rf(14),
   },
-  userDetails: {
-    gap: verticalScale(2),
-  },
-  userName: {
-    fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(12),
-    color: Colors.white,
-    letterSpacing: scale(1),
-  },
-  userPhone: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(10),
-    color: Colors.zinc[400],
-  },
-  requestStatusBadge: {
+  reqNameBox: { flex: 1 },
+  reqBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
-    paddingHorizontal: scale(10),
-    paddingVertical: verticalScale(5),
-    borderRadius: moderateScale(6),
+    gap: s(6),
+    marginBottom: vs(4),
+    flexWrap: 'wrap',
+  },
+  reqTierBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
     borderWidth: 1,
+    gap: s(4),
   },
-  requestStatusText: {
+  reqTierDot: { width: ms(4), height: ms(4), borderRadius: ms(2) },
+  reqTierText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(8),
-    letterSpacing: scale(1),
+    fontSize: rf(6),
+    letterSpacing: 0.5,
   },
-  requestDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginVertical: verticalScale(12),
-  },
-
-  // Plan Info
-  planInfoSection: {
-    gap: verticalScale(10),
-  },
-  planInfoHeader: {
-    gap: verticalScale(4),
-  },
-  planBadge: {
+  reqStatusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
+    borderWidth: 1,
+    gap: s(3),
   },
-  planBadgeDot: {
-    width: scale(6),
-    height: scale(6),
-    borderRadius: scale(3),
-  },
-  planBadgeText: {
+  reqStatusText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(8),
-    letterSpacing: scale(1.5),
-    textTransform: 'uppercase',
+    fontSize: rf(6),
+    letterSpacing: 0.5,
   },
-  planNameText: {
+  reqName: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(16),
-    letterSpacing: scale(2),
+    fontSize: rf(11),
+    color: '#FFFFFF',
+    marginBottom: vs(4),
   },
-  workoutTypeBadge: {
+  reqWorkoutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(6),
-    paddingHorizontal: scale(10),
-    paddingVertical: verticalScale(5),
-    borderRadius: moderateScale(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(4),
     alignSelf: 'flex-start',
+    marginBottom: vs(4),
+    gap: s(4),
   },
-  workoutTypeText: {
+  reqWorkoutText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(9),
-    letterSpacing: scale(1),
+    fontSize: rf(6),
+    letterSpacing: 0.5,
   },
-  priceRow: {
+  reqTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(4),
+  },
+  reqTimeText: {
+    fontFamily: Fonts.orbitron.regular,
+    fontSize: rf(7),
+    color: 'rgba(255,255,255,0.4)',
+  },
+  reqDivider: { height: 1, marginVertical: vs(10) },
+  reqPlanRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    marginBottom: vs(12),
   },
-  priceInfo: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: scale(6),
-  },
-  originalPrice: {
+  reqPlanInfo: { gap: vs(2) },
+  reqPlanLabel: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(12),
+    fontSize: rf(6),
+    color: 'rgba(255,255,255,0.4)',
+    letterSpacing: 1,
+  },
+  reqPlanName: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(13),
+    letterSpacing: 1,
+  },
+  reqPriceBox: { alignItems: 'flex-end' },
+  reqOriginalPrice: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: rf(9),
     color: Colors.zinc[500],
     textDecorationLine: 'line-through',
   },
-  finalPrice: {
+  reqFinalPrice: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(20),
+    fontSize: rf(18),
   },
-  priceDuration: {
+  reqDuration: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(10),
+    fontSize: rf(8),
     color: Colors.zinc[500],
   },
-  offerTag: {
+  reqBottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
-    paddingHorizontal: scale(8),
-    paddingVertical: verticalScale(4),
-    borderRadius: moderateScale(4),
+    justifyContent: 'space-between',
   },
-  offerTagText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(7),
-  },
-
-  // Features Preview
-  featuresPreview: {
-    gap: verticalScale(6),
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(8),
-  },
-  featureText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(9),
-    color: Colors.zinc[400],
-  },
-  moreFeatures: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
-    color: Colors.zinc[600],
-    marginTop: verticalScale(4),
-  },
-
-  // Request Time
-  requestTimeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(8),
-    marginBottom: verticalScale(12),
-  },
-  requestTimeText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(9),
-    color: Colors.zinc[500],
-  },
-
-  // Action Buttons
-  actionButtonsRow: {
-    flexDirection: 'row',
-    gap: scale(12),
-  },
-  rejectButton: {
-    flex: 1,
-    flexDirection: 'row',
+  reqPhoneBox: { flexDirection: 'row', alignItems: 'center', gap: s(8), flex: 1 },
+  reqPhoneIcon: {
+    width: ms(32),
+    height: ms(32),
+    borderRadius: ms(10),
     alignItems: 'center',
     justifyContent: 'center',
-    gap: scale(6),
-    paddingVertical: verticalScale(12),
-    borderRadius: moderateScale(10),
+  },
+  reqPhoneText: {
+    fontFamily: Fonts.orbitron.regular,
+    fontSize: rf(8),
+    color: '#FFFFFF',
+  },
+  reqActions: { flexDirection: 'row', gap: s(8) },
+  rejectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(4),
+    paddingHorizontal: s(12),
+    paddingVertical: vs(8),
+    borderRadius: ms(8),
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: 'rgba(239,68,68,0.35)',
+    backgroundColor: 'rgba(239,68,68,0.08)',
   },
-  rejectButtonText: {
+  rejectBtnText: {
     fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(10),
-    color: Colors.red,
-    letterSpacing: scale(1.5),
+    fontSize: rf(8),
+    color: '#EF4444',
+    letterSpacing: 1,
   },
-  approveButton: {
-    flex: 1,
-    borderRadius: moderateScale(10),
+  approveBtn: {
+    borderRadius: ms(8),
     overflow: 'hidden',
   },
-  approveButtonGradient: {
+  approveBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: scale(6),
-    paddingVertical: verticalScale(12),
+    gap: s(4),
+    paddingHorizontal: s(12),
+    paddingVertical: vs(8),
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.35)',
+    borderRadius: ms(8),
   },
-  approveButtonText: {
+  approveBtnText: {
     fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(10),
-    color: Colors.white,
-    letterSpacing: scale(1.5),
-  },
-  buttonDisabled: {
-    opacity: 0.5,
+    fontSize: rf(8),
+    color: '#22C55E',
+    letterSpacing: 1,
   },
 
-  // Member Card
-  memberCardGradient: {
-    borderRadius: moderateScale(16),
-    padding: scale(1),
-  },
-  memberCard: {
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    borderRadius: moderateScale(15),
-    padding: scale(16),
+  // ═══════════════════════════════════════════════
+  // MEMBER CARD STYLES - LiveRoster Style
+  // ═══════════════════════════════════════════════
+  memberCardWrapper: {
+    borderRadius: ms(16),
     overflow: 'hidden',
+    backgroundColor: '#000000',
+    borderWidth: 1,
     position: 'relative',
   },
-  memberHeader: {
+  memberCardContent: {
+    paddingLeft: ms(14),
+    paddingRight: ms(12),
+    paddingVertical: ms(12),
+  },
+  memberTopSection: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  memberAvatar: {
+    width: ms(50),
+    height: ms(50),
+    borderRadius: ms(27),
+    borderWidth: scale(2),
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: s(12),
+    position: 'relative',
+  },
+  memberAvatarText: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(14),
+    color: '#FFFFFF',
+  },
+  liveDotWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: ms(14),
+    height: ms(14),
+    borderRadius: ms(7),
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+  liveDotInner: {
+    width: ms(8),
+    height: ms(8),
+    borderRadius: ms(4),
+    backgroundColor: '#22C55E',
+  },
+  memberInfoBox: { flex: 1 },
+  memberBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: vs(4),
+    gap: s(6),
+    flexWrap: 'wrap',
+  },
+  memberTierBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
+    borderWidth: 1,
+    gap: s(4),
+  },
+  memberTierDot: { width: ms(4), height: ms(4), borderRadius: ms(2) },
+  memberTierText: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: rf(6),
+    letterSpacing: 0.5,
   },
   memberStatusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
-    paddingHorizontal: scale(10),
-    paddingVertical: verticalScale(5),
-    borderRadius: moderateScale(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
     borderWidth: 1,
-  },
-  memberStatusDot: {
-    width: scale(6),
-    height: scale(6),
-    borderRadius: scale(3),
+    gap: s(3),
   },
   memberStatusText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(8),
-    letterSpacing: scale(1),
+    fontSize: rf(6),
+    letterSpacing: 0.5,
   },
-  memberPlanRow: {
-    gap: verticalScale(4),
-    marginBottom: verticalScale(10),
+  liveChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(34,197,94,0.15)',
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
+    gap: s(3),
   },
-  memberTierName: {
+  liveChipDot: {
+    width: ms(4),
+    height: ms(4),
+    borderRadius: ms(2),
+    backgroundColor: '#22C55E',
+  },
+  liveChipText: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(16),
-    letterSpacing: scale(2),
+    fontSize: rf(5),
+    color: '#22C55E',
+    letterSpacing: 0.5,
   },
-  memberInfoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  memberInfoItem: {
-    width: '50%',
-    paddingVertical: verticalScale(8),
-  },
-  memberInfoLabel: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(7),
-    color: Colors.zinc[600],
-    letterSpacing: scale(1),
-    marginBottom: verticalScale(4),
-  },
-  memberInfoValue: {
-    fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(12),
-    color: Colors.white,
-  },
-  memberFeatures: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: scale(8),
-  },
-  featureChip: {
+  offlineChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    paddingHorizontal: scale(8),
-    paddingVertical: verticalScale(4),
-    borderRadius: moderateScale(4),
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
   },
-  featureChipText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
+  offlineChipText: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(5),
+    color: 'rgba(255,255,255,0.35)',
+    letterSpacing: 0.5,
   },
-  memberFooter: {
-    marginTop: verticalScale(12),
-    paddingTop: verticalScale(12),
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  memberName: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(11),
+    color: '#FFFFFF',
+    marginBottom: vs(4),
   },
-  memberFooterLeft: {
+  memberWorkoutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(6),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(4),
+    alignSelf: 'flex-start',
+    marginBottom: vs(5),
+    gap: s(4),
   },
-  memberFooterText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(9),
-    color: Colors.zinc[500],
-  },
-  renewBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(4),
-    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-    paddingHorizontal: scale(8),
-    paddingVertical: verticalScale(4),
-    borderRadius: moderateScale(4),
-  },
-  renewBadgeText: {
+  memberWorkoutText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(8),
-    color: Colors.gold,
+    fontSize: rf(6),
+    letterSpacing: 0.5,
+  },
+  memberTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  memberTimeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(3),
+  },
+  memberTimeText: {
+    fontFamily: Fonts.orbitron.regular,
+    fontSize: rf(8),
+    color: '#FFFFFF',
+  },
+  memberTimeDot: {
+    width: ms(3),
+    height: ms(3),
+    borderRadius: ms(1.5),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    marginHorizontal: s(6),
+  },
+  memberDivider: { height: 1, marginVertical: vs(10) },
+  memberBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  memberPhoneBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: s(8),
+  },
+  memberPhoneIcon: {
+    width: ms(32),
+    height: ms(32),
+    borderRadius: ms(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  memberPhoneLabel: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: rf(6),
+    color: 'rgba(255,255,255,0.4)',
+    letterSpacing: 1.2,
+    marginBottom: vs(1),
+  },
+  memberPhoneText: {
+    fontFamily: Fonts.orbitron.regular,
+    fontSize: rf(8),
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  memberActionBtns: { flexDirection: 'row', gap: s(6) },
+  memberActionBtn: { borderRadius: ms(10), overflow: 'hidden' },
+  memberActionGradient: {
+    width: ms(36),
+    height: ms(36),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: ms(10),
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
 
-  // Rejection Modal
-  rejectionModalOverlay: {
+  // Search Bar
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    borderRadius: ms(12),
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: s(13),
+    paddingVertical: vs(9),
+    gap: s(10),
+  },
+  searchBarFocused: { borderColor: 'rgba(255,255,255,0.15)' },
+  searchInput: {
+    flex: 1,
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: rf(13),
+    color: '#FFFFFF',
+    paddingVertical: 0,
+  },
+
+  // Filter Row
+  filterRow: {
+    flexDirection: 'row',
+    gap: s(8),
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(5),
+    borderRadius: ms(16),
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    gap: s(5),
+  },
+  filterChipActive: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  filterDot: { width: ms(5), height: ms(5), borderRadius: ms(2.5) },
+  filterChipText: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: rf(8),
+    color: 'rgba(255,255,255,0.4)',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  filterChipTextActive: { color: '#FFFFFF' },
+
+  // Section Header
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: rf(11),
+    color: 'rgba(255,255,255,0.6)',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  sectionCount: {
+    backgroundColor: 'rgba(34,197,94,0.15)',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(4),
+    borderRadius: ms(8),
+  },
+  sectionCountText: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(11),
+    color: '#22C55E',
+  },
+
+  // Modal
+  modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: scale(20),
+    paddingHorizontal: s(20),
   },
-  rejectionModalContent: {
+  modalContent: {
     width: '100%',
-    borderRadius: moderateScale(20),
+    borderRadius: ms(20),
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#000000',
   },
-  rejectionModalInner: {
-    padding: scale(24),
+  modalInner: {
+    padding: s(24),
     alignItems: 'center',
   },
   modalIconCircle: {
-    width: moderateScale(70),
-    height: moderateScale(70),
-    borderRadius: moderateScale(35),
+    width: ms(64),
+    height: ms(64),
+    borderRadius: ms(32),
+    backgroundColor: 'rgba(239,68,68,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalUserInfo: {
+  modalTitle: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(16),
+    color: Colors.white,
+    marginTop: vs(14),
+    marginBottom: vs(4),
+  },
+  modalUserRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(12),
-    marginTop: verticalScale(20),
-    marginBottom: verticalScale(10),
+    gap: s(12),
+    marginTop: vs(16),
+    marginBottom: vs(8),
     backgroundColor: 'rgba(255,255,255,0.03)',
-    padding: scale(12),
-    borderRadius: moderateScale(12),
+    padding: s(12),
+    borderRadius: ms(12),
     width: '100%',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  modalUserAvatar: {
-    width: moderateScale(40),
-    height: moderateScale(40),
-    borderRadius: moderateScale(20),
+  modalAvatar: {
+    width: ms(40),
+    height: ms(40),
+    borderRadius: ms(20),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalUserAvatarText: {
+  modalAvatarText: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(14),
+    fontSize: rf(14),
   },
   modalUserName: {
     fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(11),
+    fontSize: rf(11),
     color: Colors.white,
   },
   modalPlanName: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(9),
+    fontSize: rf(9),
     color: Colors.zinc[500],
   },
-  rejectionModalTitle: {
-    fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(16),
-    color: Colors.white,
-    marginTop: verticalScale(16),
-  },
-  rejectionInput: {
+  modalInput: {
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: moderateScale(12),
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: ms(12),
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    padding: scale(14),
-    marginTop: verticalScale(10),
+    borderColor: 'rgba(255,255,255,0.08)',
+    padding: s(14),
+    marginTop: vs(8),
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(10),
+    fontSize: rf(10),
     color: Colors.white,
     textAlignVertical: 'top',
-    minHeight: verticalScale(80),
+    minHeight: vs(80),
   },
-  rejectionButtonsRow: {
+  modalBtnsRow: {
     flexDirection: 'row',
-    gap: scale(12),
-    marginTop: verticalScale(20),
+    gap: s(12),
+    marginTop: vs(16),
     width: '100%',
   },
-  cancelButton: {
+  modalCancelBtn: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: verticalScale(14),
-    borderRadius: moderateScale(10),
+    paddingVertical: vs(12),
+    borderRadius: ms(10),
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
-  cancelButtonText: {
+  modalCancelText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(10),
+    fontSize: rf(10),
     color: Colors.zinc[500],
-    letterSpacing: scale(1.5),
+    letterSpacing: s(1.5),
   },
-  confirmRejectButton: {
+  modalRejectBtn: {
     flex: 1,
-    borderRadius: moderateScale(10),
+    borderRadius: ms(10),
     overflow: 'hidden',
   },
-  confirmRejectGradient: {
+  modalRejectGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: scale(6),
-    paddingVertical: verticalScale(14),
+    gap: s(6),
+    paddingVertical: vs(12),
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.35)',
+    borderRadius: ms(10),
   },
-  confirmRejectButtonText: {
+  modalRejectText: {
     fontFamily: Fonts.orbitron.semiBold,
-    fontSize: RFValue(10),
-    color: Colors.white,
-    letterSpacing: scale(1.5),
+    fontSize: rf(10),
+    color: '#EF4444',
+    letterSpacing: s(1.5),
   },
 });
 

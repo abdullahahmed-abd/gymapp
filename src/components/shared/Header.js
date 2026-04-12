@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
 
-const Header = ({ title = "AURA", showMenu = true, onMenuPress }) => {
+const Header = ({ title = "GOS", showMenu = true, onMenuPress }) => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
