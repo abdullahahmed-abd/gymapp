@@ -22,6 +22,8 @@ import {
   verticalScale,
 } from 'react-native-size-matters';
 import { HugeiconsIcon } from '@hugeicons/react-native';
+import BottomNav from '../../components/shared/BottomNav';
+
 import {
   Dumbbell01Icon,
   Activity01Icon,
@@ -789,6 +791,16 @@ const AdminAddPlanScreen = ({ navigation }) => {
           </View>
         </ScrollView>
       </LinearGradient>
+       <BottomNav
+                  activeTab="plans"
+                  onTabChange={(tab) => {
+                    if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+                    if (tab === 'plans') navigation.navigate('AdminAddPlan');
+                    if (tab === 'members') navigation.navigate('AdminUsersDetail');
+                    if (tab === 'settings') navigation.navigate('AdminSettings');
+                  }}
+                  userType="admin"
+                />
     </ImageBackground>
   );
 };

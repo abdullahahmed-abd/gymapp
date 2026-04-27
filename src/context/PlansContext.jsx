@@ -21,18 +21,23 @@ export const PlansProvider = ({ children }) => {
     loadPlans();
   }, []);
 
-  const loadPlans = async () => {
-    try {
-      const storedPlans = await AsyncStorage.getItem('gym_plans');
-      if (storedPlans) {
-        setPlans(JSON.parse(storedPlans));
-      }
-    } catch (error) {
-      console.error('Error loading plans:', error);
-    } finally {
-      setLoading(false);
+// loadPlans function mein return add karo:
+
+// src/context/PlansContext.js
+
+const loadPlans = async () => {
+  try {
+    const storedPlans = await AsyncStorage.getItem('gym_plans');
+    if (storedPlans) {                    // ✅ storedPlans (not storedPlants)
+      setPlans(JSON.parse(storedPlans));  // ✅ storedPlans (not storedPlants)
     }
-  };
+  } catch (error) {
+    console.error('Error loading plans:', error);
+  } finally {
+    setLoading(false);
+  }
+  return Promise.resolve();
+};
 
   const savePlans = async (newPlans) => {
     try {

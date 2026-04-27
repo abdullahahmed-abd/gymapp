@@ -458,44 +458,46 @@ const LiveMemberCard = ({ member, onCall, onWhatsApp, onViewProfile }) => {
           </View>
 
           <View style={styles.infoContainer}>
-            <View style={styles.badgeRow}>
-              {!isTrial && tierConfig && (
-                <View
-                  style={[
-                    styles.tierBadge,
-                    {
-                      backgroundColor: `${tierConfig.iconColor}20`,
-                      borderColor: `${tierConfig.iconColor}40`,
-                    },
-                  ]}
-                >
-                  <View style={[styles.tierDot, { backgroundColor: tierConfig.iconColor }]} />
-                  <Text style={[styles.tierText, { color: tierConfig.iconColor }]}>
-                    {tierConfig.badge}
-                  </Text>
-                </View>
-              )}
+<View style={styles.badgeRow}>
+  {/* Left side badges */}
+  <View style={styles.leftBadges}>
+    {!isTrial && tierConfig && (
+      <View
+        style={[
+          styles.tierBadge,
+          {
+            borderColor: `${tierConfig.iconColor}40`,
+          },
+        ]}
+      >
+        <View style={[styles.tierDot, { backgroundColor: tierConfig.iconColor }]} />
+        <Text style={[styles.tierText, { color: Colors.zinc[400] }]}>
+          {tierConfig.badge}
+        </Text>
+      </View>
+    )}
 
-              <View
-                style={[
-                  styles.statusBadge,
-                  {
-                    backgroundColor: statusConfig.bgColor,
-                    borderColor: statusConfig.borderColor,
-                  },
-                ]}
-              >
-                <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
-                <Text style={[styles.statusBadgeText, { color: statusConfig.color }]}>
-                  {statusConfig.label}
-                </Text>
-              </View>
+    <View
+      style={[
+        styles.statusBadge,
+        {
+          borderColor: statusConfig.borderColor,
+        },
+      ]}
+    >
+      <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
+      <Text style={[styles.statusBadgeText, { color: Colors.zinc[400] }]}>
+        {statusConfig.label}
+      </Text>
+    </View>
+  </View>
 
-              <View style={styles.liveBadge}>
-                <View style={styles.liveBadgeDot} />
-                <Text style={styles.liveBadgeText}>LIVE</Text>
-              </View>
-            </View>
+  {/* ✅ Right corner me LIVE badge */}
+  <View style={styles.liveBadge}>
+    <View style={styles.liveBadgeDot} />
+    <Text style={styles.liveBadgeText}>LIVE</Text>
+  </View>
+</View>
 
             <Text style={styles.memberName} numberOfLines={1}>
               {member.name}
@@ -549,7 +551,7 @@ const LiveMemberCard = ({ member, onCall, onWhatsApp, onViewProfile }) => {
               activeOpacity={0.7}
             >
               <LinearGradient
-                colors={['rgba(34, 197, 94, 0.20)', 'rgba(34, 197, 94, 0.08)']}
+                colors={['black', 'black']}
                 style={styles.actionButtonGradient}
               >
                 <HugeiconsIcon icon={Call02Icon} size={ms(18)} color="#22C55E" />
@@ -562,7 +564,7 @@ const LiveMemberCard = ({ member, onCall, onWhatsApp, onViewProfile }) => {
               activeOpacity={0.7}
             >
               <LinearGradient
-                colors={['rgba(37, 211, 102, 0.20)', 'rgba(37, 211, 102, 0.08)']}
+                colors={['black', 'black']}
                 style={styles.actionButtonGradient}
               >
                 <HugeiconsIcon icon={WhatsappIcon} size={ms(18)} color="#25D366" />
@@ -709,7 +711,7 @@ const AdminLiveRosterScreen = ({ navigation }) => {
                   <View style={styles.heroPulseDot} />
                 </View>
                 <Text style={styles.heroNumber}>{liveMembers.length}</Text>
-                <Text style={styles.heroLabel}>ACTIVE NOW</Text>
+                <Text style={styles.heroLabel}>Live Members</Text>
               </View>
               <View style={styles.heroDivider} />
               <View style={styles.heroRightStats}>
@@ -719,15 +721,15 @@ const AdminLiveRosterScreen = ({ navigation }) => {
                   <Text style={styles.avgSessionLabel}>AVG</Text>
                 </View>
                 <View style={styles.tierPillsContainer}>
-                  <View style={[styles.tierPillBox, { backgroundColor: 'rgba(234, 179, 8, 0.15)', borderColor: 'rgba(234, 179, 8, 0.3)' }]}>
+                  <View style={[styles.tierPillBox, ]}>
                     <View style={[styles.tierPillDot, { backgroundColor: '#EAB308' }]} />
-                    <Text style={[styles.tierPillLabel, { color: '#EAB308' }]}>ELITE</Text>
-                    <Text style={[styles.tierPillCount, { color: '#EAB308' }]}>{eliteCount}</Text>
+                    <Text style={[styles.tierPillLabel, { color: Colors.zinc[400] }]}>ELITE</Text>
+                    <Text style={[styles.tierPillCount, { color: Colors.zinc[100] }]}>{eliteCount}</Text>
                   </View>
-                  <View style={[styles.tierPillBox, { backgroundColor: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.3)' }]}>
+                  <View style={[styles.tierPillBox,]}>
                     <View style={[styles.tierPillDot, { backgroundColor: '#a855f7' }]} />
-                    <Text style={[styles.tierPillLabel, { color: '#c084fc' }]}>LEGENDARY</Text>
-                    <Text style={[styles.tierPillCount, { color: '#c084fc' }]}>{legendaryCount}</Text>
+                    <Text style={[styles.tierPillLabel, { color: Colors.zinc[400] }]}>LEGENDARY</Text>
+                    <Text style={[styles.tierPillCount, { color: Colors.zinc[100] }]}>{legendaryCount}</Text>
                   </View>
                 </View>
               </View>
@@ -1011,7 +1013,7 @@ const styles = StyleSheet.create({
     width: ms(10),
     height: ms(10),
     borderRadius: ms(5),
-    backgroundColor: '#22C55E',
+    backgroundColor: 'rgba(34,197,94,0.45)',
   },
   heroNumber: {
     fontFamily: Fonts.orbitron?.bold || 'System',
@@ -1021,7 +1023,7 @@ const styles = StyleSheet.create({
   heroLabel: {
     fontFamily: Fonts.rajdhani?.semiBold || 'System',
     fontSize: rf(7),
-    color: '#22C55E',
+    color: Colors.zinc[500],
     letterSpacing: 1.5,
   },
   heroDivider: {
@@ -1060,13 +1062,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: s(8),
     paddingVertical: vs(4),
     borderRadius: ms(6),
-    borderWidth: 1,
     gap: s(4),
   },
   tierPillDot: {
-    width: ms(5),
-    height: ms(5),
-    borderRadius: ms(2.5),
+    width: ms(6),
+    height: ms(6),
+    borderRadius: ms(3),
   },
   tierPillLabel: {
     fontFamily: Fonts.rajdhani?.semiBold || 'System',
@@ -1088,10 +1089,12 @@ const styles = StyleSheet.create({
   },
   statusStatsContent: {
     flexDirection: 'row',
-    paddingVertical: vs(12),
-    paddingHorizontal: s(16),
+    // paddingVertical: vs(12),
+    // paddingHorizontal: s(16),
     alignItems: 'center',
     justifyContent: 'space-around',
+    borderRadius: ms(10),
+
   },
   statusStatItem: {
     flexDirection: 'row',
@@ -1099,8 +1102,8 @@ const styles = StyleSheet.create({
     gap: s(8),
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: vs(6),
-    paddingHorizontal: s(8),
+    paddingVertical: vs(10),
+    // paddingHorizontal: s(8),
     borderRadius: ms(10),
     position: 'relative',
   },
@@ -1236,7 +1239,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   countBadge: {
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    // backgroundColor: 'rgba(34, 197, 94, 0.15)',
     paddingHorizontal: s(10),
     paddingVertical: vs(4),
     borderRadius: ms(8),
@@ -1357,13 +1360,12 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: vs(4),
-    gap: s(6),
-    flexWrap: 'wrap',
-  },
+ badgeRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: vs(4),
+  justifyContent: 'space-between', // ✅ space between add kiya
+},
   tierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1397,15 +1399,21 @@ const styles = StyleSheet.create({
     fontSize: rf(6),
     letterSpacing: 0.5,
   },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-    paddingHorizontal: s(6),
-    paddingVertical: vs(2),
-    borderRadius: ms(5),
-    gap: s(3),
-  },
+  leftBadges: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: s(6),
+  flexWrap: 'wrap',
+},
+liveBadge: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  // backgroundColor: 'rgba(34, 197, 94, 0.15)',
+  paddingHorizontal: s(6),
+  paddingVertical: vs(2),
+  borderRadius: ms(5),
+  gap: s(3),
+},
   liveBadgeDot: {
     width: ms(4),
     height: ms(4),

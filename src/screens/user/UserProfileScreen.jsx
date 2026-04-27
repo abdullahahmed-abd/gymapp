@@ -69,12 +69,19 @@ const UserProfileScreen = ({ navigation }) => {
           </GlassButton>
         </ScrollView>
 
-        <BottomNav 
-          activeTab="profile" 
-          onTabChange={(tab) => {
-            if (tab === 'dashboard') navigation.navigate('UserDashboard');
-          }} 
-        />
+      <BottomNav
+  activeTab="profile"
+  onTabChange={(tab) => {
+    if (tab === 'home') navigation.navigate('UserDashboard');
+    if (tab === 'profile') {
+    }
+    if (tab === 'membership') {
+      navigation.navigate('UserDashboard', { openPlans: true });
+    }
+    if (tab === 'friends') navigation.navigate('MembersFriend');
+  }}
+/>
+       
       </LinearGradient>
     </ImageBackground>
   );

@@ -42,6 +42,7 @@ import {
 } from '@hugeicons/core-free-icons';
 
 import Header from '../../components/shared/Header';
+import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
 
 const s = (size) => scale(size * 0.9);
@@ -85,7 +86,6 @@ const TIER_TEMPLATES = {
   },
 };
 
-// ✅ TRIAL config
 const TRIAL_CONFIG = {
   iconColor: '#3B82F6',
   bgColor: 'rgba(59, 130, 246, 0.15)',
@@ -176,15 +176,10 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
     emergencyContact: '+919876543210',
   };
 
-  // ✅ Trial check - same logic as LiveRosterScreen
   const isTrial = member.membershipStatus === 'trial';
   const tierConfig = isTrial ? null : getTierConfig(member.membershipType);
   const statusConfig = getStatusConfig(member.membershipStatus);
-
-  // ✅ Accent color - trial = blue, baaki = tier color
- const cardAccentColor = isTrial
-    ? TRIAL_CONFIG.iconColor
-    : tierConfig.iconColor;
+  const cardAccentColor = isTrial ? TRIAL_CONFIG.iconColor : tierConfig.iconColor;
 
   const handleGoBack = () => {
     if (navigation && navigation.canGoBack()) {
@@ -277,19 +272,9 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
           </TouchableOpacity>
 
           {/* ═══════════════════════════════════════════════════════════════ */}
-          {/* PROFILE HERO CARD */}
+          {/* PROFILE HERO CARD - LiveRoster card layout */}
           {/* ═══════════════════════════════════════════════════════════════ */}
           <View style={[styles.heroCard, { borderColor: `${cardAccentColor}30` }]}>
-            {Platform.OS === 'ios' ? (
-              <BlurView
-                style={StyleSheet.absoluteFill}
-                blurType={blurConfig.blurType}
-                blurAmount={blurConfig.blurAmount}
-              />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, styles.androidBlurFallback]} />
-            )}
-
             {/* Background Shield */}
             <View style={styles.heroBgIconContainer}>
               <HugeiconsIcon
@@ -301,11 +286,12 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
             </View>
 
             <View style={styles.heroContent}>
-              {/* ✅ Avatar - same as LiveRosterScreen - tier/trial color */}
-              <View style={styles.avatarSection}>
+              {/* ── TOP ROW: Avatar + Info (same as LiveRoster card) ── */}
+              <View style={styles.heroTopRow}>
+                {/* Avatar - exact LiveRoster style */}
                 <View
                   style={[
-                    styles.avatarOuter,
+                    styles.avatarContainer,
                     {
                       borderColor: isTrial
                         ? `${TRIAL_CONFIG.iconColor}80`
@@ -316,102 +302,246 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
                     },
                   ]}
                 >
-                  {/* Black background inside avatar */}
-                  <View style={styles.avatarInner}>
+                  <LinearGradient
+                    colors={['black', 'black']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.avatarGradient}
+                  >
                     <Text style={styles.avatarText}>{member.avatar}</Text>
+                  </LinearGradient>
+                  {/* Live indicator dot */}
+                  <View style={styles.liveIndicator}>
+                    <View
+                      style={[
+                        styles.liveIndicatorInner,
+                        { backgroundColor: statusConfig.color },
+                      ]}
+                    />
                   </View>
                 </View>
-                {/* Live status dot */}
-                <View style={[styles.avatarStatusDot, { backgroundColor: statusConfig.color }]} />
+
+                {/* Info Column */}
+                <View style={styles.heroInfoCol}>
+                  {/* Badge Row - left badges + right member ID */}
+                  <View style={styles.heroBadgeRow}>
+                    <View style={styles.heroLeftBadges}>
+                      {/* Tier Badge - only non-trial */}
+                      {!isTrial && tierConfig && (
+                        <View
+                          style={[
+                            styles.tierBadge,
+                            { borderColor: `${tierConfig.iconColor}40` },
+                          ]}
+                        >
+                          <View
+                            style={[
+                              styles.tierDot,
+                              { backgroundColor: tierConfig.iconColor },
+                            ]}
+                          />
+                          <Text
+                            style={[
+                              styles.tierText,
+                              { color: Colors.zinc[400] },
+                            ]}
+                          >
+                            {tierConfig.badge}
+                          </Text>
+                        </View>
+                      )}
+
+                      {/* Status Badge */}
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          { borderColor: statusConfig.borderColor },
+                        ]}
+                      >
+                        <HugeiconsIcon
+                          icon={statusConfig.icon}
+                          size={ms(10)}
+                          color={statusConfig.color}
+                        />
+                        <Text
+                          style={[
+                            styles.statusText,
+                            { color: Colors.zinc[400] },
+                          ]}
+                        >
+                          {statusConfig.label}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Member ID on right */}
+                    <Text style={styles.memberId}>{member.memberId}</Text>
+                  </View>
+
+                  {/* Member Name */}
+                  <Text style={styles.memberName} numberOfLines={1}>
+                    {member.name}
+                  </Text>
+
+                  {/* Workout Badge - trial ke liye nahi */}
+                  {!isTrial && tierConfig && (
+                    <View
+                      style={[
+                        styles.workoutBadge,
+                        { backgroundColor: `${cardAccentColor}15` },
+                      ]}
+                    >
+                      <HugeiconsIcon
+                        icon={
+                          member.workoutType === 'cardio_weights'
+                            ? Activity01Icon
+                            : Dumbbell01Icon
+                        }
+                        size={ms(10)}
+                        color={cardAccentColor}
+                      />
+                      <Text style={styles.workoutBadgeText}>
+                        {member.workoutType === 'cardio_weights'
+                          ? 'CARDIO + WEIGHTS'
+                          : 'WEIGHTS ONLY'}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Check-in + Duration time row */}
+                  <View style={styles.timeRow}>
+                    {member.checkinTime ? (
+                      <>
+                        <View style={styles.timeItem}>
+                          <HugeiconsIcon
+                            icon={Login01Icon}
+                            size={ms(11)}
+                            color="#22C55E"
+                          />
+                          <Text style={styles.timeText}>{member.checkinTime}</Text>
+                        </View>
+                        {member.duration && (
+                          <>
+                            <View style={styles.timeDot} />
+                            <View style={styles.timeItem}>
+                              <HugeiconsIcon
+                                icon={Clock01Icon}
+                                size={ms(11)}
+                                color={cardAccentColor}
+                              />
+                              <Text style={styles.timeText}>{member.duration}</Text>
+                            </View>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <View style={styles.timeItem}>
+                        <HugeiconsIcon
+                          icon={Clock01Icon}
+                          size={ms(11)}
+                          color="rgba(255,255,255,0.3)"
+                        />
+                        <Text
+                          style={[
+                            styles.timeText,
+                            { color: 'rgba(255,255,255,0.4)' },
+                          ]}
+                        >
+                          Last: {member.lastCheckout || 'N/A'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
               </View>
 
-              {/* Member ID */}
-              <Text style={styles.memberId}>{member.memberId}</Text>
+              {/* ── DIVIDER ── */}
+              <View
+                style={[
+                  styles.heroDivider,
+                  { backgroundColor: `${cardAccentColor}25` },
+                ]}
+              />
 
-              {/* Name */}
-              <Text style={styles.memberName}>
-                {member.name}
-              </Text>
-
-              {/* ✅ Trial ka tier badge nahi dikhao */}
-              {!isTrial && tierConfig && (
-                <View style={[
-                  styles.tierBadge,
-                  {
-                    backgroundColor: `${tierConfig.iconColor}20`,
-                    borderColor: `${tierConfig.iconColor}40`,
-                  },
-                ]}>
-                  <View style={[styles.tierDot, { backgroundColor: tierConfig.iconColor }]} />
-                  <Text style={[styles.tierText, { color: tierConfig.iconColor }]}>
-                    {tierConfig.badge}
-                  </Text>
-                </View>
-              )}
-
-              {/* Status Badge */}
-              <View style={[
-                styles.statusBadge,
-                {
-                  backgroundColor: statusConfig.bgColor,
-                  borderColor: statusConfig.borderColor,
-                },
-              ]}>
-                <HugeiconsIcon icon={statusConfig.icon} size={ms(12)} color={statusConfig.color} />
-                <Text style={[styles.statusText, { color: statusConfig.color }]}>
-                  {statusConfig.label}
-                </Text>
-                {member.membershipStatus !== 'expired' && (
-                  <Text style={[styles.daysLeftSmall, { color: statusConfig.color }]}>
-                    • {member.daysLeft}d
-                  </Text>
-                )}
-              </View>
-
-              {/* ✅ Workout badge - trial ke liye nahi dikhao */}
-              {!isTrial && tierConfig && (
-                <View style={[styles.workoutBadge, { backgroundColor: `${cardAccentColor}15` }]}>
-                  <HugeiconsIcon
-                    icon={member.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
-                    size={ms(12)}
-                    color={cardAccentColor}
-                  />
-                  <Text style={[styles.workoutBadgeText, { color: 'white' }]}>
-                    {member.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
-                  </Text>
-                </View>
-              )}
-
-              {/* Quick Actions */}
-              <View style={styles.quickActions}>
-                <TouchableOpacity style={styles.quickActionBtn} onPress={handleCall} activeOpacity={0.7}>
-                  <LinearGradient
-                    colors={['rgba(34, 197, 94, 0.2)', 'rgba(34, 197, 94, 0.08)']}
-                    style={styles.quickActionGradient}
+              {/* ── BOTTOM ROW: Phone + Quick Actions ── */}
+              <View style={styles.heroBottomRow}>
+                {/* Phone */}
+                <View style={styles.phoneContainer}>
+                  <View
+                    style={[
+                      styles.phoneIconBox,
+                      { backgroundColor: `${cardAccentColor}12` },
+                    ]}
                   >
-                    <HugeiconsIcon icon={Call02Icon} size={ms(18)} color="#22C55E" />
-                  </LinearGradient>
-                </TouchableOpacity>
+                    <HugeiconsIcon
+                      icon={SmartPhone01Icon}
+                      size={ms(14)}
+                      color={cardAccentColor}
+                    />
+                  </View>
+                  <View style={styles.phoneInfo}>
+                    <Text style={styles.phoneLabel}>CONTACT</Text>
+                    <Text style={styles.phoneNumber}>
+                      {formatPhone(member.phone)}
+                    </Text>
+                  </View>
+                </View>
 
-                <TouchableOpacity style={styles.quickActionBtn} onPress={handleWhatsApp} activeOpacity={0.7}>
-                  <LinearGradient
-                    colors={['rgba(37, 211, 102, 0.2)', 'rgba(37, 211, 102, 0.08)']}
-                    style={styles.quickActionGradient}
+                {/* Action Buttons */}
+                <View style={styles.quickActions}>
+                  <TouchableOpacity
+                    style={styles.quickActionBtn}
+                    onPress={handleCall}
+                    activeOpacity={0.7}
                   >
-                    <HugeiconsIcon icon={WhatsappIcon} size={ms(18)} color="#25D366" />
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                {member.email && (
-                  <TouchableOpacity style={styles.quickActionBtn} onPress={handleEmail} activeOpacity={0.7}>
                     <LinearGradient
-                      colors={['rgba(59, 130, 246, 0.2)', 'rgba(59, 130, 246, 0.08)']}
+                      colors={['black', 'black']}
                       style={styles.quickActionGradient}
                     >
-                      <HugeiconsIcon icon={Mail01Icon} size={ms(18)} color="#3B82F6" />
+                      <HugeiconsIcon
+                        icon={Call02Icon}
+                        size={ms(18)}
+                        color="#22C55E"
+                      />
                     </LinearGradient>
                   </TouchableOpacity>
-                )}
+
+                  <TouchableOpacity
+                    style={styles.quickActionBtn}
+                    onPress={handleWhatsApp}
+                    activeOpacity={0.7}
+                  >
+                    <LinearGradient
+                      colors={['black', 'black']}
+                      style={styles.quickActionGradient}
+                    >
+                      <HugeiconsIcon
+                        icon={WhatsappIcon}
+                        size={ms(18)}
+                        color="#25D366"
+                      />
+                    </LinearGradient>
+                  </TouchableOpacity>
+
+                  {member.email && (
+                    <TouchableOpacity
+                      style={styles.quickActionBtn}
+                      onPress={handleEmail}
+                      activeOpacity={0.7}
+                    >
+                      <LinearGradient
+                        colors={['black', 'black']}
+                        style={styles.quickActionGradient}
+                      >
+                        <HugeiconsIcon
+                          icon={Mail01Icon}
+                          size={ms(18)}
+                          color="#3B82F6"
+                        />
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             </View>
           </View>
@@ -419,28 +549,41 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
           {/* ═══════════════════════════════════════════════════════════════ */}
           {/* ALERT CARD - Expired / Trial */}
           {/* ═══════════════════════════════════════════════════════════════ */}
-          {(member.membershipStatus === 'expired' || member.membershipStatus === 'trial') && (
-            <View style={[styles.alertCard, { borderColor: statusConfig.borderColor }]}>
-              {Platform.OS === 'ios' ? (
-                <BlurView
-                  style={StyleSheet.absoluteFill}
-                  blurType={blurConfig.blurType}
-                  blurAmount={blurConfig.blurAmount}
-                />
-              ) : (
-                <View style={[StyleSheet.absoluteFill, styles.androidBlurFallback]} />
-              )}
+          {(member.membershipStatus === 'expired' ||
+            member.membershipStatus === 'trial') && (
+            <View
+              style={[
+                styles.alertCard,
+                { borderColor: statusConfig.borderColor },
+              ]}
+            >
               <LinearGradient
                 colors={[statusConfig.bgColor, 'transparent']}
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.alertContent}>
-                <View style={[styles.alertIconBox, { backgroundColor: statusConfig.bgColor }]}>
-                  <HugeiconsIcon icon={statusConfig.icon} size={ms(20)} color={statusConfig.color} />
+                <View
+                  style={[
+                    styles.alertIconBox,
+                    { backgroundColor: statusConfig.bgColor },
+                  ]}
+                >
+                  <HugeiconsIcon
+                    icon={statusConfig.icon}
+                    size={ms(20)}
+                    color={statusConfig.color}
+                  />
                 </View>
                 <View style={styles.alertTextBox}>
-                  <Text style={[styles.alertTitle, { color: statusConfig.color }]}>
-                    {member.membershipStatus === 'expired' ? 'Membership Expired!' : 'Trial Period'}
+                  <Text
+                    style={[
+                      styles.alertTitle,
+                      { color: statusConfig.color },
+                    ]}
+                  >
+                    {member.membershipStatus === 'expired'
+                      ? 'Membership Expired!'
+                      : 'Trial Period'}
                   </Text>
                   <Text style={styles.alertSubtitle}>
                     {member.membershipStatus === 'expired'
@@ -449,7 +592,10 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[styles.renewButton, { backgroundColor: `${statusConfig.color}CC` }]}
+                  style={[
+                    styles.renewButton,
+                    { backgroundColor: `${statusConfig.color}CC` },
+                  ]}
                   onPress={handleRenewMembership}
                   activeOpacity={0.8}
                 >
@@ -465,27 +611,35 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
           {/* CONTACT INFO CARD */}
           {/* ═══════════════════════════════════════════════════════════════ */}
           <View style={styles.infoCard}>
-            {Platform.OS === 'ios' ? (
-              <BlurView
-                style={StyleSheet.absoluteFill}
-                blurType={blurConfig.blurType}
-                blurAmount={blurConfig.blurAmount}
-              />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, styles.androidBlurFallback]} />
-            )}
             <View style={styles.infoCardContent}>
               <Text style={styles.infoCardTitle}>CONTACT INFO</Text>
 
-              <TouchableOpacity style={styles.infoRow} onPress={handleCall} activeOpacity={0.7}>
-                <View style={[styles.infoIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.1)' }]}>
-                  <HugeiconsIcon icon={SmartPhone01Icon} size={ms(14)} color="#22C55E" />
+              <TouchableOpacity
+                style={styles.infoRow}
+                onPress={handleCall}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={[
+                    styles.infoIconBox,
+                    { backgroundColor: 'rgba(34, 197, 94, 0.1)' },
+                  ]}
+                >
+                  <HugeiconsIcon
+                    icon={SmartPhone01Icon}
+                    size={ms(14)}
+                    color="#22C55E"
+                  />
                 </View>
                 <View style={styles.infoTextContainer}>
                   <Text style={styles.infoLabel}>Phone</Text>
                   <Text style={styles.infoValue}>{formatPhone(member.phone)}</Text>
                 </View>
-                <HugeiconsIcon icon={ArrowRight01Icon} size={ms(14)} color="rgba(255,255,255,0.3)" />
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  size={ms(14)}
+                  color="rgba(255,255,255,0.3)"
+                />
               </TouchableOpacity>
 
               {member.email && (
@@ -494,14 +648,27 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
                   onPress={handleEmail}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.infoIconBox, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
-                    <HugeiconsIcon icon={Mail01Icon} size={ms(14)} color="#3B82F6" />
+                  <View
+                    style={[
+                      styles.infoIconBox,
+                      { backgroundColor: 'rgba(59, 130, 246, 0.1)' },
+                    ]}
+                  >
+                    <HugeiconsIcon
+                      icon={Mail01Icon}
+                      size={ms(14)}
+                      color="#3B82F6"
+                    />
                   </View>
                   <View style={styles.infoTextContainer}>
                     <Text style={styles.infoLabel}>Email</Text>
                     <Text style={styles.infoValue}>{member.email}</Text>
                   </View>
-                  <HugeiconsIcon icon={ArrowRight01Icon} size={ms(14)} color="rgba(255,255,255,0.3)" />
+                  <HugeiconsIcon
+                    icon={ArrowRight01Icon}
+                    size={ms(14)}
+                    color="rgba(255,255,255,0.3)"
+                  />
                 </TouchableOpacity>
               )}
             </View>
@@ -511,49 +678,77 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
           {/* LAST ACTIVITY CARD */}
           {/* ═══════════════════════════════════════════════════════════════ */}
           <View style={styles.infoCard}>
-            {Platform.OS === 'ios' ? (
-              <BlurView
-                style={StyleSheet.absoluteFill}
-                blurType={blurConfig.blurType}
-                blurAmount={blurConfig.blurAmount}
-              />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, styles.androidBlurFallback]} />
-            )}
             <View style={styles.infoCardContent}>
               <Text style={styles.infoCardTitle}>LAST ACTIVITY</Text>
 
               <View style={styles.activityGrid}>
                 <View style={styles.activityItem}>
-                  <View style={[styles.activityIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.15)' }]}>
-                    <HugeiconsIcon icon={Login01Icon} size={ms(16)} color="#22C55E" />
+                  <View
+                    style={[
+                      styles.activityIconBox,
+                      { backgroundColor: 'rgba(34, 197, 94, 0.15)' },
+                    ]}
+                  >
+                    <HugeiconsIcon
+                      icon={Login01Icon}
+                      size={ms(16)}
+                      color="#22C55E"
+                    />
                   </View>
                   <View style={styles.activityTextBox}>
                     <Text style={styles.activityLabel}>Check-in</Text>
-                    <Text style={styles.activityValue}>{member.lastCheckin || member.checkinTime}</Text>
-                    <Text style={styles.activityDate}>{member.lastVisitDate || 'Today'}</Text>
+                    <Text style={styles.activityValue}>
+                      {member.lastCheckin || member.checkinTime || '--'}
+                    </Text>
+                    <Text style={styles.activityDate}>
+                      {member.lastVisitDate || 'Today'}
+                    </Text>
                   </View>
                 </View>
 
                 <View style={styles.activityItem}>
-                  <View style={[styles.activityIconBox, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
-                    <HugeiconsIcon icon={Logout01Icon} size={ms(16)} color="#EF4444" />
+                  <View
+                    style={[
+                      styles.activityIconBox,
+                      { backgroundColor: 'rgba(239, 68, 68, 0.15)' },
+                    ]}
+                  >
+                    <HugeiconsIcon
+                      icon={Logout01Icon}
+                      size={ms(16)}
+                      color="#EF4444"
+                    />
                   </View>
                   <View style={styles.activityTextBox}>
                     <Text style={styles.activityLabel}>Check-out</Text>
-                    <Text style={styles.activityValue}>{member.lastCheckout || '--:--'}</Text>
-                    <Text style={styles.activityDate}>{member.lastVisitDate || 'Today'}</Text>
+                    <Text style={styles.activityValue}>
+                      {member.lastCheckout || '--:--'}
+                    </Text>
+                    <Text style={styles.activityDate}>
+                      {member.lastVisitDate || 'Today'}
+                    </Text>
                   </View>
                 </View>
               </View>
 
               {member.duration && (
                 <View style={styles.sessionRow}>
-                  <View style={[styles.sessionIconBox, { backgroundColor: `${cardAccentColor}15` }]}>
-                    <HugeiconsIcon icon={Clock01Icon} size={ms(14)} color={cardAccentColor} />
+                  <View
+                    style={[
+                      styles.sessionIconBox,
+                      { backgroundColor: `${cardAccentColor}15` },
+                    ]}
+                  >
+                    <HugeiconsIcon
+                      icon={Clock01Icon}
+                      size={ms(14)}
+                      color={cardAccentColor}
+                    />
                   </View>
                   <Text style={styles.sessionLabel}>Session Duration</Text>
-                  <Text style={[styles.sessionValue, { color: cardAccentColor }]}>{member.duration}</Text>
+                  <Text style={[styles.sessionValue, { color: cardAccentColor }]}>
+                    {member.duration}
+                  </Text>
                 </View>
               )}
 
@@ -575,55 +770,65 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
           {/* MEMBERSHIP DETAILS CARD */}
           {/* ═══════════════════════════════════════════════════════════════ */}
           <View style={[styles.infoCard, { borderColor: `${cardAccentColor}20` }]}>
-            {Platform.OS === 'ios' ? (
-              <BlurView
-                style={StyleSheet.absoluteFill}
-                blurType={blurConfig.blurType}
-                blurAmount={blurConfig.blurAmount}
-              />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, styles.androidBlurFallback]} />
-            )}
             <View style={styles.infoCardContent}>
               <View style={styles.cardTitleRow}>
                 <Text style={styles.infoCardTitle}>MEMBERSHIP</Text>
-                {/* ✅ Days left - sirf text, koi background nahi */}
-                <Text style={[styles.daysLeftPlainText, { color: "white" }]}>
+                <Text style={[styles.daysLeftPlainText, { color: 'rgba(255,255,255,0.6)' }]}>
                   {getDaysLeftText(member)}
                 </Text>
               </View>
 
-              {/* ✅ Plan - trial ke liye nahi dikhao */}
+              {/* Plan - trial ke liye nahi */}
               {!isTrial && tierConfig && (
                 <View style={styles.membershipRow}>
                   <Text style={styles.membershipLabel}>Plan</Text>
-                  <View style={[
-                    styles.membershipBadge,
-                    {
-                      // backgroundColor: `${tierConfig.iconColor}20`,
-                      borderColor: `${tierConfig.iconColor}40`,
-                    },
-                  ]}>
-                    <View style={[styles.membershipBadgeDot, { backgroundColor: tierConfig.iconColor }]} />
-                    <Text style={[styles.membershipBadgeText, { color: tierConfig.iconColor }]}>
+                  <View
+                    style={[
+                      styles.membershipBadge,
+                      { borderColor: `${tierConfig.iconColor}40` },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.membershipBadgeDot,
+                        { backgroundColor: tierConfig.iconColor },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.membershipBadgeText,
+                        { color: tierConfig.iconColor },
+                      ]}
+                    >
                       {member.membershipType}
                     </Text>
                   </View>
                 </View>
               )}
 
-              {/* ✅ Workout - trial ke liye nahi dikhao */}
+              {/* Workout - trial ke liye nahi */}
               {!isTrial && tierConfig && (
                 <View style={styles.membershipRow}>
                   <Text style={styles.membershipLabel}>Workout</Text>
-                  <View style={[styles.methodBadge, { backgroundColor: `${cardAccentColor}15` }]}>
+                  <View
+                    style={[
+                      styles.methodBadge,
+                      { backgroundColor: `${cardAccentColor}15` },
+                    ]}
+                  >
                     <HugeiconsIcon
-                      icon={member.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
+                      icon={
+                        member.workoutType === 'cardio_weights'
+                          ? Activity01Icon
+                          : Dumbbell01Icon
+                      }
                       size={ms(12)}
                       color={cardAccentColor}
                     />
                     <Text style={[styles.methodBadgeText, { color: 'white' }]}>
-                      {member.workoutType === 'cardio_weights' ? 'Cardio + Weights' : 'Weights Only'}
+                      {member.workoutType === 'cardio_weights'
+                        ? 'Cardio + Weights'
+                        : 'Weights Only'}
                     </Text>
                   </View>
                 </View>
@@ -632,15 +837,23 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
               {/* Status */}
               <View style={styles.membershipRow}>
                 <Text style={styles.membershipLabel}>Status</Text>
-                <View style={[
-                  styles.statusSmallBadge,
-                  {
-                    // backgroundColor: statusConfig.bgColor,
-                    borderColor: statusConfig.borderColor,
-                  },
-                ]}>
-                  <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
-                  <Text style={[styles.statusSmallText, { color: statusConfig.color }]}>
+                <View
+                  style={[
+                    styles.statusSmallBadge,
+                    { borderColor: statusConfig.borderColor },
+                  ]}
+                >
+                  <HugeiconsIcon
+                    icon={statusConfig.icon}
+                    size={ms(10)}
+                    color={statusConfig.color}
+                  />
+                  <Text
+                    style={[
+                      styles.statusSmallText,
+                      { color: statusConfig.color },
+                    ]}
+                  >
                     {statusConfig.label}
                   </Text>
                 </View>
@@ -651,10 +864,16 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
               {/* Dates */}
               <View style={styles.datesRow}>
                 <View style={styles.dateItem}>
-                  <HugeiconsIcon icon={Calendar03Icon} size={ms(12)} color="#22C55E" />
+                  <HugeiconsIcon
+                    icon={Calendar03Icon}
+                    size={ms(12)}
+                    color="#22C55E"
+                  />
                   <View style={styles.dateInfo}>
                     <Text style={styles.dateLabel}>Joined</Text>
-                    <Text style={styles.dateValue}>{formatDate(member.joinDate)}</Text>
+                    <Text style={styles.dateValue}>
+                      {formatDate(member.joinDate)}
+                    </Text>
                   </View>
                 </View>
 
@@ -662,30 +881,52 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
                   <HugeiconsIcon
                     icon={Calendar03Icon}
                     size={ms(12)}
-                    color={member.membershipStatus === 'expired' ? '#EF4444' : cardAccentColor}
+                    color={
+                      member.membershipStatus === 'expired'
+                        ? '#EF4444'
+                        : cardAccentColor
+                    }
                   />
                   <View style={styles.dateInfo}>
                     <Text style={styles.dateLabel}>
                       {member.membershipStatus === 'expired' ? 'Expired' : 'Expires'}
                     </Text>
-                    <Text style={[
-                      styles.dateValue,
-                      member.membershipStatus === 'expired' && { color: '#EF4444' },
-                    ]}>
+                    <Text
+                      style={[
+                        styles.dateValue,
+                        member.membershipStatus === 'expired' && {
+                          color: '#EF4444',
+                        },
+                      ]}
+                    >
                       {formatDate(member.expiryDate)}
                     </Text>
                   </View>
                 </View>
               </View>
 
-              {/* ✅ Membership Status Bar - background hata diya, sirf text + icon */}
+              {/* Membership Status Bar */}
               <View style={styles.membershipStatusBar}>
-                <HugeiconsIcon icon={statusConfig.icon} size={ms(14)} color={statusConfig.color} />
-                <Text style={[styles.membershipStatusText, { color: statusConfig.color }]}>
+                <HugeiconsIcon
+                  icon={statusConfig.icon}
+                  size={ms(14)}
+                  color={statusConfig.color}
+                />
+                <Text
+                  style={[
+                    styles.membershipStatusText,
+                    { color: statusConfig.color },
+                  ]}
+                >
                   {statusConfig.message}
                 </Text>
                 {member.membershipStatus === 'active' && (
-                  <Text style={[styles.membershipDaysText, { color: statusConfig.color }]}>
+                  <Text
+                    style={[
+                      styles.membershipDaysText,
+                      { color: statusConfig.color },
+                    ]}
+                  >
                     • {member.daysLeft} days remaining
                   </Text>
                 )}
@@ -697,44 +938,77 @@ const AdminSeeUserProfileScreen = ({ navigation, route }) => {
           {/* ACTION BUTTONS */}
           {/* ═══════════════════════════════════════════════════════════════ */}
           <View style={styles.actionButtonsContainer}>
-            {(member.membershipStatus === 'expired' || member.membershipStatus === 'trial') && (
+            {(member.membershipStatus === 'expired' ||
+              member.membershipStatus === 'trial') && (
               <TouchableOpacity
                 style={styles.renewFullButton}
                 onPress={handleRenewMembership}
                 activeOpacity={0.8}
               >
-<LinearGradient
-  colors={[`${cardAccentColor}CC`, `${cardAccentColor}50`]}
-  start={{ x: 3, y: 0 }}
-  end={{ x: 0, y: 0 }}
-  style={styles.renewFullGradient}
->
-                  <HugeiconsIcon icon={SparklesIcon} size={ms(16)} color="#FFFFFF" />
+                <LinearGradient
+                  colors={[`${cardAccentColor}CC`, `${cardAccentColor}50`]}
+                  start={{ x: 1, y: 0 }}
+                  end={{ x: 0, y: 0 }}
+                  style={styles.renewFullGradient}
+                >
+                  <HugeiconsIcon
+                    icon={SparklesIcon}
+                    size={ms(16)}
+                    color="#FFFFFF"
+                  />
                   <Text style={styles.renewFullText}>
-                    {member.membershipStatus === 'expired' ? 'RENEW MEMBERSHIP' : 'UPGRADE TO FULL'}
+                    {member.membershipStatus === 'expired'
+                      ? 'RENEW MEMBERSHIP'
+                      : 'UPGRADE TO FULL'}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
 
             <View style={styles.actionButtonsRow}>
-              <TouchableOpacity style={styles.editButton} onPress={handleEditProfile} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={handleEditProfile}
+                activeOpacity={0.8}
+              >
                 <LinearGradient
-                  colors={['rgba(59, 130, 246, 0.15)', 'rgba(59, 130, 246, 0.05)']}
+                  colors={[
+                    'rgba(59, 130, 246, 0.15)',
+                    'rgba(59, 130, 246, 0.05)',
+                  ]}
                   style={styles.actionButtonGradient}
                 >
-                  <HugeiconsIcon icon={Edit02Icon} size={ms(14)} color="#3B82F6" />
-                  <Text style={[styles.actionButtonText, { color: '#3B82F6' }]}>Edit</Text>
+                  <HugeiconsIcon
+                    icon={Edit02Icon}
+                    size={ms(14)}
+                    color="#3B82F6"
+                  />
+                  <Text style={[styles.actionButtonText, { color: '#3B82F6' }]}>
+                    Edit Profile
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.deleteButton} onPress={handleRemoveMember} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleRemoveMember}
+                activeOpacity={0.8}
+              >
                 <LinearGradient
-                  colors={['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.05)']}
+                  colors={[
+                    'rgba(239, 68, 68, 0.15)',
+                    'rgba(239, 68, 68, 0.05)',
+                  ]}
                   style={styles.actionButtonGradient}
                 >
-                  <HugeiconsIcon icon={Delete02Icon} size={ms(14)} color="#EF4444" />
-                  <Text style={[styles.actionButtonText, { color: '#EF4444' }]}>Remove</Text>
+                  <HugeiconsIcon
+                    icon={Delete02Icon}
+                    size={ms(14)}
+                    color="#EF4444"
+                  />
+                  <Text style={[styles.actionButtonText, { color: '#EF4444' }]}>
+                    Remove
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -755,9 +1029,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: s(14),
     paddingTop: vs(8),
     paddingBottom: vs(30),
-  },
-  androidBlurFallback: {
-    backgroundColor: 'black',
   },
 
   // Back Button
@@ -785,10 +1056,10 @@ const styles = StyleSheet.create({
   },
 
   // ═══════════════════════════════════════════════════════════════
-  // HERO CARD
+  // HERO CARD - LiveRoster card layout match
   // ═══════════════════════════════════════════════════════════════
   heroCard: {
-    borderRadius: ms(18),
+    borderRadius: ms(16),
     overflow: 'hidden',
     marginBottom: vs(12),
     borderWidth: 1,
@@ -797,149 +1068,235 @@ const styles = StyleSheet.create({
   },
   heroBgIconContainer: {
     position: 'absolute',
-    top: -ms(15),
-    right: -ms(20),
+    top: -ms(5),
+    right: -ms(10),
     opacity: 0.8,
   },
   heroContent: {
-    alignItems: 'center',
-    paddingVertical: vs(20),
-    paddingHorizontal: s(16),
+    paddingLeft: ms(14),
+    paddingRight: ms(12),
+    paddingVertical: ms(12),
   },
 
-  // ✅ Avatar - same style as LiveRosterScreen
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: vs(8),
+  // ── Top Row ──
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
+  // ✅ Avatar - exact LiveRoster style
+  avatarContainer: {
     position: 'relative',
-  },
-  avatarOuter: {
-    width: ms(76),
-    height: ms(76),
-    borderRadius: ms(38),
+    marginRight: s(12),
     borderWidth: scale(2),
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: ms(27),
   },
-  avatarInner: {
-    width: ms(68),
-    height: ms(68),
-    borderRadius: ms(34),
-    backgroundColor: '#000000',
+  avatarGradient: {
+    width: ms(50),
+    height: ms(50),
+    borderRadius: ms(25),
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontFamily: Fonts.orbitron?.bold || 'System',
-    fontSize: rf(18),
+    fontSize: rf(14),
     color: '#FFFFFF',
   },
-  avatarStatusDot: {
+  liveIndicator: {
     position: 'absolute',
-    bottom: ms(2),
-    right: ms(2),
-    width: ms(16),
-    height: ms(16),
-    borderRadius: ms(8),
-    borderWidth: 3,
+    bottom: ms(0),
+    right: ms(0),
+    width: ms(14),
+    height: ms(14),
+    borderRadius: ms(7),
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
     borderColor: '#000000',
   },
+  liveIndicatorInner: {
+    width: ms(8),
+    height: ms(8),
+    borderRadius: ms(4),
+  },
 
-  memberId: {
-    fontFamily: Fonts.orbitron?.regular || 'System',
-    fontSize: rf(8),
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.5,
+  // ── Info Column ──
+  heroInfoCol: {
+    flex: 1,
+  },
+
+  // ✅ Badge Row - space-between, left badges + right memberId
+  heroBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: vs(4),
+    justifyContent: 'space-between',
   },
-  memberName: {
-    fontFamily: Fonts.orbitron?.bold || 'System',
-    fontSize: rf(16),
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: vs(8),
-    letterSpacing: 1,
+  heroLeftBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(6),
+    flexWrap: 'wrap',
   },
 
-  // Tier Badge
+  // Tier Badge - no background, only border
   tierBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: s(10),
-    paddingVertical: vs(4),
-    borderRadius: ms(8),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
     borderWidth: 1,
-    gap: s(5),
-    marginBottom: vs(8),
+    gap: s(4),
   },
   tierDot: {
-    width: ms(6),
-    height: ms(6),
-    borderRadius: ms(3),
+    width: ms(4),
+    height: ms(4),
+    borderRadius: ms(2),
   },
   tierText: {
-    fontFamily: Fonts.rajdhani?.bold || 'System',
-    fontSize: rf(9),
-    letterSpacing: 1,
+    fontFamily: Fonts.rajdhani?.semiBold || 'System',
+    fontSize: rf(6),
+    letterSpacing: 0.5,
   },
 
-  // Status Badge
+  // Status Badge - no background, only border
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: s(10),
-    paddingVertical: vs(4),
-    borderRadius: ms(8),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(5),
     borderWidth: 1,
-    gap: s(5),
-    marginBottom: vs(8),
+    gap: s(3),
   },
   statusText: {
-    fontFamily: Fonts.orbitron?.bold || 'System',
-    fontSize: rf(8),
-    letterSpacing: 0.8,
-  },
-  daysLeftSmall: {
     fontFamily: Fonts.rajdhani?.semiBold || 'System',
-    fontSize: rf(8),
+    fontSize: rf(6),
+    letterSpacing: 0.5,
+  },
+
+  // Member ID - right side
+  memberId: {
+    fontFamily: Fonts.orbitron?.regular || 'System',
+    fontSize: rf(7),
+    color: 'rgba(255,255,255,0.35)',
+    letterSpacing: 1,
+  },
+
+  // Member Name
+  memberName: {
+    fontFamily: Fonts.orbitron?.bold || 'System',
+    fontSize: rf(11),
+    color: '#FFFFFF',
+    marginBottom: vs(4),
   },
 
   // Workout Badge
   workoutBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: s(10),
-    paddingVertical: vs(4),
-    borderRadius: ms(6),
-    gap: s(5),
-    marginBottom: vs(12),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(4),
+    alignSelf: 'flex-start',
+    marginBottom: vs(5),
+    gap: s(4),
   },
   workoutBadgeText: {
     fontFamily: Fonts.rajdhani?.semiBold || 'System',
-    fontSize: rf(8),
+    fontSize: rf(6),
+    color: 'white',
     letterSpacing: 0.5,
   },
 
-  // Quick Actions
+  // Time Row
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  timeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(3),
+  },
+  timeText: {
+    fontFamily: Fonts.orbitron?.regular || 'System',
+    fontSize: rf(8),
+    color: '#FFFFFF',
+  },
+  timeDot: {
+    width: ms(3),
+    height: ms(3),
+    borderRadius: ms(1.5),
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    marginHorizontal: s(6),
+  },
+
+  // ── Divider ──
+  heroDivider: {
+    height: 1,
+    marginVertical: vs(10),
+  },
+
+  // ── Bottom Row: Phone + Actions ──
+  heroBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  phoneIconBox: {
+    width: ms(32),
+    height: ms(32),
+    borderRadius: ms(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: s(8),
+  },
+  phoneInfo: {
+    flex: 1,
+  },
+  phoneLabel: {
+    fontFamily: Fonts.rajdhani?.regular || 'System',
+    fontSize: rf(6),
+    color: 'rgba(255,255,255,0.4)',
+    letterSpacing: 1.2,
+    marginBottom: vs(1),
+  },
+  phoneNumber: {
+    fontFamily: Fonts.orbitron?.regular || 'System',
+    fontSize: rf(8),
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
   quickActions: {
     flexDirection: 'row',
-    gap: s(12),
+    gap: s(6),
   },
   quickActionBtn: {
-    borderRadius: ms(12),
+    borderRadius: ms(10),
     overflow: 'hidden',
   },
   quickActionGradient: {
-    width: ms(44),
-    height: ms(44),
+    width: ms(36),
+    height: ms(36),
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: ms(12),
+    borderRadius: ms(10),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
 
-  // Alert Card
+  // ═══════════════════════════════════════════════════════════════
+  // ALERT CARD
+  // ═══════════════════════════════════════════════════════════════
   alertCard: {
     borderRadius: ms(14),
     overflow: 'hidden',
@@ -983,7 +1340,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  // Info Card
+  // ═══════════════════════════════════════════════════════════════
+  // INFO CARD (shared)
+  // ═══════════════════════════════════════════════════════════════
   infoCard: {
     borderRadius: ms(14),
     overflow: 'hidden',
@@ -1008,7 +1367,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: vs(12),
   },
-  // ✅ Days left - sirf plain text, koi background nahi
   daysLeftPlainText: {
     fontFamily: Fonts.rajdhani?.semiBold || 'System',
     fontSize: rf(10),
@@ -1149,6 +1507,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
 
+  // Membership rows
   membershipRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1243,7 +1602,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // ✅ Membership Status Bar - background hataya, sirf text
   membershipStatusBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1262,7 +1620,9 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
 
-  // Action Buttons
+  // ═══════════════════════════════════════════════════════════════
+  // ACTION BUTTONS
+  // ═══════════════════════════════════════════════════════════════
   actionButtonsContainer: {
     marginTop: vs(4),
     gap: vs(10),

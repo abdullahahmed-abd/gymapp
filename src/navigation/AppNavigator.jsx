@@ -21,8 +21,17 @@ import AdminSeeUserProfileScreen from "../screens/admin/AdminSeeUserProfileScree
 import AdminUsersDetailScreen from '../screens/admin/AdminUsersDetailScreen'; 
 // App.js / Navigator file mein
 import MembersProfileScreen from '../screens/admin/MembersProfileScreen';
-
+import MembersFriendScreen from '../screens/user/MembersFriendScreen';
 // Stack mein
+// In your Stack Navigator
+import SentRequestsScreen from '../screens/user/SentRequestsScreen';
+import ReceivedRequestsScreen from '../screens/user/ReceivedRequestsScreen';
+// AppNavigator.js mein
+import AdminSettingsScreen from '../screens/admin/AdminSettingsScreen';
+
+// Stack.Navigator mein add karo
+// Inside Stack.Navigator:
+
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -40,6 +49,7 @@ const AppNavigator = () => {
           }),
         }}
       >
+        
         {/* Auth Flow */}
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="LoginStep1" component={LoginStep1Screen} />
@@ -55,13 +65,26 @@ const AppNavigator = () => {
         <Stack.Screen name="AdminAddPlan" component={AdminAddPlanScreen} />
         <Stack.Screen name="AdminSeeUserProfile" component={AdminSeeUserProfileScreen} />
    <Stack.Screen name="AdminUsersDetail" component={AdminUsersDetailScreen} /> 
+<Stack.Screen name="AdminSettings" component={AdminSettingsScreen} />
+
         
 <Stack.Screen 
   name="AdminLiveRoster" 
   component={AdminLiveRosterScreen} 
 />
 <Stack.Screen name="MembersProfile" component={MembersProfileScreen} />
+<Stack.Screen name="MembersFriend" component={MembersFriendScreen} />
 
+<Stack.Screen
+  name="SentRequests"
+  component={SentRequestsScreen}
+  options={{ headerShown: false }}
+/>
+<Stack.Screen
+  name="ReceivedRequests"
+  component={ReceivedRequestsScreen}
+  options={{ headerShown: false }}
+/>
       </Stack.Navigator>
     </NavigationContainer>
   );

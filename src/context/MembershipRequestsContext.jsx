@@ -253,11 +253,18 @@ export const MembershipRequestsProvider = ({ children }) => {
   };
 
   // Refresh data
-  const refreshData = async () => {
-    setLoading(true);
+
+const refreshData = async () => {
+  setLoading(true);
+  try {
     await loadData();
+  } catch (e) {
+    console.error(e);
+  } finally {
     setLoading(false);
-  };
+  }
+  return Promise.resolve();
+};
 
   return (
     <MembershipRequestsContext.Provider

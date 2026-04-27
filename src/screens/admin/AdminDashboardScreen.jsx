@@ -107,12 +107,19 @@ const AdminDashboardScreen = ({ navigation }) => {
                       <View style={styles.liveDot} />
                       <Text style={styles.liveBadgeText}>Overview</Text>
                     </View>
-                    <Text style={styles.liveStatsTitle}>ALL MEMBERS</Text>
+                    <Text style={styles.liveStatsTitle}>MEMBERS</Text>
                   </View>
                   <View style={styles.liveCountContainer}>
                     <Text style={styles.liveCount}>{ALL_MEMBERS_STATS.totalMembers}</Text>
                     <Text style={styles.liveCountLabel}>Total</Text>
                   </View>
+                   <View style={styles.allmemberLogo}>
+                  <Image
+                    source={gymlogoimg}
+                    style={styles.allmemberLogoimg}
+                    // resizeMode="contain"
+                  />
+                </View>
                 </View>
 
                 <View style={styles.divider} />
@@ -211,7 +218,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                       </View>
                       <View style={styles.heroLiveInfo}>
                         <Text style={styles.heroLiveCount}>{LIVE_ROSTER_STATS.totalLive}</Text>
-                        <Text style={styles.heroLiveLabel}>ACTIVE NOW</Text>
+                        <Text style={styles.heroLiveLabel}>Live Members</Text>
                       </View>
                     </View>
 
@@ -229,13 +236,13 @@ const AdminDashboardScreen = ({ navigation }) => {
 
                       {/* Tier Pills */}
                       <View style={styles.heroTierRow}>
-                        <View style={[styles.heroTierPill, { backgroundColor: 'rgba(234, 179, 8, 0.15)', borderColor: 'rgba(234, 179, 8, 0.3)' }]}>
+                        <View style={[styles.heroTierPill,]}>
                           <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.ELITE }]} />
-                          <Text style={[styles.heroTierCount, { color: TIER_COLORS.ELITE }]}>{LIVE_ROSTER_STATS.eliteCount}</Text>
+                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500]}]}>{LIVE_ROSTER_STATS.eliteCount}</Text>
                         </View>
-                        <View style={[styles.heroTierPill, { backgroundColor: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.3)' }]}>
+                        <View style={[styles.heroTierPill, ]}>
                           <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.LEGENDARY }]} />
-                          <Text style={[styles.heroTierCount, { color: '#c084fc' }]}>{LIVE_ROSTER_STATS.legendaryCount}</Text>
+                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500] }]}>{LIVE_ROSTER_STATS.legendaryCount}</Text>
                         </View>
                       </View>
                     </View>
@@ -248,20 +255,20 @@ const AdminDashboardScreen = ({ navigation }) => {
                   <View style={styles.heroStatusRow}>
                     <View style={styles.heroStatusItem}>
                       <View style={[styles.heroStatusDot, { backgroundColor: '#22C55E' }]} />
-                      <Text style={styles.heroStatusLabel}>Active</Text>
-                      <Text style={[styles.heroStatusCount, { color: '#22C55E' }]}>{LIVE_ROSTER_STATS.activeCount}</Text>
+                      <Text style={styles.heroStatusLabel}>Active Members</Text>
+                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>{LIVE_ROSTER_STATS.activeCount}</Text>
                     </View>
                     <View style={styles.heroStatusDivider} />
                     <View style={styles.heroStatusItem}>
                       <View style={[styles.heroStatusDot, { backgroundColor: '#EF4444' }]} />
                       <Text style={styles.heroStatusLabel}>Expired</Text>
-                      <Text style={[styles.heroStatusCount, { color: '#EF4444' }]}>{LIVE_ROSTER_STATS.expiredCount}</Text>
+                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>{LIVE_ROSTER_STATS.expiredCount}</Text>
                     </View>
                     <View style={styles.heroStatusDivider} />
                     <View style={styles.heroStatusItem}>
                       <View style={[styles.heroStatusDot, { backgroundColor: '#3B82F6' }]} />
                       <Text style={styles.heroStatusLabel}>Trial</Text>
-                      <Text style={[styles.heroStatusCount, { color: '#3B82F6' }]}>{LIVE_ROSTER_STATS.trialCount}</Text>
+                      <Text style={[styles.heroStatusCount, { color:Colors.zinc[100] }]}>{LIVE_ROSTER_STATS.trialCount}</Text>
                     </View>
                   </View>
 
@@ -436,15 +443,16 @@ const AdminDashboardScreen = ({ navigation }) => {
             </View>
           </ScrollView>
 
-          <BottomNav 
-            activeTab="dashboard" 
-            onTabChange={(tab) => {
-              if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-              if (tab === 'membership') navigation.navigate('AdminMembership');
-              if (tab === 'profile') navigation.navigate('AdminProfile');
-              if (tab === 'usersdetail') navigation.navigate('AdminUsersDetail');
-            }} 
-          />
+<BottomNav
+  activeTab="dashboard"
+  onTabChange={(tab) => {
+    if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+    if (tab === 'plans') navigation.navigate('AdminAddPlan');
+    if (tab === 'members') navigation.navigate('AdminUsersDetail');
+    if (tab === 'settings') navigation.navigate('AdminSettings');
+  }}
+  // NO userType needed - auto-detects from route name 'AdminDashboard'
+/>
         </SafeAreaView>
       </LinearGradient>
     </ImageBackground>
@@ -499,9 +507,10 @@ const styles = StyleSheet.create({
   },
   liveStatsCard: {
     position: 'relative',
-    borderWidth: 0,
+    // borderWidth: 0.5,
     backgroundColor: '#000000',
     overflow: 'hidden',
+    // borderColor:Colors.zinc[600]
   },
   liveStatsHeader: {
     flexDirection: 'row',
@@ -520,12 +529,12 @@ const styles = StyleSheet.create({
     width: scale(6),
     height: scale(6),
     borderRadius: scale(3),
-    backgroundColor: Colors.green,
+    backgroundColor: Colors.gold,
   },
   liveBadgeText: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: RFValue(7),
-    color: Colors.green,
+    color: Colors.gold,
     letterSpacing: scale(1.8),
     textTransform: 'uppercase',
     fontWeight: '600',
@@ -569,11 +578,11 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(6),
+    gap: scale(4),
   },
   statIconWrapper: {
     width: moderateScale(15),
-    height: moderateScale(21),
+    height: moderateScale(15),
     borderRadius: moderateScale(14),
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
@@ -591,7 +600,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
   },
   trialValue: {
-    color: '#3B82F6',
+    color:Colors.zinc[100],
+
   },
 
   // Expired - Red
@@ -599,10 +609,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   expiredValue: {
-    color: '#EF4444',
+    color: Colors.zinc[100],
   },
   expiredLabel: {
-    color: '#EF4444',
+    color:Colors.zinc[500],
   },
 
   // Elite - Gold
@@ -610,13 +620,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(234, 179, 8, 0.15)',
   },
   eliteDot: {
-     width: moderateScale(5),
+      width: moderateScale(5),
     height: moderateScale(5),
     borderRadius: moderateScale(2.5),
     backgroundColor: '#EAB308',
   },
   eliteValue: {
-    color: '#EAB308',
+        color:Colors.zinc[100],
+
   },
 
   // Legendary - Purple
@@ -624,13 +635,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(168, 85, 247, 0.15)',
   },
   legendaryDot: {
-      width: moderateScale(6),
-    height: moderateScale(6),
-    borderRadius: moderateScale(3),
+        width: moderateScale(5),
+    height: moderateScale(5),
+    borderRadius: moderateScale(2.5),
     backgroundColor: '#a855f7',
   },
   legendaryValue: {
-    color: '#c084fc',
+      color:Colors.zinc[100],
+
   },
 
   statItemValue: {
@@ -705,16 +717,16 @@ const styles = StyleSheet.create({
   },
   heroPulseRing: {
     position: 'absolute',
-    width: moderateScale(24),
-    height: moderateScale(24),
+    width: moderateScale(18),
+    height: moderateScale(18),
     borderRadius: moderateScale(12),
     backgroundColor: 'rgba(34, 197, 94, 0.15)',
   },
   heroPulseDot: {
-    width: moderateScale(10),
-    height: moderateScale(10),
-    borderRadius: moderateScale(5),
-    backgroundColor: '#22C55E',
+    width: moderateScale(6),
+    height: moderateScale(6),
+    borderRadius: moderateScale(2.5),
+    backgroundColor: 'rgba(34,197,94,0.45)',
   },
   heroLiveInfo: {
     alignItems: 'flex-start',
@@ -726,10 +738,12 @@ const styles = StyleSheet.create({
     lineHeight: RFValue(28),
   },
   heroLiveLabel: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(7),
-    color: '#22C55E',
-    letterSpacing: scale(1.2),
+    fontFamily: Fonts.rajdhani.bold,
+    fontSize: RFValue(8),
+    color:Colors.zinc[500],
+
+    letterSpacing: scale(1),
+    fontWeight:"500"
   },
   heroVerticalDivider: {
     width: 1,
@@ -868,6 +882,22 @@ const styles = StyleSheet.create({
   cardLogo: {
     width: moderateScale(120),
     height: moderateScale(120),
+    // opacity: 0.50
+  },
+  allmemberLogo: {
+    position: 'absolute',
+    top: scale(70),
+    right: 0,
+    bottom: 0,
+    left: scale(10),
+    justifyContent: 'center',
+    alignItems: "center",
+    paddingRight: scale(10),
+  },
+  allmemberLogoimg: {
+    width: moderateScale(300),
+    height: moderateScale(150),
+    opacity: 0.40
   },
   revenueHeader: {
     flexDirection: 'row',

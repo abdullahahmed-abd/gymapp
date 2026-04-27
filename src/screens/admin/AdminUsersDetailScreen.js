@@ -364,14 +364,17 @@ const DUMMY_MEMBERS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// HELPER - Get tier/trial config
+// HELPERS
 // ═══════════════════════════════════════════════════════════════
-const getMemberTierConfig = (member) => {
-  if (member.membershipStatus === 'trial') return TRIAL_CONFIG;
-  return TIER_TEMPLATES[member.membershipType] || TIER_TEMPLATES['ELITE TIER'];
-};
-
 const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.active;
+
+const formatPhone = (phone) => {
+  const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.length === 12) {
+    return `+${cleaned.slice(0, 2)} ${cleaned.slice(2, 7)} ${cleaned.slice(7)}`;
+  }
+  return phone;
+};
 
 // ═══════════════════════════════════════════════════════════════
 // TAB BUTTON
@@ -394,7 +397,7 @@ const TabButton = ({ title, count, isActive, onPress, color }) => (
 );
 
 // ═══════════════════════════════════════════════════════════════
-// REQUEST CARD - UI fix
+// REQUEST CARD
 // ═══════════════════════════════════════════════════════════════
 const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
   const template = request.planTemplate || {
@@ -407,56 +410,52 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
 
   return (
     <TouchableOpacity activeOpacity={0.95} style={[styles.requestCardWrapper, { borderColor: `${iconColor}30` }]}>
-      {/* Subtle overlay */}
-      <LinearGradient
-        colors={[`${iconColor}10`, `${iconColor}05`, 'transparent']}
-        style={StyleSheet.absoluteFill}
-      />
-
-      {/* Background Shield */}
       <View style={styles.cardBgIconContainer}>
         <HugeiconsIcon icon={Shield01Icon} size={ms(70)} color={`${iconColor}15`} strokeWidth={0.5} />
       </View>
 
-      {/* Header */}
       <View style={styles.reqHeader}>
         <View style={styles.reqAvatarRow}>
-          {/* Avatar */}
-          <View style={[styles.reqAvatar, { borderColor: `${iconColor}60`, backgroundColor: `${iconColor}15` }]}>
-            <Text style={[styles.reqAvatarText, { color: textColor }]}>
-              {request.userName?.slice(0, 2).toUpperCase() || 'UN'}
-            </Text>
+          <View style={[styles.reqAvatarContainer, { borderColor: `${iconColor}60`, backgroundColor: `${iconColor}15` }]}>
+            <LinearGradient
+              colors={['black', 'black']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.reqAvatar}
+            >
+              <Text style={styles.reqAvatarText}>
+                {request.userName?.slice(0, 2).toUpperCase() || 'UN'}
+              </Text>
+            </LinearGradient>
           </View>
 
-          {/* Name + Phone */}
           <View style={styles.reqNameBox}>
-            {/* Tier Badge + Status Badge */}
             <View style={styles.reqBadgeRow}>
-              <View style={[styles.reqTierBadge, { backgroundColor: `${iconColor}20`, borderColor: `${iconColor}40` }]}>
-                <View style={[styles.reqTierDot, { backgroundColor: iconColor }]} />
-                <Text style={[styles.reqTierText, { color: iconColor }]}>{template.badge || 'PLAN'}</Text>
-              </View>
-              <View style={[styles.reqStatusBadge, { backgroundColor: 'rgba(234,179,8,0.15)', borderColor: 'rgba(234,179,8,0.3)' }]}>
-                <HugeiconsIcon icon={Clock01Icon} size={ms(10)} color={Colors.gold} />
-                <Text style={[styles.reqStatusText, { color: Colors.gold }]}>PENDING</Text>
+              <View style={styles.reqLeftBadges}>
+                <View style={[styles.reqTierBadge, { borderColor: `${iconColor}40` }]}>
+                  <View style={[styles.reqTierDot, { backgroundColor: iconColor }]} />
+                  <Text style={[styles.reqTierText, { color: Colors.zinc[400] }]}>{template.badge || 'PLAN'}</Text>
+                </View>
+                <View style={[styles.reqStatusBadge, { borderColor: 'rgba(234,179,8,0.3)' }]}>
+                  <HugeiconsIcon icon={Clock01Icon} size={ms(10)} color={Colors.gold} />
+                  <Text style={[styles.reqStatusText, { color: Colors.zinc[400] }]}>PENDING</Text>
+                </View>
               </View>
             </View>
 
             <Text style={styles.reqName}>{request.userName}</Text>
 
-            {/* Workout Badge */}
             <View style={[styles.reqWorkoutBadge, { backgroundColor: `${iconColor}15` }]}>
               <HugeiconsIcon
                 icon={request.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
                 size={ms(10)}
                 color={iconColor}
               />
-              <Text style={[styles.reqWorkoutText, { color: iconColor }]}>
+              <Text style={[styles.reqWorkoutText, { color: 'white' }]}>
                 {request.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
               </Text>
             </View>
 
-            {/* Time Row */}
             <View style={styles.reqTimeRow}>
               <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color="rgba(255,255,255,0.4)" />
               <Text style={styles.reqTimeText}>
@@ -469,10 +468,8 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
         </View>
       </View>
 
-      {/* Divider */}
       <View style={[styles.reqDivider, { backgroundColor: `${iconColor}25` }]} />
 
-      {/* Plan + Price */}
       <View style={styles.reqPlanRow}>
         <View style={styles.reqPlanInfo}>
           <Text style={styles.reqPlanLabel}>PLAN</Text>
@@ -487,17 +484,17 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
         </View>
       </View>
 
-      {/* Phone + Actions */}
       <View style={styles.reqBottomRow}>
-        {/* Phone */}
         <View style={styles.reqPhoneBox}>
           <View style={[styles.reqPhoneIcon, { backgroundColor: `${iconColor}12` }]}>
             <HugeiconsIcon icon={SmartPhone01Icon} size={ms(14)} color={iconColor} />
           </View>
-          <Text style={styles.reqPhoneText}>{request.userPhone}</Text>
+          <View>
+            <Text style={styles.memberPhoneLabel}>CONTACT</Text>
+            <Text style={styles.reqPhoneText}>{request.userPhone}</Text>
+          </View>
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.reqActions}>
           <TouchableOpacity
             style={[styles.rejectBtn, isProcessing && { opacity: 0.5 }]}
@@ -536,7 +533,7 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// MEMBER CARD - LiveRoster style
+// MEMBER CARD - Exact LiveRoster style match
 // ═══════════════════════════════════════════════════════════════
 const MemberCard = ({ member, onPress }) => {
   const isTrial = member.membershipStatus === 'trial';
@@ -559,12 +556,6 @@ const MemberCard = ({ member, onPress }) => {
       onPress={() => onPress(member)}
       activeOpacity={0.9}
     >
-      {/* Subtle overlay */}
-      <LinearGradient
-        colors={[`${cardAccentColor}10`, `${cardAccentColor}04`, 'transparent']}
-        style={StyleSheet.absoluteFill}
-      />
-
       {/* Background Shield */}
       <View style={styles.cardBgIconContainer}>
         <HugeiconsIcon icon={Shield01Icon} size={ms(70)} color={`${cardAccentColor}15`} strokeWidth={0.5} />
@@ -573,16 +564,29 @@ const MemberCard = ({ member, onPress }) => {
       <View style={styles.memberCardContent}>
         {/* Top Section */}
         <View style={styles.memberTopSection}>
-          {/* Avatar */}
-          <View style={[
-            styles.memberAvatar,
-            {
-              borderColor: `${cardAccentColor}60`,
-              backgroundColor: `${cardAccentColor}15`,
-            },
-          ]}>
-            <Text style={styles.memberAvatarText}>{member.avatar}</Text>
-            {/* Live dot */}
+          {/* ✅ Avatar - exact LiveRoster style with LinearGradient */}
+          <View
+            style={[
+              styles.memberAvatarContainer,
+              {
+                borderColor: isTrial
+                  ? `${TRIAL_CONFIG.iconColor}80`
+                  : `${tierConfig.iconColor}60`,
+                backgroundColor: isTrial
+                  ? TRIAL_CONFIG.bgColor
+                  : `${tierConfig.iconColor}15`,
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={['black', 'black']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.memberAvatarInner}
+            >
+              <Text style={styles.memberAvatarText}>{member.avatar}</Text>
+            </LinearGradient>
+            {/* Live/Offline indicator */}
             {member.isLive && (
               <View style={styles.liveDotWrapper}>
                 <View style={styles.liveDotInner} />
@@ -592,23 +596,39 @@ const MemberCard = ({ member, onPress }) => {
 
           {/* Info */}
           <View style={styles.memberInfoBox}>
-            {/* Badge Row */}
+            {/* ✅ Badge Row - space-between with left badges + right LIVE/OFFLINE */}
             <View style={styles.memberBadgeRow}>
-              {/* Tier Badge - only non-trial */}
-              {!isTrial && (
-                <View style={[styles.memberTierBadge, { backgroundColor: `${cardAccentColor}20`, borderColor: `${cardAccentColor}40` }]}>
-                  <View style={[styles.memberTierDot, { backgroundColor: cardAccentColor }]} />
-                  <Text style={[styles.memberTierText, { color: cardAccentColor }]}>{tierConfig.badge}</Text>
-                </View>
-              )}
+              <View style={styles.memberLeftBadges}>
+                {/* Tier Badge - only non-trial */}
+                {!isTrial && (
+                  <View
+                    style={[
+                      styles.memberTierBadge,
+                      { borderColor: `${cardAccentColor}40` },
+                    ]}
+                  >
+                    <View style={[styles.memberTierDot, { backgroundColor: cardAccentColor }]} />
+                    <Text style={[styles.memberTierText, { color: Colors.zinc[400] }]}>
+                      {tierConfig.badge}
+                    </Text>
+                  </View>
+                )}
 
-              {/* Status Badge */}
-              <View style={[styles.memberStatusBadge, { backgroundColor: statusConfig.bgColor, borderColor: statusConfig.borderColor }]}>
-                <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
-                <Text style={[styles.memberStatusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
+                {/* Status Badge */}
+                <View
+                  style={[
+                    styles.memberStatusBadge,
+                    { borderColor: statusConfig.borderColor },
+                  ]}
+                >
+                  <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
+                  <Text style={[styles.memberStatusText, { color: Colors.zinc[400] }]}>
+                    {statusConfig.label}
+                  </Text>
+                </View>
               </View>
 
-              {/* Live Badge */}
+              {/* ✅ Right corner LIVE/OFFLINE badge */}
               {member.isLive ? (
                 <View style={styles.liveChip}>
                   <View style={styles.liveChipDot} />
@@ -624,7 +644,7 @@ const MemberCard = ({ member, onPress }) => {
             {/* Name */}
             <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
 
-            {/* Workout Badge - only non-trial */}
+            {/* ✅ Workout Badge - only non-trial (same as LiveRoster) */}
             {!isTrial && (
               <View style={[styles.memberWorkoutBadge, { backgroundColor: `${cardAccentColor}15` }]}>
                 <HugeiconsIcon
@@ -667,26 +687,32 @@ const MemberCard = ({ member, onPress }) => {
         {/* Divider */}
         <View style={[styles.memberDivider, { backgroundColor: `${cardAccentColor}25` }]} />
 
-        {/* Bottom - Phone + Actions */}
+        {/* ✅ Bottom - Phone + Actions - exact LiveRoster style */}
         <View style={styles.memberBottomRow}>
           <View style={styles.memberPhoneBox}>
             <View style={[styles.memberPhoneIcon, { backgroundColor: `${cardAccentColor}12` }]}>
               <HugeiconsIcon icon={SmartPhone01Icon} size={ms(14)} color={cardAccentColor} />
             </View>
-            <View>
+            <View style={styles.memberPhoneInfo}>
               <Text style={styles.memberPhoneLabel}>CONTACT</Text>
-              <Text style={styles.memberPhoneText}>{member.phone}</Text>
+              <Text style={styles.memberPhoneText}>{formatPhone(member.phone)}</Text>
             </View>
           </View>
 
           <View style={styles.memberActionBtns}>
             <TouchableOpacity style={styles.memberActionBtn} onPress={handleCall} activeOpacity={0.7}>
-              <LinearGradient colors={['rgba(34,197,94,0.20)', 'rgba(34,197,94,0.08)']} style={styles.memberActionGradient}>
+              <LinearGradient
+                colors={['black', 'black']}
+                style={styles.memberActionGradient}
+              >
                 <HugeiconsIcon icon={Call02Icon} size={ms(18)} color="#22C55E" />
               </LinearGradient>
             </TouchableOpacity>
             <TouchableOpacity style={styles.memberActionBtn} onPress={handleWhatsApp} activeOpacity={0.7}>
-              <LinearGradient colors={['rgba(37,211,102,0.20)', 'rgba(37,211,102,0.08)']} style={styles.memberActionGradient}>
+              <LinearGradient
+                colors={['black', 'black']}
+                style={styles.memberActionGradient}
+              >
                 <HugeiconsIcon icon={WhatsappIcon} size={ms(18)} color="#25D366" />
               </LinearGradient>
             </TouchableOpacity>
@@ -786,12 +812,11 @@ const AdminUsersDetailScreen = ({ navigation }) => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [memberFilter, setMemberFilter] = useState('all'); // all, live, offline
+  const [memberFilter, setMemberFilter] = useState('all');
 
   const pendingRequests = getPendingRequests();
   const activeMembers = getActiveMembers();
 
-  // Filter dummy members
   const filteredMembers = DUMMY_MEMBERS.filter(m => {
     const matchesSearch =
       m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1036,14 +1061,6 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             {renderContent()}
           </ScrollView>
 
-          <BottomNav
-            activeTab="usersdetail"
-            onTabChange={(tab) => {
-              if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-              if (tab === 'membership') navigation.navigate('AdminMembership');
-              if (tab === 'profile') navigation.navigate('AdminProfile');
-            }}
-          />
 
           <RejectionModal
             visible={showRejectModal}
@@ -1053,6 +1070,16 @@ const AdminUsersDetailScreen = ({ navigation }) => {
           />
         </SafeAreaView>
       </LinearGradient>
+      <BottomNav
+  activeTab="members"
+  onTabChange={(tab) => {
+    if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+    if (tab === 'plans') navigation.navigate('AdminAddPlan');
+    if (tab === 'members') navigation.navigate('AdminUsersDetail');
+    if (tab === 'settings') navigation.navigate('AdminSettings');
+  }}
+  // NO userType needed - auto-detects from route name 'AdminDashboard'
+/>
     </ImageBackground>
   );
 };
@@ -1184,6 +1211,16 @@ const styles = StyleSheet.create({
   },
 
   // ═══════════════════════════════════════════════
+  // SHARED CARD STYLES
+  // ═══════════════════════════════════════════════
+  cardBgIconContainer: {
+    position: 'absolute',
+    top: -ms(5),
+    right: -ms(10),
+    opacity: 0.8,
+  },
+
+  // ═══════════════════════════════════════════════
   // REQUEST CARD STYLES
   // ═══════════════════════════════════════════════
   requestCardWrapper: {
@@ -1194,32 +1231,36 @@ const styles = StyleSheet.create({
     position: 'relative',
     padding: ms(14),
   },
-  cardBgIconContainer: {
-    position: 'absolute',
-    top: -ms(5),
-    right: -ms(10),
-    opacity: 0.8,
-  },
   reqHeader: { marginBottom: vs(8) },
   reqAvatarRow: { flexDirection: 'row', alignItems: 'flex-start', gap: s(12) },
+  reqAvatarContainer: {
+    position: 'relative',
+    borderWidth: scale(2),
+    borderRadius: ms(27),
+  },
   reqAvatar: {
     width: ms(50),
     height: ms(50),
     borderRadius: ms(25),
-    borderWidth: scale(2),
     alignItems: 'center',
     justifyContent: 'center',
   },
   reqAvatarText: {
     fontFamily: Fonts.orbitron.bold,
     fontSize: rf(14),
+    color: '#FFFFFF',
   },
   reqNameBox: { flex: 1 },
   reqBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(6),
     marginBottom: vs(4),
+    justifyContent: 'space-between',
+  },
+  reqLeftBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(6),
     flexWrap: 'wrap',
   },
   reqTierBadge: {
@@ -1334,6 +1375,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.orbitron.regular,
     fontSize: rf(8),
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   reqActions: { flexDirection: 'row', gap: s(8) },
   rejectBtn: {
@@ -1375,7 +1417,7 @@ const styles = StyleSheet.create({
   },
 
   // ═══════════════════════════════════════════════
-  // MEMBER CARD STYLES - LiveRoster Style
+  // MEMBER CARD STYLES - Exact LiveRoster Match
   // ═══════════════════════════════════════════════
   memberCardWrapper: {
     borderRadius: ms(16),
@@ -1393,15 +1435,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  memberAvatar: {
+  // ✅ Avatar container - exact LiveRoster style
+  memberAvatarContainer: {
+    position: 'relative',
+    marginRight: s(12),
+    borderWidth: scale(2),
+    borderRadius: ms(27),
+  },
+  memberAvatarInner: {
     width: ms(50),
     height: ms(50),
-    borderRadius: ms(27),
-    borderWidth: scale(2),
+    borderRadius: ms(25),
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: s(12),
-    position: 'relative',
   },
   memberAvatarText: {
     fontFamily: Fonts.orbitron.bold,
@@ -1410,8 +1456,8 @@ const styles = StyleSheet.create({
   },
   liveDotWrapper: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: ms(0),
+    right: ms(0),
     width: ms(14),
     height: ms(14),
     borderRadius: ms(7),
@@ -1428,10 +1474,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#22C55E',
   },
   memberInfoBox: { flex: 1 },
+  // ✅ Badge row - space-between layout
   memberBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: vs(4),
+    justifyContent: 'space-between',
+  },
+  memberLeftBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: s(6),
     flexWrap: 'wrap',
   },
@@ -1464,10 +1516,10 @@ const styles = StyleSheet.create({
     fontSize: rf(6),
     letterSpacing: 0.5,
   },
+  // ✅ Live chip - exact LiveRoster style
   liveChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(34,197,94,0.15)',
     paddingHorizontal: s(6),
     paddingVertical: vs(2),
     borderRadius: ms(5),
@@ -1488,7 +1540,6 @@ const styles = StyleSheet.create({
   offlineChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: s(6),
     paddingVertical: vs(2),
     borderRadius: ms(5),
@@ -1551,7 +1602,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: s(8),
   },
   memberPhoneIcon: {
     width: ms(32),
@@ -1559,6 +1609,10 @@ const styles = StyleSheet.create({
     borderRadius: ms(10),
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: s(8),
+  },
+  memberPhoneInfo: {
+    flex: 1,
   },
   memberPhoneLabel: {
     fontFamily: Fonts.rajdhani.regular,
@@ -1594,7 +1648,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: s(13),
-    paddingVertical: vs(9),
+    paddingVertical: vs(6),
     gap: s(10),
   },
   searchBarFocused: { borderColor: 'rgba(255,255,255,0.15)' },
@@ -1650,7 +1704,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   sectionCount: {
-    backgroundColor: 'rgba(34,197,94,0.15)',
     paddingHorizontal: s(10),
     paddingVertical: vs(4),
     borderRadius: ms(8),
