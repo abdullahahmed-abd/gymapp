@@ -4,6 +4,7 @@ export default {
   surfaceHeavy: 'rgba(5, 5, 5, 0.65)',
   white: '#FFFFFF',
   burlywood4:"#8B7355",
+  burlywood:"#8B8878",
   gold: '#C5A059',
   zinc: {
     100: '#f4f4f5',

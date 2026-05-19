@@ -149,20 +149,7 @@ const AdminSettingsScreen = ({ navigation }) => {
               <Text style={styles.sectionTitle}>Account Settings</Text>
 
               {/* Contact Information */}
-              <GlassCard style={styles.settingCard}>
-                <View style={styles.settingHeader}>
-                  <View style={styles.settingIconWrapper}>
-                    <Text style={styles.iconText}>🏢</Text>
-                  </View>
-                  <View style={styles.settingContent}>
-                    <Text style={styles.settingTitle}>Gym Information</Text>
-                    <Text style={styles.settingDescription}>
-                      FitZone Premium Gym
-                    </Text>
-                  </View>
-                  <Text style={styles.arrowIcon}>→</Text>
-                </View>
-              </GlassCard>
+              
 
               {/* Email Setting */}
               <GlassCard style={styles.settingCard}>
@@ -219,46 +206,9 @@ const AdminSettingsScreen = ({ navigation }) => {
                 </View>
               </GlassCard>
 
-              {/* Two Factor Authentication */}
-              <GlassCard style={styles.settingCardWithToggle}>
-                <View style={styles.settingHeaderWithToggle}>
-                  <View style={styles.settingHeaderLeft}>
-                    <View style={styles.settingIconWrapper}>
-                      <Text style={styles.iconText}>🛡️</Text>
-                    </View>
-                    <View style={styles.settingContent}>
-                      <Text style={styles.settingTitle}>
-                        Two-Factor Authentication
-                      </Text>
-                      <Text style={styles.settingDescription}>
-                        Add extra security to your account
-                      </Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={enableTwoFactor}
-                    onValueChange={setEnableTwoFactor}
-                    trackColor={{ false: '#39404B', true: 'rgba(76, 222, 128, 0.3)' }}
-                    thumbColor={enableTwoFactor ? '#22C55E' : '#71717A'}
-                  />
-                </View>
-              </GlassCard>
+              
 
-              {/* Session Management */}
-              <GlassCard style={styles.settingCard}>
-                <View style={styles.settingHeader}>
-                  <View style={styles.settingIconWrapper}>
-                    <Text style={styles.iconText}>☁️</Text>
-                  </View>
-                  <View style={styles.settingContent}>
-                    <Text style={styles.settingTitle}>Active Sessions</Text>
-                    <Text style={styles.settingDescription}>
-                      1 device currently logged in
-                    </Text>
-                  </View>
-                  <Text style={styles.arrowIcon}>→</Text>
-                </View>
-              </GlassCard>
+              
             </View>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
@@ -313,28 +263,7 @@ const AdminSettingsScreen = ({ navigation }) => {
                 </View>
               </GlassCard>
 
-              {/* SMS Alerts */}
-              <GlassCard style={styles.settingCardWithToggle}>
-                <View style={styles.settingHeaderWithToggle}>
-                  <View style={styles.settingHeaderLeft}>
-                    <View style={styles.settingIconWrapper}>
-                      <Text style={styles.iconText}>💬</Text>
-                    </View>
-                    <View style={styles.settingContent}>
-                      <Text style={styles.settingTitle}>SMS Alerts</Text>
-                      <Text style={styles.settingDescription}>
-                        Critical alerts via SMS
-                      </Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={false}
-                    onValueChange={() => {}}
-                    trackColor={{ false: '#39404B', true: 'rgba(6, 182, 212, 0.3)' }}
-                    thumbColor={'#06B6D4'}
-                  />
-                </View>
-              </GlassCard>
+          
             </View>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
@@ -413,17 +342,7 @@ const AdminSettingsScreen = ({ navigation }) => {
                 </View>
               </GlassCard>
 
-              <GlassCard style={styles.settingCard}>
-                <View style={styles.settingHeader}>
-                  <View style={styles.settingContent}>
-                    <Text style={styles.settingTitle}>Payment Methods</Text>
-                    <Text style={styles.settingDescription}>
-                      Visa ending in 4242
-                    </Text>
-                  </View>
-                  <Text style={styles.arrowIcon}>→</Text>
-                </View>
-              </GlassCard>
+              
             </View>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
@@ -432,23 +351,7 @@ const AdminSettingsScreen = ({ navigation }) => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Help & Support</Text>
 
-              <GlassCard style={styles.settingCard}>
-                <TouchableOpacity
-                  style={styles.settingHeader}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.settingIconWrapper}>
-                    <Text style={styles.iconText}>❓</Text>
-                  </View>
-                  <View style={styles.settingContent}>
-                    <Text style={styles.settingTitle}>Help Center</Text>
-                    <Text style={styles.settingDescription}>
-                      FAQs and documentation
-                    </Text>
-                  </View>
-                  <Text style={styles.arrowIcon}>→</Text>
-                </TouchableOpacity>
-              </GlassCard>
+             
 
               <GlassCard style={styles.settingCard}>
                 <TouchableOpacity
@@ -503,31 +406,7 @@ const AdminSettingsScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </GlassCard>
 
-              <GlassCard style={[styles.settingCard, styles.dangerCard]}>
-                <TouchableOpacity
-                  style={styles.settingHeader}
-                  activeOpacity={0.7}
-                  onPress={handleDeleteAccount}
-                >
-                  <View
-                    style={[
-                      styles.settingIconWrapper,
-                      styles.dangerIconWrapper,
-                    ]}
-                  >
-                    <Text style={styles.dangerIconText}>⚠️</Text>
-                  </View>
-                  <View style={styles.settingContent}>
-                    <Text style={[styles.settingTitle, styles.dangerText]}>
-                      Delete Account
-                    </Text>
-                    <Text style={styles.settingDescription}>
-                      Permanently delete your account
-                    </Text>
-                  </View>
-                  <Text style={[styles.arrowIcon, styles.dangerArrow]}>→</Text>
-                </TouchableOpacity>
-              </GlassCard>
+             
             </View>
 
             {/* Footer */}
@@ -537,15 +416,15 @@ const AdminSettingsScreen = ({ navigation }) => {
             </View>
           </ScrollView>
 
-         <BottomNav
+     <BottomNav
   activeTab="settings"
   onTabChange={(tab) => {
     if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-    if (tab === 'plans') navigation.navigate('AdminAddPlan');
+    if (tab === 'plans') navigation.navigate('AdminPlans'); // ✅ Changed
     if (tab === 'members') navigation.navigate('AdminUsersDetail');
     if (tab === 'settings') navigation.navigate('AdminSettings');
   }}
-  // NO userType needed - auto-detects from route name 'AdminDashboard'
+  userType="admin"
 />
         </SafeAreaView>
       </LinearGradient>

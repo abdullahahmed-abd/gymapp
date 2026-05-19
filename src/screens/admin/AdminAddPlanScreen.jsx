@@ -9,12 +9,10 @@ import {
   Switch,
   Modal,
   Pressable,
-  Platform,
   Alert,
   ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { BlurView } from '@react-native-community/blur';
 import { RFValue } from 'react-native-responsive-fontsize';
 import {
   scale,
@@ -38,13 +36,10 @@ import {
   ViewIcon,
   Layers01Icon,
   Shield01Icon,
-  Timer01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Header from '../../components/shared/Header';
-import GlassCard from '../../components/shared/GlassCard';
 import GlassInput from '../../components/shared/GlassInput';
-import GlassButton from '../../components/shared/GlassButton';
 import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
 import { usePlans } from '../../context/PlansContext';
@@ -188,7 +183,7 @@ const BlurDropdown = ({
 };
 
 // ═══════════════════════════════════════════════════════════════
-// WORKOUT TYPE CARD - Black Background + Tier Colors
+// WORKOUT TYPE CARD
 // ═══════════════════════════════════════════════════════════════
 const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
   const template = TIER_TEMPLATES[type];
@@ -205,7 +200,6 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
           isSelected && { borderColor: `${template.iconColor}50` },
         ]}
       >
-        {/* ✅ Subtle tier color gradient overlay when selected */}
         {isSelected && (
           <LinearGradient
             colors={[`${template.iconColor}12`, `${template.iconColor}06`, 'transparent']}
@@ -213,7 +207,6 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
           />
         )}
 
-        {/* Background Icon */}
         <HugeiconsIcon
           icon={Shield01Icon}
           size={ms(65)}
@@ -222,7 +215,6 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
           strokeWidth={0.5}
         />
 
-        {/* Header Row */}
         <View style={styles.workoutCardHeader}>
           <View style={styles.workoutIconsRow}>
             {type === 'cardio_weights' ? (
@@ -297,9 +289,7 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
           )}
         </View>
 
-        {/* Content */}
         <View style={styles.workoutCardContent}>
-          {/* Tier Badge */}
           <View style={[
             styles.tierBadgeContainer,
             isSelected && { backgroundColor: `${template.iconColor}15` },
@@ -313,7 +303,6 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
             </Text>
           </View>
 
-          {/* Plan Name */}
           <Text style={[
             styles.workoutCardTitle,
             isSelected && { color: template.textColor },
@@ -321,7 +310,6 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
             {template.name}
           </Text>
 
-          {/* Subtitle */}
           <Text style={[
             styles.workoutCardSubtitle,
             isSelected && { color: `${template.iconColor}90` },
@@ -330,13 +318,11 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
           </Text>
         </View>
 
-        {/* Divider */}
         <View style={[
           styles.workoutDivider,
           isSelected && { backgroundColor: `${template.iconColor}30` },
         ]} />
 
-        {/* Description */}
         <Text style={[
           styles.workoutCardDesc,
           isSelected && { color: `${template.iconColor}80` },
@@ -375,7 +361,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
 
   const discountOptions = [
     { label: 'PERCENTAGE (%)', value: 'percentage' },
-    { label: 'FIXED AMOUNT ($)', value: 'fixed' },
+    { label: 'FIXED AMOUNT (₹)', value: 'fixed' },
   ];
 
   const calculateFinalPrice = () => {
@@ -429,7 +415,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
               text:
                 discountType === 'percentage'
                   ? `${discountValue}% OFF`
-                  : `$${discountValue} OFF`,
+                  : `₹${discountValue} OFF`,
             }
           : null,
         features: currentTemplate.features,
@@ -442,7 +428,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
         `"${currentTemplate.name}" is now live!\nMembers can see this plan.`,
         [
           {
-            text: 'Deploy Another',
+            text: 'Add Another',
             onPress: () => {
               setPrice('');
               setHasOffer(false);
@@ -450,7 +436,10 @@ const AdminAddPlanScreen = ({ navigation }) => {
               setDurationOption('1 Month');
             },
           },
-          { text: 'Done', onPress: () => navigation.goBack() },
+          {
+            text: 'View Plans',
+            onPress: () => navigation.navigate('AdminPlans'),
+          },
         ],
       );
     } catch (error) {
@@ -473,7 +462,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
         colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.95)', '#000000']}
         style={styles.gradient}
       >
-        <Header title="NEW PLAN" showMenu={false} />
+        <Header title="CREATE NEW PLAN" showMenu={false} />
 
         <ScrollView
           style={styles.container}
@@ -483,7 +472,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
           {/* Back Button */}
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate('AdminPlans')}
             activeOpacity={0.8}
           >
             <View style={styles.backIconContainer}>
@@ -493,12 +482,10 @@ const AdminAddPlanScreen = ({ navigation }) => {
                 color={Colors.zinc[400]}
               />
             </View>
-            <Text style={styles.backText}>Back to Control</Text>
+            <Text style={styles.backText}>Back to Plans</Text>
           </TouchableOpacity>
 
-          {/* ═══════════════════════════════════════════════════ */}
           {/* SELECT TIER SECTION */}
-          {/* ═══════════════════════════════════════════════════ */}
           <View style={styles.tierSection}>
             <View style={styles.sectionHeader}>
               <HugeiconsIcon
@@ -528,9 +515,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* ═══════════════════════════════════════════════════ */}
           {/* PRICING SECTION */}
-          {/* ═══════════════════════════════════════════════════ */}
           <View style={styles.pricingSection}>
             <View style={styles.sectionHeader}>
               <HugeiconsIcon
@@ -544,7 +529,6 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.pricingCard}>
-              {/* Subtle tier color top border glow */}
               <LinearGradient
                 colors={[`${currentTemplate.iconColor}20`, 'transparent']}
                 style={styles.pricingCardTopGlow}
@@ -565,8 +549,9 @@ const AdminAddPlanScreen = ({ navigation }) => {
                 />
               )}
 
+              {/* ✅ $ → ₹ in label */}
               <GlassInput
-                label="Price ($)"
+                label="Price (₹)"
                 placeholder="0.00"
                 value={price}
                 onChangeText={setPrice}
@@ -575,9 +560,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* ═══════════════════════════════════════════════════ */}
           {/* PROMOTIONAL OFFER SECTION */}
-          {/* ═══════════════════════════════════════════════════ */}
           <View style={styles.offerSection}>
             <View style={styles.offerHeader}>
               <View style={styles.offerHeaderLeft}>
@@ -608,8 +591,9 @@ const AdminAddPlanScreen = ({ navigation }) => {
                   options={discountOptions}
                 />
 
+                {/* ✅ $ → ₹ in label */}
                 <GlassInput
-                  label={discountType === 'percentage' ? 'Percentage Off (%)' : 'Amount Deducted ($)'}
+                  label={discountType === 'percentage' ? 'Percentage Off (%)' : 'Amount Deducted (₹)'}
                   placeholder={discountType === 'percentage' ? '20' : '15.00'}
                   value={discountValue}
                   onChangeText={setDiscountValue}
@@ -621,7 +605,8 @@ const AdminAddPlanScreen = ({ navigation }) => {
                   <Text style={styles.calculationText}>
                     Final Price:{' '}
                     <Text style={styles.calculationHighlight}>
-                      ${calculateFinalPrice()?.toFixed(2) || '0.00'}
+                      {/* ✅ $ → ₹ */}
+                      ₹{calculateFinalPrice()?.toFixed(2) || '0.00'}
                     </Text>
                   </Text>
                 </View>
@@ -629,24 +614,19 @@ const AdminAddPlanScreen = ({ navigation }) => {
             )}
           </View>
 
-          {/* ═══════════════════════════════════════════════════ */}
           {/* LIVE PREVIEW */}
-          {/* ═══════════════════════════════════════════════════ */}
           <View style={styles.previewSection}>
             <View style={styles.sectionHeader}>
               <HugeiconsIcon icon={ViewIcon} size={ms(16)} color={Colors.zinc[400]} />
               <Text style={styles.sectionTitleWithIcon}>Live Preview</Text>
             </View>
 
-            {/* ✅ Black background card with subtle tier overlay */}
             <View style={styles.membershipCard}>
-              {/* Subtle gradient overlay - tier color */}
               <LinearGradient
                 colors={[`${currentTemplate.iconColor}18`, `${currentTemplate.iconColor}08`, 'transparent']}
                 style={StyleSheet.absoluteFill}
               />
 
-              {/* Background Icon */}
               <View style={styles.cardBgContainer}>
                 <HugeiconsIcon
                   icon={Shield01Icon}
@@ -656,10 +636,8 @@ const AdminAddPlanScreen = ({ navigation }) => {
                 />
               </View>
 
-              {/* Header - Active Badge + Tier Name + Days Left */}
               <View style={styles.membershipHeader}>
                 <View style={{ flex: 1 }}>
-                  {/* Active Badge */}
                   <View style={[styles.activeBadge, { backgroundColor: `${currentTemplate.iconColor}20` }]}>
                     <View style={[styles.activeDot, { backgroundColor: currentTemplate.iconColor }]} />
                     <Text style={[styles.activeBadgeText, { color: currentTemplate.iconColor }]}>
@@ -667,12 +645,10 @@ const AdminAddPlanScreen = ({ navigation }) => {
                     </Text>
                   </View>
 
-                  {/* Tier Name */}
                   <Text style={[styles.membershipTier, { color: currentTemplate.textColor }]}>
                     {currentTemplate.name}
                   </Text>
 
-                  {/* Workout Type Badge */}
                   <View style={[styles.eliteWorkoutBadge, { backgroundColor: `${currentTemplate.iconColor}20` }]}>
                     <HugeiconsIcon
                       icon={workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
@@ -685,17 +661,14 @@ const AdminAddPlanScreen = ({ navigation }) => {
                   </View>
                 </View>
 
-                {/* Days Left Container */}
                 <View style={styles.daysContainer}>
                   <Text style={[styles.daysNumber, { color: currentTemplate.textColor }]}>25</Text>
                   <Text style={styles.daysLabel}>Days Left</Text>
                 </View>
               </View>
 
-              {/* Divider */}
               <View style={[styles.divider, { backgroundColor: `${currentTemplate.iconColor}30` }]} />
 
-              {/* Footer */}
               <View style={styles.membershipFooter}>
                 <Text style={styles.expiryText}>
                   Exp. {new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
@@ -709,7 +682,6 @@ const AdminAddPlanScreen = ({ navigation }) => {
                 </View>
               </View>
 
-              {/* Price Info Section */}
               {(price || hasOffer) && (
                 <>
                   <View style={[styles.divider, { backgroundColor: `${currentTemplate.iconColor}30` }]} />
@@ -719,14 +691,16 @@ const AdminAddPlanScreen = ({ navigation }) => {
                       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: s(6) }}>
                         {hasOffer && calculateFinalPrice() !== null && price ? (
                           <>
-                            <Text style={styles.previewOriginalPrice}>${price}</Text>
+                            {/* ✅ $ → ₹ */}
+                            <Text style={styles.previewOriginalPrice}>₹{price}</Text>
                             <Text style={[styles.previewFinalPrice, { color: currentTemplate.textColor }]}>
-                              ${calculateFinalPrice()?.toFixed(2)}
+                              ₹{calculateFinalPrice()?.toFixed(2)}
                             </Text>
                           </>
                         ) : (
+                          // ✅ $ → ₹
                           <Text style={[styles.previewFinalPrice, { color: currentTemplate.textColor }]}>
-                            ${price || '0'}
+                            ₹{price || '0'}
                           </Text>
                         )}
                         <Text style={styles.previewPriceDuration}>
@@ -739,7 +713,8 @@ const AdminAddPlanScreen = ({ navigation }) => {
                       <View style={styles.previewOfferBadge}>
                         <HugeiconsIcon icon={FlashIcon} size={ms(10)} color={Colors.gold} />
                         <Text style={styles.previewOfferText}>
-                          {discountType === 'percentage' ? `${discountValue}% OFF` : `$${discountValue} OFF`}
+                          {/* ✅ $ → ₹ */}
+                          {discountType === 'percentage' ? `${discountValue}% OFF` : `₹${discountValue} OFF`}
                         </Text>
                       </View>
                     )}
@@ -749,9 +724,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* ═══════════════════════════════════════════════════ */}
           {/* ACTION BUTTONS */}
-          {/* ═══════════════════════════════════════════════════ */}
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={[styles.deployButton, isDeploying && styles.deployButtonDisabled]}
@@ -762,7 +735,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
               <LinearGradient
                 colors={[currentTemplate.iconColor, `${currentTemplate.iconColor}80`]}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={styles.deployButtonGradient}
               >
                 {isDeploying ? (
@@ -782,7 +755,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate('AdminPlans')}
               activeOpacity={0.8}
             >
               <HugeiconsIcon icon={Cancel01Icon} size={ms(14)} color={Colors.zinc[500]} />
@@ -790,17 +763,18 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        <BottomNav
+          activeTab="plans"
+          onTabChange={(tab) => {
+            if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+            if (tab === 'plans') navigation.navigate('AdminPlans');
+            if (tab === 'members') navigation.navigate('AdminUsersDetail');
+            if (tab === 'settings') navigation.navigate('AdminSettings');
+          }}
+          userType="admin"
+        />
       </LinearGradient>
-       <BottomNav
-                  activeTab="plans"
-                  onTabChange={(tab) => {
-                    if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-                    if (tab === 'plans') navigation.navigate('AdminAddPlan');
-                    if (tab === 'members') navigation.navigate('AdminUsersDetail');
-                    if (tab === 'settings') navigation.navigate('AdminSettings');
-                  }}
-                  userType="admin"
-                />
     </ImageBackground>
   );
 };
@@ -812,7 +786,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: s(18),
     paddingTop: vs(10),
-    paddingBottom: vs(40),
+    paddingBottom: vs(120),
   },
 
   // Back Button
@@ -864,7 +838,7 @@ const styles = StyleSheet.create({
     paddingLeft: s(2),
   },
 
-  // ✅ Workout Card - BLACK background
+  // Workout Card
   workoutCardsContainer: { gap: vs(12) },
   workoutCardWrapper: { width: '100%' },
   workoutCard: {
@@ -953,7 +927,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // ✅ Pricing Card - BLACK background
+  // Pricing Card
   pricingCard: {
     borderRadius: ms(16),
     padding: ms(16),
@@ -983,7 +957,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: s(3),
   },
 
-  // ✅ Dropdown - BLACK background
+  // Dropdown
   dropdownTrigger: {
     height: vs(38),
     borderRadius: ms(12),
@@ -1015,7 +989,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: s(20),
   },
   dropdownModalCenter: { width: '100%' },
-  // ✅ Dropdown Modal - BLACK background
   dropdownModalCard: {
     borderRadius: ms(16),
     overflow: 'hidden',
@@ -1063,7 +1036,7 @@ const styles = StyleSheet.create({
   },
   dropdownOptionTextSelected: { color: Colors.white },
 
-  // ✅ Offer Section - BLACK background
+  // Offer Section
   offerSection: { marginBottom: vs(24) },
   offerHeader: {
     flexDirection: 'row',
@@ -1115,7 +1088,7 @@ const styles = StyleSheet.create({
     color: Colors.gold,
   },
 
-  // ✅ Live Preview - BLACK background
+  // Live Preview
   previewSection: { marginBottom: vs(24) },
   membershipCard: {
     borderRadius: ms(16),
@@ -1225,7 +1198,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
-  previewPriceInfo: { gap: vs(8) },
+  previewPriceInfo: { gap: vs(8), zIndex: 1 },
   previewPriceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -1,4 +1,4 @@
-// AdminDashboardScreen.js - FINAL UPDATED VERSION
+// AdminDashboardScreen.js - TRAINER ADDED VERSION
 
 import React from 'react';
 import { 
@@ -34,10 +34,11 @@ import {
   Clock01Icon,
   CheckmarkCircle02Icon,
   MoneyReceiveCircleIcon,
+  Dumbbell01Icon,
 } from "@hugeicons/core-free-icons";
 
 // ═══════════════════════════════════════════════════════════════
-// LIVE ROSTER DATA (This will come from API/Context in real app)
+// LIVE ROSTER DATA
 // ═══════════════════════════════════════════════════════════════
 const LIVE_ROSTER_STATS = {
   totalLive: 15,
@@ -47,10 +48,11 @@ const LIVE_ROSTER_STATS = {
   activeCount: 8,
   expiredCount: 4,
   trialCount: 3,
+  trainerCount: 2,
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ALL MEMBERS STATS (For top card)
+// ALL MEMBERS STATS
 // ═══════════════════════════════════════════════════════════════
 const ALL_MEMBERS_STATS = {
   totalMembers: 128,
@@ -58,6 +60,7 @@ const ALL_MEMBERS_STATS = {
   expiredCount: 20,
   eliteCount: 65,
   legendaryCount: 43,
+  trainerCount: 8,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -66,6 +69,7 @@ const ALL_MEMBERS_STATS = {
 const TIER_COLORS = {
   ELITE: '#EAB308',
   LEGENDARY: '#a855f7',
+  TRAINER: '#22D3EE',
 };
 
 const AdminDashboardScreen = ({ navigation }) => {
@@ -76,7 +80,7 @@ const AdminDashboardScreen = ({ navigation }) => {
       blurRadius={9}
     >
       <LinearGradient
-               colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000000']}
+        colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000000']}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['']}>
@@ -94,7 +98,7 @@ const AdminDashboardScreen = ({ navigation }) => {
             </View>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
-            {/* ALL MEMBERS STATS CARD - UPDATED */}
+            {/* ALL MEMBERS STATS CARD */}
             {/* ═══════════════════════════════════════════════════════════════ */}
             <LinearGradient
               colors={['rgba(113, 113, 122, 0.3)', 'rgba(24, 24, 27, 0.8)', '#000000']}
@@ -113,33 +117,34 @@ const AdminDashboardScreen = ({ navigation }) => {
                     <Text style={styles.liveCount}>{ALL_MEMBERS_STATS.totalMembers}</Text>
                     <Text style={styles.liveCountLabel}>Total</Text>
                   </View>
-                   <View style={styles.allmemberLogo}>
-                  <Image
-                    source={gymlogoimg}
-                    style={styles.allmemberLogoimg}
-                    // resizeMode="contain"
-                  />
-                </View>
+                  <View style={styles.allmemberLogo}>
+                    <Image
+                      source={gymlogoimg}
+                      style={styles.allmemberLogoimg}
+                    />
+                  </View>
                 </View>
 
                 <View style={styles.divider} />
 
-                {/* Stats Row - Updated with Trial, Expired, Elite, Legendary */}
+                {/* Row 1: Trial, Expired, Elite, Legendary */}
                 <View style={styles.statsRow}>
-                  {/* Trial - Blue */}
+                  {/* Trial */}
                   <View style={styles.statItem}>
                     <View style={[styles.statIconWrapper, styles.trialIconWrapper]}>
                       <View style={styles.trialDot} />
                     </View>
                     <View>
-                      <Text style={[styles.statItemValue, styles.trialValue]}>{ALL_MEMBERS_STATS.trialCount}</Text>
+                      <Text style={[styles.statItemValue, styles.trialValue]}>
+                        {ALL_MEMBERS_STATS.trialCount}
+                      </Text>
                       <Text style={styles.statItemLabel}>Trial</Text>
                     </View>
                   </View>
 
                   <View style={styles.statDivider} />
 
-                  {/* Expired - Red with Alert Icon */}
+                  {/* Expired */}
                   <View style={styles.statItem}>
                     <View style={[styles.statIconWrapper, styles.expiredIconWrapper]}>
                       <HugeiconsIcon
@@ -149,42 +154,78 @@ const AdminDashboardScreen = ({ navigation }) => {
                       />
                     </View>
                     <View>
-                      <Text style={[styles.statItemValue, styles.expiredValue]}>{ALL_MEMBERS_STATS.expiredCount}</Text>
+                      <Text style={[styles.statItemValue, styles.expiredValue]}>
+                        {ALL_MEMBERS_STATS.expiredCount}
+                      </Text>
                       <Text style={[styles.statItemLabel, styles.expiredLabel]}>Expired</Text>
                     </View>
                   </View>
 
                   <View style={styles.statDivider} />
 
-                  {/* Elite Tier - Gold */}
+                  {/* Elite */}
                   <View style={styles.statItem}>
                     <View style={[styles.statIconWrapper, styles.eliteIconWrapper]}>
                       <View style={styles.eliteDot} />
                     </View>
                     <View>
-                      <Text style={[styles.statItemValue, styles.eliteValue]}>{ALL_MEMBERS_STATS.eliteCount}</Text>
+                      <Text style={[styles.statItemValue, styles.eliteValue]}>
+                        {ALL_MEMBERS_STATS.eliteCount}
+                      </Text>
                       <Text style={styles.statItemLabel}>Elite</Text>
                     </View>
                   </View>
 
                   <View style={styles.statDivider} />
 
-                  {/* Legendary Tier - Purple */}
+                  {/* Legendary */}
                   <View style={styles.statItem}>
                     <View style={[styles.statIconWrapper, styles.legendaryIconWrapper]}>
                       <View style={styles.legendaryDot} />
                     </View>
                     <View>
-                      <Text style={[styles.statItemValue, styles.legendaryValue]}>{ALL_MEMBERS_STATS.legendaryCount}</Text>
+                      <Text style={[styles.statItemValue, styles.legendaryValue]}>
+                        {ALL_MEMBERS_STATS.legendaryCount}
+                      </Text>
                       <Text style={styles.statItemLabel}>Legendary</Text>
                     </View>
                   </View>
                 </View>
+
+                {/* Trainer Row */}
+                <View style={styles.trainerRowDivider} />
+
+                <View style={styles.trainerStatRow}>
+                  <View style={styles.trainerStatLeft}>
+                    <View style={styles.trainerIconWrapper}>
+                      <HugeiconsIcon
+                        icon={Dumbbell01Icon}
+                        size={moderateScale(13)}
+                        color={TIER_COLORS.TRAINER}
+                      />
+                    </View>
+                    <View>
+                      <Text style={styles.trainerStatLabel}>Trainers</Text>
+                      <Text style={styles.trainerStatSub}>On Roster</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.trainerStatRight}>
+                    <Text style={styles.trainerStatCount}>
+                      {ALL_MEMBERS_STATS.trainerCount}
+                    </Text>
+                    <View style={styles.trainerActivePill}>
+                      <View style={styles.trainerActiveDot} />
+                      <Text style={styles.trainerActivePillText}>Active</Text>
+                    </View>
+                  </View>
+                </View>
+
               </GlassCard>
             </LinearGradient>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
-            {/* LIVE ROSTER HERO CARD - COMPACT & TRANSPARENT */}
+            {/* LIVE ROSTER HERO CARD */}
             {/* ═══════════════════════════════════════════════════════════════ */}
             <TouchableOpacity
               activeOpacity={0.9}
@@ -200,12 +241,6 @@ const AdminDashboardScreen = ({ navigation }) => {
                     strokeWidth={0.5}
                   />
                 </View>
-
-                {/* Left Accent */}
-                {/* <LinearGradient
-                  colors={['red', 'black', 'yellow']}
-                  style={styles.heroLeftAccent}
-                /> */}
 
                 <View style={styles.heroContent}>
                   {/* Main Stats Row */}
@@ -236,13 +271,23 @@ const AdminDashboardScreen = ({ navigation }) => {
 
                       {/* Tier Pills */}
                       <View style={styles.heroTierRow}>
-                        <View style={[styles.heroTierPill,]}>
+                        <View style={styles.heroTierPill}>
                           <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.ELITE }]} />
-                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500]}]}>{LIVE_ROSTER_STATS.eliteCount}</Text>
+                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500] }]}>
+                            {LIVE_ROSTER_STATS.eliteCount}
+                          </Text>
                         </View>
-                        <View style={[styles.heroTierPill, ]}>
+                        <View style={styles.heroTierPill}>
                           <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.LEGENDARY }]} />
-                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500] }]}>{LIVE_ROSTER_STATS.legendaryCount}</Text>
+                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500] }]}>
+                            {LIVE_ROSTER_STATS.legendaryCount}
+                          </Text>
+                        </View>
+                        <View style={styles.heroTierPill}>
+                          <View style={[styles.heroTierDot, { backgroundColor: TIER_COLORS.TRAINER }]} />
+                          <Text style={[styles.heroTierCount, { color: Colors.zinc[500] }]}>
+                            {LIVE_ROSTER_STATS.trainerCount}
+                          </Text>
                         </View>
                       </View>
                     </View>
@@ -255,20 +300,40 @@ const AdminDashboardScreen = ({ navigation }) => {
                   <View style={styles.heroStatusRow}>
                     <View style={styles.heroStatusItem}>
                       <View style={[styles.heroStatusDot, { backgroundColor: '#22C55E' }]} />
-                      <Text style={styles.heroStatusLabel}>Active Members</Text>
-                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>{LIVE_ROSTER_STATS.activeCount}</Text>
+                      <Text style={styles.heroStatusLabel}>Active</Text>
+                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>
+                        {LIVE_ROSTER_STATS.activeCount}
+                      </Text>
                     </View>
+
                     <View style={styles.heroStatusDivider} />
+
                     <View style={styles.heroStatusItem}>
                       <View style={[styles.heroStatusDot, { backgroundColor: '#EF4444' }]} />
                       <Text style={styles.heroStatusLabel}>Expired</Text>
-                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>{LIVE_ROSTER_STATS.expiredCount}</Text>
+                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>
+                        {LIVE_ROSTER_STATS.expiredCount}
+                      </Text>
                     </View>
+
                     <View style={styles.heroStatusDivider} />
+
                     <View style={styles.heroStatusItem}>
                       <View style={[styles.heroStatusDot, { backgroundColor: '#3B82F6' }]} />
                       <Text style={styles.heroStatusLabel}>Trial</Text>
-                      <Text style={[styles.heroStatusCount, { color:Colors.zinc[100] }]}>{LIVE_ROSTER_STATS.trialCount}</Text>
+                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>
+                        {LIVE_ROSTER_STATS.trialCount}
+                      </Text>
+                    </View>
+
+                    <View style={styles.heroStatusDivider} />
+
+                    <View style={styles.heroStatusItem}>
+                      <View style={[styles.heroStatusDot, { backgroundColor: TIER_COLORS.TRAINER }]} />
+                      <Text style={styles.heroStatusLabel}>Trainer</Text>
+                      <Text style={[styles.heroStatusCount, { color: Colors.zinc[100] }]}>
+                        {LIVE_ROSTER_STATS.trainerCount}
+                      </Text>
                     </View>
                   </View>
 
@@ -279,22 +344,20 @@ const AdminDashboardScreen = ({ navigation }) => {
                       <Text style={styles.heroViewAllText}>View All Live Members</Text>
                     </View>
                     <View style={styles.heroViewAllArrow}>
-                      <HugeiconsIcon icon={ArrowRight01Icon} size={moderateScale(14)} color="rgba(255,255,255,0.5)" />
+                      <HugeiconsIcon
+                        icon={ArrowRight01Icon}
+                        size={moderateScale(14)}
+                        color="rgba(255,255,255,0.5)"
+                      />
                     </View>
                   </View>
                 </View>
-
-                {/* Bottom Accent */}
-                {/* <LinearGradient
-                  colors={['#22C55E', 'transparent']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.heroBottomAccent}
-                /> */}
               </View>
             </TouchableOpacity>
 
-            {/* Revenue Card */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* REVENUE CARD */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <GlassCard>
               <View style={styles.revenueHeader}>
                 <View style={styles.revenueTitle}>
@@ -326,10 +389,8 @@ const AdminDashboardScreen = ({ navigation }) => {
                 <View style={[styles.progressFill, { width: '75%' }]} />
               </View>
 
-              {/* Revenue Breakdown */}
               <View style={styles.revenueBreakdown}>
                 <View style={styles.breakdownDivider} />
-                
                 <View style={styles.breakdownContent}>
                   <View style={styles.breakdownItem}>
                     <Text style={styles.breakdownValue}>₹32K</Text>
@@ -347,17 +408,21 @@ const AdminDashboardScreen = ({ navigation }) => {
               </View>
             </GlassCard>
 
-            {/* Command Center */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* COMMAND CENTER - UPDATED WITH TRAINERS BUTTON */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Command Center</Text>
               <View style={styles.commandGrid}>
+
+                {/* New Plan */}
                 <TouchableOpacity 
                   style={styles.commandCard}
                   onPress={() => navigation.navigate('AdminAddPlan')}
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']}
+                    colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
                     style={styles.commandCardGradient}
                   >
                     <View style={styles.commandIconWrapper}>
@@ -371,31 +436,39 @@ const AdminDashboardScreen = ({ navigation }) => {
                   </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
+                {/* ✅ TRAINERS BUTTON - Replaces Offers */}
+                <TouchableOpacity
                   style={styles.commandCard}
+                  onPress={() => navigation.navigate('AdminTrainers')}
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']}
+                    colors={['rgba(34,211,238,0.12)', 'rgba(34,211,238,0.03)']}
                     style={styles.commandCardGradient}
                   >
-                    <View style={styles.commandIconWrapper}>
+                    <View style={[
+                      styles.commandIconWrapper,
+                      { backgroundColor: 'rgba(34,211,238,0.15)' }
+                    ]}>
                       <HugeiconsIcon
-                        icon={PercentIcon}
+                        icon={Dumbbell01Icon}
                         size={moderateScale(22)}
-                        color={Colors.white}
+                        color={TIER_COLORS.TRAINER}
                       />
                     </View>
-                    <Text style={styles.commandLabel}>Offers</Text>
+                    <Text style={[styles.commandLabel, { color: TIER_COLORS.TRAINER }]}>
+                      Trainers
+                    </Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
+                {/* Add User */}
+                <TouchableOpacity
                   style={styles.commandCard}
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']}
+                    colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
                     style={styles.commandCardGradient}
                   >
                     <View style={styles.commandIconWrapper}>
@@ -408,10 +481,13 @@ const AdminDashboardScreen = ({ navigation }) => {
                     <Text style={styles.commandLabel}>Add User</Text>
                   </LinearGradient>
                 </TouchableOpacity>
+
               </View>
             </View>
 
-            {/* Quick Actions */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* QUICK ACTIONS */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <View style={styles.actionButtons}>
               <GlassButton variant="glass" style={styles.actionButton}>
                 <View style={styles.actionButtonContent}>
@@ -441,18 +517,19 @@ const AdminDashboardScreen = ({ navigation }) => {
                 </View>
               </GlassButton>
             </View>
+
           </ScrollView>
 
-<BottomNav
-  activeTab="dashboard"
-  onTabChange={(tab) => {
-    if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-    if (tab === 'plans') navigation.navigate('AdminAddPlan');
-    if (tab === 'members') navigation.navigate('AdminUsersDetail');
-    if (tab === 'settings') navigation.navigate('AdminSettings');
-  }}
-  // NO userType needed - auto-detects from route name 'AdminDashboard'
-/>
+          <BottomNav
+            activeTab="dashboard"
+            onTabChange={(tab) => {
+              if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+              if (tab === 'plans') navigation.navigate('AdminPlans');
+              if (tab === 'members') navigation.navigate('AdminUsersDetail');
+              if (tab === 'settings') navigation.navigate('AdminSettings');
+            }}
+            userType="admin"
+          />
         </SafeAreaView>
       </LinearGradient>
     </ImageBackground>
@@ -460,28 +537,18 @@ const AdminDashboardScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-  },
+  background: { flex: 1 },
+  gradient: { flex: 1 },
+  safeArea: { flex: 1 },
+  container: { flex: 1 },
   scrollContent: {
     paddingHorizontal: scale(24),
     gap: verticalScale(16),
     paddingBottom: verticalScale(100),
   },
 
-  // Welcome Section
-  welcomeSection: {
-    marginBottom: verticalScale(0),
-  },
+  // Welcome
+  welcomeSection: { marginBottom: verticalScale(0) },
   welcomeLabel: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: RFValue(8),
@@ -498,19 +565,15 @@ const styles = StyleSheet.create({
     letterSpacing: scale(3.6),
   },
 
-  // ═══════════════════════════════════════════════════════════════
-  // ALL MEMBERS STATS CARD
-  // ═══════════════════════════════════════════════════════════════
+  // Members Stats Card
   statsGradient: {
     borderRadius: moderateScale(16),
     padding: scale(1),
   },
   liveStatsCard: {
     position: 'relative',
-    // borderWidth: 0.5,
     backgroundColor: '#000000',
     overflow: 'hidden',
-    // borderColor:Colors.zinc[600]
   },
   liveStatsHeader: {
     flexDirection: 'row',
@@ -564,7 +627,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: verticalScale(1),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     marginBottom: verticalScale(16),
     zIndex: 1,
   },
@@ -584,67 +647,37 @@ const styles = StyleSheet.create({
     width: moderateScale(15),
     height: moderateScale(15),
     borderRadius: moderateScale(14),
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
-  // Trial - Blue
-  trialIconWrapper: {
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
-  },
+  trialIconWrapper: { backgroundColor: 'rgba(59,130,246,0.15)' },
   trialDot: {
     width: moderateScale(5),
     height: moderateScale(5),
     borderRadius: moderateScale(2.5),
     backgroundColor: '#3B82F6',
   },
-  trialValue: {
-    color:Colors.zinc[100],
-
-  },
-
-  // Expired - Red
-  expiredIconWrapper: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-  },
-  expiredValue: {
-    color: Colors.zinc[100],
-  },
-  expiredLabel: {
-    color:Colors.zinc[500],
-  },
-
-  // Elite - Gold
-  eliteIconWrapper: {
-    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-  },
+  trialValue: { color: Colors.zinc[100] },
+  expiredIconWrapper: { backgroundColor: 'rgba(239,68,68,0.1)' },
+  expiredValue: { color: Colors.zinc[100] },
+  expiredLabel: { color: Colors.zinc[500] },
+  eliteIconWrapper: { backgroundColor: 'rgba(234,179,8,0.15)' },
   eliteDot: {
-      width: moderateScale(5),
+    width: moderateScale(5),
     height: moderateScale(5),
     borderRadius: moderateScale(2.5),
     backgroundColor: '#EAB308',
   },
-  eliteValue: {
-        color:Colors.zinc[100],
-
-  },
-
-  // Legendary - Purple
-  legendaryIconWrapper: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-  },
+  eliteValue: { color: Colors.zinc[100] },
+  legendaryIconWrapper: { backgroundColor: 'rgba(168,85,247,0.15)' },
   legendaryDot: {
-        width: moderateScale(5),
+    width: moderateScale(5),
     height: moderateScale(5),
     borderRadius: moderateScale(2.5),
     backgroundColor: '#a855f7',
   },
-  legendaryValue: {
-      color:Colors.zinc[100],
-
-  },
-
+  legendaryValue: { color: Colors.zinc[100] },
   statItemValue: {
     fontFamily: Fonts.orbitron.bold,
     fontSize: RFValue(11),
@@ -654,24 +687,101 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.rajdhani.regular,
     fontSize: RFValue(6),
     color: Colors.zinc[500],
-    letterSpacing: scale(0),
     textTransform: 'uppercase',
   },
   statDivider: {
     width: scale(1),
     height: verticalScale(30),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     marginHorizontal: scale(4),
   },
 
-  // ═══════════════════════════════════════════════════════════════
-  // LIVE ROSTER HERO CARD - COMPACT & TRANSPARENT
-  // ═══════════════════════════════════════════════════════════════
+  // Trainer Row in Members Card
+  trainerRowDivider: {
+    height: verticalScale(1),
+    backgroundColor: 'rgba(34,211,238,0.12)',
+    marginTop: verticalScale(14),
+    marginBottom: verticalScale(12),
+  },
+  trainerStatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(34,211,238,0.05)',
+    borderRadius: moderateScale(10),
+    borderWidth: 1,
+    borderColor: 'rgba(34,211,238,0.12)',
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(8),
+  },
+  trainerStatLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(8),
+  },
+  trainerIconWrapper: {
+    width: moderateScale(30),
+    height: moderateScale(30),
+    borderRadius: moderateScale(8),
+    backgroundColor: 'rgba(34,211,238,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trainerStatLabel: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: RFValue(9),
+    color: TIER_COLORS.TRAINER,
+    letterSpacing: scale(1.2),
+    textTransform: 'uppercase',
+  },
+  trainerStatSub: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: RFValue(6.5),
+    color: Colors.zinc[600],
+    letterSpacing: scale(0.8),
+    textTransform: 'uppercase',
+  },
+  trainerStatRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(10),
+  },
+  trainerStatCount: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(18),
+    color: TIER_COLORS.TRAINER,
+  },
+  trainerActivePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(4),
+    backgroundColor: 'rgba(34,211,238,0.10)',
+    borderRadius: moderateScale(6),
+    borderWidth: 1,
+    borderColor: 'rgba(34,211,238,0.2)',
+    paddingHorizontal: scale(7),
+    paddingVertical: verticalScale(3),
+  },
+  trainerActiveDot: {
+    width: moderateScale(5),
+    height: moderateScale(5),
+    borderRadius: moderateScale(2.5),
+    backgroundColor: TIER_COLORS.TRAINER,
+  },
+  trainerActivePillText: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: RFValue(7),
+    color: TIER_COLORS.TRAINER,
+    letterSpacing: scale(0.8),
+    textTransform: 'uppercase',
+  },
+
+  // Live Roster Hero Card
   liveRosterHeroCard: {
     backgroundColor: 'black',
     borderRadius: moderateScale(18),
     borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.25)',
+    borderColor: 'rgba(34,197,94,0.25)',
     overflow: 'hidden',
     position: 'relative',
   },
@@ -681,25 +791,7 @@ const styles = StyleSheet.create({
     right: -moderateScale(15),
     opacity: 1,
   },
-  heroLeftAccent: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: moderateScale(3),
-  },
-  heroBottomAccent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    // width: '50%',
-    height: moderateScale(2),
-  },
-  heroContent: {
-    padding: moderateScale(14),
-  },
-
-  // Main Row
+  heroContent: { padding: moderateScale(14) },
   heroMainRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -720,7 +812,7 @@ const styles = StyleSheet.create({
     width: moderateScale(18),
     height: moderateScale(18),
     borderRadius: moderateScale(12),
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    backgroundColor: 'rgba(34,197,94,0.15)',
   },
   heroPulseDot: {
     width: moderateScale(6),
@@ -728,9 +820,7 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(2.5),
     backgroundColor: 'rgba(34,197,94,0.45)',
   },
-  heroLiveInfo: {
-    alignItems: 'flex-start',
-  },
+  heroLiveInfo: { alignItems: 'flex-start' },
   heroLiveCount: {
     fontFamily: Fonts.orbitron.bold,
     fontSize: RFValue(24),
@@ -740,10 +830,9 @@ const styles = StyleSheet.create({
   heroLiveLabel: {
     fontFamily: Fonts.rajdhani.bold,
     fontSize: RFValue(8),
-    color:Colors.zinc[500],
-
+    color: Colors.zinc[500],
     letterSpacing: scale(1),
-    fontWeight:"500"
+    fontWeight: '500',
   },
   heroVerticalDivider: {
     width: 1,
@@ -751,9 +840,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
     marginHorizontal: scale(14),
   },
-  heroRightSection: {
-    flex: 1,
-  },
+  heroRightSection: { flex: 1 },
   heroAvgBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -782,6 +869,7 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(3),
     borderRadius: moderateScale(6),
     borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
     gap: scale(4),
   },
   heroTierDot: {
@@ -793,8 +881,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.orbitron.bold,
     fontSize: RFValue(10),
   },
-
-  // Divider
   heroDivider: {
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.06)',
@@ -811,7 +897,7 @@ const styles = StyleSheet.create({
   heroStatusItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(5),
+    gap: scale(4),
   },
   heroStatusDot: {
     width: moderateScale(5),
@@ -820,12 +906,12 @@ const styles = StyleSheet.create({
   },
   heroStatusLabel: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: RFValue(8),
+    fontSize: RFValue(7.5),
     color: 'rgba(255,255,255,0.5)',
   },
   heroStatusCount: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: RFValue(10),
+    fontSize: RFValue(9),
   },
   heroStatusDivider: {
     width: 1,
@@ -833,7 +919,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
 
-  // View All Button
+  // View All
   heroViewAllRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -843,7 +929,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(12),
     borderRadius: moderateScale(10),
     borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.2)',
+    borderColor: 'rgba(34,197,94,0.2)',
   },
   heroViewAllContent: {
     flexDirection: 'row',
@@ -866,9 +952,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // ═══════════════════════════════════════════════════════════════
-  // REVENUE CARD
-  // ═══════════════════════════════════════════════════════════════
+  // Revenue Card
   cardLogoContainer: {
     position: 'absolute',
     top: scale(27),
@@ -876,13 +960,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: scale(230),
     justifyContent: 'center',
-    alignItems: "center",
+    alignItems: 'center',
     paddingRight: scale(10),
   },
   cardLogo: {
     width: moderateScale(120),
     height: moderateScale(120),
-    // opacity: 0.50
   },
   allmemberLogo: {
     position: 'absolute',
@@ -891,13 +974,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: scale(10),
     justifyContent: 'center',
-    alignItems: "center",
+    alignItems: 'center',
     paddingRight: scale(10),
   },
   allmemberLogoimg: {
     width: moderateScale(300),
     height: moderateScale(150),
-    opacity: 0.40
+    opacity: 0.40,
   },
   revenueHeader: {
     flexDirection: 'row',
@@ -919,13 +1002,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   trendBadge: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    backgroundColor: 'rgba(34,197,94,0.1)',
     paddingHorizontal: scale(8),
     paddingVertical: verticalScale(4),
     borderRadius: moderateScale(4),
     borderWidth: scale(1),
-    borderColor: 'rgba(34, 197, 94, 0.2)',
-    marginLeft: moderateScale(45)
+    borderColor: 'rgba(34,197,94,0.2)',
+    marginLeft: moderateScale(45),
   },
   trendText: {
     fontFamily: Fonts.orbitron.bold,
@@ -954,7 +1037,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: verticalScale(4),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: moderateScale(2),
     overflow: 'hidden',
     marginTop: verticalScale(16),
@@ -963,12 +1046,10 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: Colors.gold,
   },
-  revenueBreakdown: {
-    marginTop: verticalScale(16),
-  },
+  revenueBreakdown: { marginTop: verticalScale(16) },
   breakdownDivider: {
     height: verticalScale(1),
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     marginBottom: verticalScale(16),
   },
   breakdownContent: {
@@ -992,10 +1073,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  // Section
-  section: {
-    gap: verticalScale(12),
-  },
+  // Command Center
+  section: { gap: verticalScale(12) },
   sectionTitle: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: RFValue(8),
@@ -1004,8 +1083,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     fontWeight: '600',
   },
-
-  // Command Grid
   commandGrid: {
     flexDirection: 'row',
     gap: scale(12),
@@ -1021,13 +1098,13 @@ const styles = StyleSheet.create({
     gap: verticalScale(10),
     borderRadius: moderateScale(12),
     borderWidth: scale(1),
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   commandIconWrapper: {
     width: moderateScale(44),
     height: moderateScale(44),
     borderRadius: moderateScale(22),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1059,12 +1136,12 @@ const styles = StyleSheet.create({
     height: moderateScale(36),
     borderRadius: moderateScale(18),
     borderWidth: scale(1),
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionIconInactive: {
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   actionButtonText: {
     fontFamily: Fonts.rajdhani.semiBold,

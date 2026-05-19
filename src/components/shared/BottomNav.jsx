@@ -64,8 +64,8 @@ const BottomNav = ({ activeTab, onTabChange, userType }) => {
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Top border glow */}
-        <View style={styles.topGlow} />
+        {/* Gradient top border */}
+        <View style={styles.topBorder} />
 
         <View style={styles.inner}>
           {tabs.map((tab) => {
@@ -76,31 +76,36 @@ const BottomNav = ({ activeTab, onTabChange, userType }) => {
                 key={tab.id}
                 style={styles.tab}
                 onPress={() => onTabChange(tab.id)}
-                activeOpacity={0.7}
+                activeOpacity={0.6}
               >
-                {/* Icon wrapper */}
+                {/* Icon */}
                 <View
                   style={[
-                    styles.iconWrapper,
-                    isActive && styles.iconWrapperActive,
+                    styles.iconContainer,
+                    isActive && styles.iconContainerActive,
                   ]}
                 >
                   <HugeiconsIcon
                     icon={tab.icon}
-                    size={moderateScale(19)}
-                    color={isActive ? Colors.white : Colors.zinc[600]}
-                    strokeWidth={isActive ? 2 : 1.5}
+                    size={moderateScale(17)}
+                    color={isActive ? Colors.white : Colors.zinc[500]}
+                    strokeWidth={isActive ? 2.5 : 2}
                   />
+                  
+                  {/* Subtle glow behind active icon */}
+                  {isActive && <View style={styles.iconGlow} />}
                 </View>
 
                 {/* Label */}
-                {/* ✅ Fix #3 — semiBold (capital B) consistent with rest of app */}
-                <Text style={[styles.label, isActive && styles.labelActive]}>
+                <Text 
+                  style={[
+                    styles.label, 
+                    isActive && styles.labelActive
+                  ]}
+                  numberOfLines={1}
+                >
                   {tab.label}
                 </Text>
-
-                {/* Active indicator dot */}
-                {isActive && <View style={styles.activeIndicator} />}
               </TouchableOpacity>
             );
           })}
@@ -115,88 +120,84 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    backgroundColor: Colors.surfaceHeavy,
+    backgroundColor: 'transparent',
   },
   container: {
     backgroundColor: Colors.surfaceHeavy,
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(8),
-    paddingHorizontal: scale(20),
-    borderTopLeftRadius: moderateScale(16),
-    borderTopRightRadius: moderateScale(16),
+    paddingTop: 0,
+    paddingBottom: verticalScale(4),
+    paddingHorizontal: scale(12),
+    borderTopLeftRadius: moderateScale(24),
+    borderTopRightRadius: moderateScale(24),
     borderWidth: scale(1),
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     borderBottomWidth: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 20,
+    overflow: 'hidden',
   },
-  topGlow: {
+  topBorder: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: scale(1),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderTopLeftRadius: moderateScale(16),
-    borderTopRightRadius: moderateScale(16),
+    height: scale(2),
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   inner: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: scale(8),
+    paddingHorizontal: scale(4),
+    paddingVertical: verticalScale(8),
   },
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: verticalScale(5),
-    paddingVertical: verticalScale(6),
-    paddingHorizontal: scale(8),
-    position: 'relative',
-    minWidth: scale(60),
+    gap: verticalScale(6),
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: scale(12),
+    flex: 1,
+    maxWidth: scale(90),
   },
-  iconWrapper: {
-    width: moderateScale(42),
-    height: moderateScale(42),
-    borderRadius: moderateScale(12),
+  iconContainer: {
+    width: moderateScale(30),
+    height: moderateScale(30),
+    borderRadius: moderateScale(16),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
-    // ✅ Fix #7 — removed invalid `transition` CSS prop
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    position: 'relative',
   },
-  iconWrapperActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: scale(1),
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+  iconContainerActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: scale(1.5),
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  iconGlow: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: moderateScale(16),
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    opacity: 0.5,
   },
   label: {
-    // ✅ Fix #3 — semiBold not semibold
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: RFValue(8),
+    fontSize: RFValue(6),
     textTransform: 'uppercase',
-    letterSpacing: scale(1.2),
-    color: Colors.zinc[600],
+    letterSpacing: scale(0.8),
+    color: Colors.zinc[500],
     textAlign: 'center',
+    marginTop: verticalScale(2),
   },
   labelActive: {
     color: Colors.white,
     fontFamily: Fonts.rajdhani.bold,
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: verticalScale(0),
-    width: scale(4),
-    height: scale(4),
-    borderRadius: scale(2),
-    backgroundColor: Colors.white,
-    shadowColor: Colors.white,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
-    elevation: 4,
+    letterSpacing: scale(1),
   },
 });
 

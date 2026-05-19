@@ -43,12 +43,15 @@ import BottomNav from '../../components/shared/BottomNav';
 import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
 import { useMembershipRequests } from '../../context/MembershipRequestsContext';
+import { useTrainer } from '../../context/TrainerContext';
 import { Linking } from 'react-native';
 
-const s = (size) => scale(size);
+const s  = (size) => scale(size);
 const ms = (size) => moderateScale(size, 0.25);
 const vs = (size) => verticalScale(size);
 const rf = (size) => RFValue(size);
+
+const TRAINER_COLOR = '#22D3EE';
 
 // ═══════════════════════════════════════════════════════════════
 // TIER + STATUS CONFIGS
@@ -79,16 +82,33 @@ const TRIAL_CONFIG = {
 };
 
 const STATUS_CONFIG = {
-  active: { label: 'ACTIVE', color: '#22C55E', bgColor: 'rgba(34,197,94,0.15)', borderColor: 'rgba(34,197,94,0.3)', icon: CheckmarkCircle02Icon },
-  expired: { label: 'EXPIRED', color: '#EF4444', bgColor: 'rgba(239,68,68,0.15)', borderColor: 'rgba(239,68,68,0.3)', icon: AlertCircleIcon },
-  trial: { label: 'TRIAL', color: '#3B82F6', bgColor: 'rgba(59,130,246,0.15)', borderColor: 'rgba(59,130,246,0.3)', icon: Timer01Icon },
+  active: {
+    label: 'ACTIVE',
+    color: '#22C55E',
+    bgColor: 'rgba(34,197,94,0.15)',
+    borderColor: 'rgba(34,197,94,0.3)',
+    icon: CheckmarkCircle02Icon,
+  },
+  expired: {
+    label: 'EXPIRED',
+    color: '#EF4444',
+    bgColor: 'rgba(239,68,68,0.15)',
+    borderColor: 'rgba(239,68,68,0.3)',
+    icon: AlertCircleIcon,
+  },
+  trial: {
+    label: 'TRIAL',
+    color: '#3B82F6',
+    bgColor: 'rgba(59,130,246,0.15)',
+    borderColor: 'rgba(59,130,246,0.3)',
+    icon: Timer01Icon,
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════
-// 30 DUMMY MEMBERS - LIVE + OFFLINE
+// 30 DUMMY MEMBERS
 // ═══════════════════════════════════════════════════════════════
 const DUMMY_MEMBERS = [
-  // ── LIVE MEMBERS (15) ──────────────────────────────────────
   {
     id: 'm1', name: 'Abdullah Ahmed', avatar: 'AA', memberId: 'GYM001',
     phone: '+918817159218', email: 'abdullah@example.com',
@@ -224,8 +244,6 @@ const DUMMY_MEMBERS = [
     joinDate: '2024-10-01', expiryDate: '2025-03-01', daysLeft: 40,
     totalVisits: 88, currentStreak: 18, paidAmount: 2500,
   },
-
-  // ── OFFLINE MEMBERS (15) ────────────────────────────────────
   {
     id: 'm16', name: 'Divya Sharma', avatar: 'DS', memberId: 'GYM016',
     phone: '+919876543225', email: 'divya@example.com',
@@ -409,14 +427,30 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
   const textColor = template.textColor || Colors.gold;
 
   return (
-    <TouchableOpacity activeOpacity={0.95} style={[styles.requestCardWrapper, { borderColor: `${iconColor}30` }]}>
+    <TouchableOpacity
+      activeOpacity={0.95}
+      style={[styles.requestCardWrapper, { borderColor: `${iconColor}30` }]}
+    >
       <View style={styles.cardBgIconContainer}>
-        <HugeiconsIcon icon={Shield01Icon} size={ms(70)} color={`${iconColor}15`} strokeWidth={0.5} />
+        <HugeiconsIcon
+          icon={Shield01Icon}
+          size={ms(70)}
+          color={`${iconColor}15`}
+          strokeWidth={0.5}
+        />
       </View>
 
       <View style={styles.reqHeader}>
         <View style={styles.reqAvatarRow}>
-          <View style={[styles.reqAvatarContainer, { borderColor: `${iconColor}60`, backgroundColor: `${iconColor}15` }]}>
+          <View
+            style={[
+              styles.reqAvatarContainer,
+              {
+                borderColor: `${iconColor}60`,
+                backgroundColor: `${iconColor}15`,
+              },
+            ]}
+          >
             <LinearGradient
               colors={['black', 'black']}
               start={{ x: 0, y: 0 }}
@@ -434,7 +468,9 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
               <View style={styles.reqLeftBadges}>
                 <View style={[styles.reqTierBadge, { borderColor: `${iconColor}40` }]}>
                   <View style={[styles.reqTierDot, { backgroundColor: iconColor }]} />
-                  <Text style={[styles.reqTierText, { color: Colors.zinc[400] }]}>{template.badge || 'PLAN'}</Text>
+                  <Text style={[styles.reqTierText, { color: Colors.zinc[400] }]}>
+                    {template.badge || 'PLAN'}
+                  </Text>
                 </View>
                 <View style={[styles.reqStatusBadge, { borderColor: 'rgba(234,179,8,0.3)' }]}>
                   <HugeiconsIcon icon={Clock01Icon} size={ms(10)} color={Colors.gold} />
@@ -460,7 +496,10 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
               <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color="rgba(255,255,255,0.4)" />
               <Text style={styles.reqTimeText}>
                 {new Date(request.requestedAt).toLocaleString('en-US', {
-                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </Text>
             </View>
@@ -533,18 +572,26 @@ const RequestCard = ({ request, onApprove, onReject, isProcessing }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// MEMBER CARD - Exact LiveRoster style match
+// MEMBER CARD
+// ✅ Trainer assign logic REMOVED
+// ✅ Only shows trainer BADGE if already accepted (read-only)
 // ═══════════════════════════════════════════════════════════════
-const MemberCard = ({ member, onPress }) => {
+const MemberCard = ({ member, onPress, trainerStatus }) => {
   const isTrial = member.membershipStatus === 'trial';
-  const tierConfig = isTrial ? TRIAL_CONFIG : (TIER_TEMPLATES[member.membershipType] || TIER_TEMPLATES['ELITE TIER']);
+  const tierConfig = isTrial
+    ? TRIAL_CONFIG
+    : TIER_TEMPLATES[member.membershipType] || TIER_TEMPLATES['ELITE TIER'];
   const statusConfig = getStatusConfig(member.membershipStatus);
   const cardAccentColor = tierConfig.iconColor;
+
+  const isTrainerPending  = trainerStatus === 'pending';
+  const isTrainerAccepted = trainerStatus === 'accepted';
 
   const handleCall = (e) => {
     e.stopPropagation();
     Linking.openURL(`tel:${member.phone.replace(/\D/g, '')}`);
   };
+
   const handleWhatsApp = (e) => {
     e.stopPropagation();
     Linking.openURL(`whatsapp://send?phone=${member.phone.replace(/\D/g, '')}`);
@@ -552,27 +599,42 @@ const MemberCard = ({ member, onPress }) => {
 
   return (
     <TouchableOpacity
-      style={[styles.memberCardWrapper, { borderColor: `${cardAccentColor}30` }]}
+      style={[
+        styles.memberCardWrapper,
+        {
+          borderColor: isTrainerAccepted
+            ? `${TRAINER_COLOR}40`
+            : `${cardAccentColor}30`,
+        },
+      ]}
       onPress={() => onPress(member)}
       activeOpacity={0.9}
     >
-      {/* Background Shield */}
       <View style={styles.cardBgIconContainer}>
-        <HugeiconsIcon icon={Shield01Icon} size={ms(70)} color={`${cardAccentColor}15`} strokeWidth={0.5} />
+        <HugeiconsIcon
+          icon={Shield01Icon}
+          size={ms(70)}
+          color={`${cardAccentColor}15`}
+          strokeWidth={0.5}
+        />
       </View>
 
       <View style={styles.memberCardContent}>
-        {/* Top Section */}
         <View style={styles.memberTopSection}>
-          {/* ✅ Avatar - exact LiveRoster style with LinearGradient */}
+
+          {/* Avatar */}
           <View
             style={[
               styles.memberAvatarContainer,
               {
-                borderColor: isTrial
+                borderColor: isTrainerAccepted
+                  ? `${TRAINER_COLOR}80`
+                  : isTrial
                   ? `${TRIAL_CONFIG.iconColor}80`
                   : `${tierConfig.iconColor}60`,
-                backgroundColor: isTrial
+                backgroundColor: isTrainerAccepted
+                  ? `${TRAINER_COLOR}15`
+                  : isTrial
                   ? TRIAL_CONFIG.bgColor
                   : `${tierConfig.iconColor}15`,
               },
@@ -586,7 +648,6 @@ const MemberCard = ({ member, onPress }) => {
             >
               <Text style={styles.memberAvatarText}>{member.avatar}</Text>
             </LinearGradient>
-            {/* Live/Offline indicator */}
             {member.isLive && (
               <View style={styles.liveDotWrapper}>
                 <View style={styles.liveDotInner} />
@@ -596,39 +657,54 @@ const MemberCard = ({ member, onPress }) => {
 
           {/* Info */}
           <View style={styles.memberInfoBox}>
-            {/* ✅ Badge Row - space-between with left badges + right LIVE/OFFLINE */}
             <View style={styles.memberBadgeRow}>
               <View style={styles.memberLeftBadges}>
-                {/* Tier Badge - only non-trial */}
-                {!isTrial && (
-                  <View
-                    style={[
-                      styles.memberTierBadge,
-                      { borderColor: `${cardAccentColor}40` },
-                    ]}
-                  >
+
+                {/* ✅ Show TRAINER badge if accepted (read-only) */}
+                {isTrainerAccepted ? (
+                  <View style={[styles.memberTierBadge, { borderColor: `${TRAINER_COLOR}40` }]}>
+                    <View style={[styles.memberTierDot, { backgroundColor: TRAINER_COLOR }]} />
+                    <Text style={[styles.memberTierText, { color: TRAINER_COLOR }]}>
+                      TRAINER
+                    </Text>
+                  </View>
+                ) : isTrainerPending ? (
+                  <View style={[styles.memberTierBadge, { borderColor: 'rgba(234,179,8,0.4)' }]}>
+                    <View style={[styles.memberTierDot, { backgroundColor: '#EAB308' }]} />
+                    <Text style={[styles.memberTierText, { color: '#EAB308' }]}>
+                      TRAINER PENDING
+                    </Text>
+                  </View>
+                ) : !isTrial ? (
+                  <View style={[styles.memberTierBadge, { borderColor: `${cardAccentColor}40` }]}>
                     <View style={[styles.memberTierDot, { backgroundColor: cardAccentColor }]} />
                     <Text style={[styles.memberTierText, { color: Colors.zinc[400] }]}>
                       {tierConfig.badge}
                     </Text>
                   </View>
-                )}
+                ) : null}
 
                 {/* Status Badge */}
-                <View
-                  style={[
-                    styles.memberStatusBadge,
-                    { borderColor: statusConfig.borderColor },
-                  ]}
-                >
-                  <HugeiconsIcon icon={statusConfig.icon} size={ms(10)} color={statusConfig.color} />
-                  <Text style={[styles.memberStatusText, { color: Colors.zinc[400] }]}>
-                    {statusConfig.label}
-                  </Text>
-                </View>
+                {!isTrainerAccepted && (
+                  <View
+                    style={[
+                      styles.memberStatusBadge,
+                      { borderColor: statusConfig.borderColor },
+                    ]}
+                  >
+                    <HugeiconsIcon
+                      icon={statusConfig.icon}
+                      size={ms(10)}
+                      color={statusConfig.color}
+                    />
+                    <Text style={[styles.memberStatusText, { color: Colors.zinc[400] }]}>
+                      {statusConfig.label}
+                    </Text>
+                  </View>
+                )}
               </View>
 
-              {/* ✅ Right corner LIVE/OFFLINE badge */}
+              {/* Live / Offline chip */}
               {member.isLive ? (
                 <View style={styles.liveChip}>
                   <View style={styles.liveChipDot} />
@@ -641,19 +717,50 @@ const MemberCard = ({ member, onPress }) => {
               )}
             </View>
 
-            {/* Name */}
-            <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
+            <Text style={styles.memberName} numberOfLines={1}>
+              {member.name}
+            </Text>
 
-            {/* ✅ Workout Badge - only non-trial (same as LiveRoster) */}
-            {!isTrial && (
-              <View style={[styles.memberWorkoutBadge, { backgroundColor: `${cardAccentColor}15` }]}>
+            {/* Workout Badge */}
+            {!isTrial && !isTrainerAccepted && (
+              <View
+                style={[
+                  styles.memberWorkoutBadge,
+                  { backgroundColor: `${cardAccentColor}15` },
+                ]}
+              >
                 <HugeiconsIcon
-                  icon={member.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
+                  icon={
+                    member.workoutType === 'cardio_weights'
+                      ? Activity01Icon
+                      : Dumbbell01Icon
+                  }
                   size={ms(10)}
                   color={cardAccentColor}
                 />
                 <Text style={[styles.memberWorkoutText, { color: 'white' }]}>
-                  {member.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
+                  {member.workoutType === 'cardio_weights'
+                    ? 'CARDIO + WEIGHTS'
+                    : 'WEIGHTS ONLY'}
+                </Text>
+              </View>
+            )}
+
+            {/* Trainer accepted workout badge */}
+            {isTrainerAccepted && (
+              <View
+                style={[
+                  styles.memberWorkoutBadge,
+                  { backgroundColor: `${TRAINER_COLOR}15` },
+                ]}
+              >
+                <HugeiconsIcon
+                  icon={Dumbbell01Icon}
+                  size={ms(10)}
+                  color={TRAINER_COLOR}
+                />
+                <Text style={[styles.memberWorkoutText, { color: TRAINER_COLOR }]}>
+                  GYM TRAINER
                 </Text>
               </View>
             )}
@@ -668,13 +775,21 @@ const MemberCard = ({ member, onPress }) => {
                   </View>
                   <View style={styles.memberTimeDot} />
                   <View style={styles.memberTimeItem}>
-                    <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color={cardAccentColor} />
+                    <HugeiconsIcon
+                      icon={Clock01Icon}
+                      size={ms(11)}
+                      color={cardAccentColor}
+                    />
                     <Text style={styles.memberTimeText}>{member.duration}</Text>
                   </View>
                 </>
               ) : (
                 <View style={styles.memberTimeItem}>
-                  <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color="rgba(255,255,255,0.3)" />
+                  <HugeiconsIcon
+                    icon={Clock01Icon}
+                    size={ms(11)}
+                    color="rgba(255,255,255,0.3)"
+                  />
                   <Text style={[styles.memberTimeText, { color: 'rgba(255,255,255,0.4)' }]}>
                     Last: {member.lastCheckout || 'N/A'}
                   </Text>
@@ -684,14 +799,35 @@ const MemberCard = ({ member, onPress }) => {
           </View>
         </View>
 
-        {/* Divider */}
-        <View style={[styles.memberDivider, { backgroundColor: `${cardAccentColor}25` }]} />
+        <View
+          style={[
+            styles.memberDivider,
+            {
+              backgroundColor: isTrainerAccepted
+                ? `${TRAINER_COLOR}25`
+                : `${cardAccentColor}25`,
+            },
+          ]}
+        />
 
-        {/* ✅ Bottom - Phone + Actions - exact LiveRoster style */}
+        {/* Bottom Row - Phone + Call/WhatsApp only */}
         <View style={styles.memberBottomRow}>
           <View style={styles.memberPhoneBox}>
-            <View style={[styles.memberPhoneIcon, { backgroundColor: `${cardAccentColor}12` }]}>
-              <HugeiconsIcon icon={SmartPhone01Icon} size={ms(14)} color={cardAccentColor} />
+            <View
+              style={[
+                styles.memberPhoneIcon,
+                {
+                  backgroundColor: isTrainerAccepted
+                    ? `${TRAINER_COLOR}12`
+                    : `${cardAccentColor}12`,
+                },
+              ]}
+            >
+              <HugeiconsIcon
+                icon={SmartPhone01Icon}
+                size={ms(14)}
+                color={isTrainerAccepted ? TRAINER_COLOR : cardAccentColor}
+              />
             </View>
             <View style={styles.memberPhoneInfo}>
               <Text style={styles.memberPhoneLabel}>CONTACT</Text>
@@ -699,8 +835,13 @@ const MemberCard = ({ member, onPress }) => {
             </View>
           </View>
 
+          {/* ✅ Only Call & WhatsApp buttons - NO Make Trainer button */}
           <View style={styles.memberActionBtns}>
-            <TouchableOpacity style={styles.memberActionBtn} onPress={handleCall} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.memberActionBtn}
+              onPress={handleCall}
+              activeOpacity={0.7}
+            >
               <LinearGradient
                 colors={['black', 'black']}
                 style={styles.memberActionGradient}
@@ -708,7 +849,12 @@ const MemberCard = ({ member, onPress }) => {
                 <HugeiconsIcon icon={Call02Icon} size={ms(18)} color="#22C55E" />
               </LinearGradient>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.memberActionBtn} onPress={handleWhatsApp} activeOpacity={0.7}>
+
+            <TouchableOpacity
+              style={styles.memberActionBtn}
+              onPress={handleWhatsApp}
+              activeOpacity={0.7}
+            >
               <LinearGradient
                 colors={['black', 'black']}
                 style={styles.memberActionGradient}
@@ -737,7 +883,12 @@ const RejectionModal = ({ visible, onClose, onSubmit, request }) => {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
         <Pressable style={styles.modalContent} onPress={() => {}}>
           <BlurView
@@ -778,7 +929,10 @@ const RejectionModal = ({ visible, onClose, onSubmit, request }) => {
                 <Text style={styles.modalCancelText}>CANCEL</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalRejectBtn} onPress={handleSubmit}>
-                <LinearGradient colors={['rgba(239,68,68,0.25)', 'rgba(239,68,68,0.10)']} style={styles.modalRejectGradient}>
+                <LinearGradient
+                  colors={['rgba(239,68,68,0.25)', 'rgba(239,68,68,0.10)']}
+                  style={styles.modalRejectGradient}
+                >
                   <Icon name="x" size={rf(14)} color="#EF4444" />
                   <Text style={styles.modalRejectText}>REJECT</Text>
                 </LinearGradient>
@@ -805,19 +959,23 @@ const AdminUsersDetailScreen = ({ navigation }) => {
     refreshData,
   } = useMembershipRequests();
 
-  const [activeTab, setActiveTab] = useState('pending');
-  const [processingId, setProcessingId] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
+  // ✅ Only getTrainerStatus & getTrainerCount - no sendTrainerRequest
+  const { getTrainerStatus, getTrainerCount } = useTrainer();
+
+  const [activeTab, setActiveTab]           = useState('pending');
+  const [processingId, setProcessingId]     = useState(null);
+  const [refreshing, setRefreshing]         = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery]       = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [memberFilter, setMemberFilter] = useState('all');
+  const [memberFilter, setMemberFilter]     = useState('all');
 
   const pendingRequests = getPendingRequests();
-  const activeMembers = getActiveMembers();
+  const activeMembers   = getActiveMembers();
+  const trainerCount    = getTrainerCount();
 
-  const filteredMembers = DUMMY_MEMBERS.filter(m => {
+  const filteredMembers = DUMMY_MEMBERS.filter((m) => {
     const matchesSearch =
       m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.memberId.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -825,14 +983,17 @@ const AdminUsersDetailScreen = ({ navigation }) => {
 
     const matchesFilter =
       memberFilter === 'all' ||
-      (memberFilter === 'live' && m.isLive) ||
-      (memberFilter === 'offline' && !m.isLive);
+      (memberFilter === 'live'    && m.isLive) ||
+      (memberFilter === 'offline' && !m.isLive) ||
+      (memberFilter === 'trial'   && m.membershipStatus === 'trial') ||
+      (memberFilter === 'trainer' && getTrainerStatus(m.id) === 'accepted');
 
     return matchesSearch && matchesFilter;
   });
 
-  const liveCount = DUMMY_MEMBERS.filter(m => m.isLive).length;
-  const offlineCount = DUMMY_MEMBERS.filter(m => !m.isLive).length;
+  const liveCount    = DUMMY_MEMBERS.filter((m) => m.isLive).length;
+  const offlineCount = DUMMY_MEMBERS.filter((m) => !m.isLive).length;
+  const trialCount   = DUMMY_MEMBERS.filter((m) => m.membershipStatus === 'trial').length;
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -852,7 +1013,10 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             setProcessingId(request.id);
             try {
               await approveRequest(request.id);
-              Alert.alert('Success! ✓', `${request.userName} is now a ${request.planName} member!`);
+              Alert.alert(
+                'Success! ✓',
+                `${request.userName} is now a ${request.planName} member!`
+              );
             } catch (error) {
               Alert.alert('Error', 'Failed to approve request');
             } finally {
@@ -904,7 +1068,9 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             <Icon name="inbox" size={rf(40)} color={Colors.zinc[600]} />
           </View>
           <Text style={styles.emptyTitle}>No Pending Requests</Text>
-          <Text style={styles.emptySubtitle}>New membership requests will appear here</Text>
+          <Text style={styles.emptySubtitle}>
+            New membership requests will appear here
+          </Text>
         </View>
       ) : (
         pendingRequests.map((request) => (
@@ -923,8 +1089,17 @@ const AdminUsersDetailScreen = ({ navigation }) => {
       return (
         <>
           {/* Search Bar */}
-          <View style={[styles.searchBar, isSearchFocused && styles.searchBarFocused]}>
-            <HugeiconsIcon icon={Search01Icon} size={ms(18)} color={isSearchFocused ? '#fff' : 'rgba(255,255,255,0.4)'} />
+          <View
+            style={[
+              styles.searchBar,
+              isSearchFocused && styles.searchBarFocused,
+            ]}
+          >
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={ms(18)}
+              color={isSearchFocused ? '#fff' : 'rgba(255,255,255,0.4)'}
+            />
             <TextInput
               style={styles.searchInput}
               placeholder="Search name, ID, or phone..."
@@ -937,55 +1112,92 @@ const AdminUsersDetailScreen = ({ navigation }) => {
               autoCorrect={false}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} activeOpacity={0.7}>
-                <HugeiconsIcon icon={Cancel01Icon} size={ms(14)} color="rgba(255,255,255,0.5)" />
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                activeOpacity={0.7}
+              >
+                <HugeiconsIcon
+                  icon={Cancel01Icon}
+                  size={ms(14)}
+                  color="rgba(255,255,255,0.5)"
+                />
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Live / Offline Filter */}
+          {/* Filter Row */}
           <View style={styles.filterRow}>
             {[
-              { label: 'All', value: 'all', count: DUMMY_MEMBERS.length },
-              { label: 'Live', value: 'live', count: liveCount, color: '#22C55E' },
+              { label: 'All',     value: 'all',     count: DUMMY_MEMBERS.length },
+              { label: 'Live',    value: 'live',    count: liveCount,    color: '#22C55E' },
               { label: 'Offline', value: 'offline', count: offlineCount, color: 'rgba(255,255,255,0.4)' },
-            ].map(f => (
+              { label: 'Trial',   value: 'trial',   count: trialCount,   color: '#3B82F6' },
+              { label: 'Trainer', value: 'trainer', count: trainerCount, color: TRAINER_COLOR },
+            ].map((f) => (
               <TouchableOpacity
                 key={f.value}
-                style={[styles.filterChip, memberFilter === f.value && styles.filterChipActive]}
+                style={[
+                  styles.filterChip,
+                  memberFilter === f.value && styles.filterChipActive,
+                ]}
                 onPress={() => setMemberFilter(f.value)}
                 activeOpacity={0.7}
               >
-                {f.color && <View style={[styles.filterDot, { backgroundColor: f.color }]} />}
-                <Text style={[styles.filterChipText, memberFilter === f.value && styles.filterChipTextActive]}>
+                {f.color && (
+                  <View style={[styles.filterDot, { backgroundColor: f.color }]} />
+                )}
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    memberFilter === f.value && styles.filterChipTextActive,
+                  ]}
+                >
                   {f.label} ({f.count})
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Section header */}
+          {/* Section Header */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              {searchQuery ? 'Search Results' : memberFilter === 'live' ? 'Live Members' : memberFilter === 'offline' ? 'Offline Members' : 'All Members'}
+              {searchQuery
+                ? 'Search Results'
+                : memberFilter === 'live'
+                ? 'Live Members'
+                : memberFilter === 'offline'
+                ? 'Offline Members'
+                : memberFilter === 'trial'
+                ? 'Trial Members'
+                : memberFilter === 'trainer'
+                ? 'Trainers'
+                : 'All Members'}
             </Text>
             <View style={styles.sectionCount}>
               <Text style={styles.sectionCountText}>{filteredMembers.length}</Text>
             </View>
           </View>
 
+          {/* Member Cards */}
           {filteredMembers.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <HugeiconsIcon icon={UserRemove01Icon} size={ms(48)} color="rgba(255,255,255,0.3)" />
+              <HugeiconsIcon
+                icon={UserRemove01Icon}
+                size={ms(48)}
+                color="rgba(255,255,255,0.3)"
+              />
               <Text style={styles.emptyTitle}>No Members Found</Text>
-              <Text style={styles.emptySubtitle}>Try adjusting your search or filter</Text>
+              <Text style={styles.emptySubtitle}>
+                Try adjusting your search or filter
+              </Text>
             </View>
           ) : (
-            filteredMembers.map(member => (
+            filteredMembers.map((member) => (
               <MemberCard
                 key={member.id}
                 member={member}
                 onPress={handleMemberPress}
+                trainerStatus={getTrainerStatus(member.id)}
               />
             ))
           )}
@@ -1007,21 +1219,27 @@ const AdminUsersDetailScreen = ({ navigation }) => {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <Header title="MEMBERS" showMenu={false} />
 
-          {/* Stats Row */}
+          {/* Stats Top Row */}
           <View style={styles.statsTopRow}>
             <View style={styles.statTopItem}>
-              <Text style={[styles.statTopNumber, { color: Colors.gold }]}>{pendingRequests.length}</Text>
+              <Text style={[styles.statTopNumber, { color: Colors.gold }]}>
+                {pendingRequests.length}
+              </Text>
               <Text style={styles.statTopLabel}>PENDING</Text>
             </View>
             <View style={styles.statTopDivider} />
             <View style={styles.statTopItem}>
-              <Text style={[styles.statTopNumber, { color: '#22C55E' }]}>{liveCount}</Text>
+              <Text style={[styles.statTopNumber, { color: '#22C55E' }]}>
+                {liveCount}
+              </Text>
               <Text style={styles.statTopLabel}>LIVE</Text>
             </View>
             <View style={styles.statTopDivider} />
             <View style={styles.statTopItem}>
-              <Text style={[styles.statTopNumber, { color: 'rgba(255,255,255,0.5)' }]}>{offlineCount}</Text>
-              <Text style={styles.statTopLabel}>OFFLINE</Text>
+              <Text style={[styles.statTopNumber, { color: TRAINER_COLOR }]}>
+                {trainerCount}
+              </Text>
+              <Text style={styles.statTopLabel}>TRAINERS</Text>
             </View>
             <View style={styles.statTopDivider} />
             <View style={styles.statTopItem}>
@@ -1055,39 +1273,49 @@ const AdminUsersDetailScreen = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={Colors.white} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={Colors.white}
+              />
             }
           >
             {renderContent()}
           </ScrollView>
 
-
           <RejectionModal
             visible={showRejectModal}
-            onClose={() => { setShowRejectModal(false); setSelectedRequest(null); }}
+            onClose={() => {
+              setShowRejectModal(false);
+              setSelectedRequest(null);
+            }}
             onSubmit={confirmReject}
             request={selectedRequest}
           />
         </SafeAreaView>
       </LinearGradient>
+
       <BottomNav
-  activeTab="members"
-  onTabChange={(tab) => {
-    if (tab === 'dashboard') navigation.navigate('AdminDashboard');
-    if (tab === 'plans') navigation.navigate('AdminAddPlan');
-    if (tab === 'members') navigation.navigate('AdminUsersDetail');
-    if (tab === 'settings') navigation.navigate('AdminSettings');
-  }}
-  // NO userType needed - auto-detects from route name 'AdminDashboard'
-/>
+        activeTab="members"
+        onTabChange={(tab) => {
+          if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+          if (tab === 'plans')     navigation.navigate('AdminPlans');
+          if (tab === 'members')   navigation.navigate('AdminUsersDetail');
+          if (tab === 'settings')  navigation.navigate('AdminSettings');
+        }}
+        userType="admin"
+      />
     </ImageBackground>
   );
 };
 
+// ═══════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  gradient: { flex: 1 },
-  safeArea: { flex: 1 },
+  gradient:   { flex: 1 },
+  safeArea:   { flex: 1 },
 
   // Stats Top Row
   statsTopRow: {
@@ -1161,7 +1389,6 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
 
-  // Scroll
   scrollView: { flex: 1 },
   scrollContent: {
     paddingHorizontal: s(20),
@@ -1169,7 +1396,6 @@ const styles = StyleSheet.create({
     gap: vs(12),
   },
 
-  // Center / Empty
   centerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -1210,9 +1436,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: s(20),
   },
 
-  // ═══════════════════════════════════════════════
-  // SHARED CARD STYLES
-  // ═══════════════════════════════════════════════
   cardBgIconContainer: {
     position: 'absolute',
     top: -ms(5),
@@ -1220,9 +1443,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
 
-  // ═══════════════════════════════════════════════
-  // REQUEST CARD STYLES
-  // ═══════════════════════════════════════════════
+  // ── Request Card ──
   requestCardWrapper: {
     borderRadius: ms(16),
     overflow: 'hidden',
@@ -1313,11 +1534,7 @@ const styles = StyleSheet.create({
     fontSize: rf(6),
     letterSpacing: 0.5,
   },
-  reqTimeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(4),
-  },
+  reqTimeRow: { flexDirection: 'row', alignItems: 'center', gap: s(4) },
   reqTimeText: {
     fontFamily: Fonts.orbitron.regular,
     fontSize: rf(7),
@@ -1363,13 +1580,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  reqPhoneBox: { flexDirection: 'row', alignItems: 'center', gap: s(8), flex: 1 },
+  reqPhoneBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(8),
+    flex: 1,
+  },
   reqPhoneIcon: {
     width: ms(32),
     height: ms(32),
     borderRadius: ms(10),
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  memberPhoneLabel: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: rf(6),
+    color: 'rgba(255,255,255,0.4)',
+    letterSpacing: 1.2,
+    marginBottom: vs(1),
   },
   reqPhoneText: {
     fontFamily: Fonts.orbitron.regular,
@@ -1395,10 +1624,7 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     letterSpacing: 1,
   },
-  approveBtn: {
-    borderRadius: ms(8),
-    overflow: 'hidden',
-  },
+  approveBtn: { borderRadius: ms(8), overflow: 'hidden' },
   approveBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1416,9 +1642,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  // ═══════════════════════════════════════════════
-  // MEMBER CARD STYLES - Exact LiveRoster Match
-  // ═══════════════════════════════════════════════
+  // ── Member Card ──
   memberCardWrapper: {
     borderRadius: ms(16),
     overflow: 'hidden',
@@ -1431,11 +1655,7 @@ const styles = StyleSheet.create({
     paddingRight: ms(12),
     paddingVertical: ms(12),
   },
-  memberTopSection: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  // ✅ Avatar container - exact LiveRoster style
+  memberTopSection: { flexDirection: 'row', alignItems: 'flex-start' },
   memberAvatarContainer: {
     position: 'relative',
     marginRight: s(12),
@@ -1474,7 +1694,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#22C55E',
   },
   memberInfoBox: { flex: 1 },
-  // ✅ Badge row - space-between layout
   memberBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1516,7 +1735,6 @@ const styles = StyleSheet.create({
     fontSize: rf(6),
     letterSpacing: 0.5,
   },
-  // ✅ Live chip - exact LiveRoster style
   liveChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1571,15 +1789,8 @@ const styles = StyleSheet.create({
     fontSize: rf(6),
     letterSpacing: 0.5,
   },
-  memberTimeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  memberTimeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(3),
-  },
+  memberTimeRow: { flexDirection: 'row', alignItems: 'center' },
+  memberTimeItem: { flexDirection: 'row', alignItems: 'center', gap: s(3) },
   memberTimeText: {
     fontFamily: Fonts.orbitron.regular,
     fontSize: rf(8),
@@ -1611,9 +1822,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: s(8),
   },
-  memberPhoneInfo: {
-    flex: 1,
-  },
+  memberPhoneInfo: { flex: 1 },
   memberPhoneLabel: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: rf(6),
@@ -1639,7 +1848,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
 
-  // Search Bar
+  // Search
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1660,21 +1869,18 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
 
-  // Filter Row
-  filterRow: {
-    flexDirection: 'row',
-    gap: s(8),
-  },
+  // Filter
+  filterRow: { flexDirection: 'row', gap: s(6), flexWrap: 'wrap' },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: s(10),
+    paddingHorizontal: s(8),
     paddingVertical: vs(5),
     borderRadius: ms(16),
     backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    gap: s(5),
+    gap: s(4),
   },
   filterChipActive: {
     backgroundColor: 'rgba(255,255,255,0.10)',
@@ -1683,7 +1889,7 @@ const styles = StyleSheet.create({
   filterDot: { width: ms(5), height: ms(5), borderRadius: ms(2.5) },
   filterChipText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(8),
+    fontSize: rf(7),
     color: 'rgba(255,255,255,0.4)',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -1730,10 +1936,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: '#000000',
   },
-  modalInner: {
-    padding: s(24),
-    alignItems: 'center',
-  },
+  modalInner: { padding: s(24), alignItems: 'center' },
   modalIconCircle: {
     width: ms(64),
     height: ms(64),
@@ -1819,11 +2022,7 @@ const styles = StyleSheet.create({
     color: Colors.zinc[500],
     letterSpacing: s(1.5),
   },
-  modalRejectBtn: {
-    flex: 1,
-    borderRadius: ms(10),
-    overflow: 'hidden',
-  },
+  modalRejectBtn: { flex: 1, borderRadius: ms(10), overflow: 'hidden' },
   modalRejectGradient: {
     flexDirection: 'row',
     alignItems: 'center',
