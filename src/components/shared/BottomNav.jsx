@@ -17,6 +17,7 @@ import {
   User02Icon,
   UserMultipleIcon,
   SettingsIcon,
+  Calendar03Icon,
 } from '@hugeicons/core-free-icons';
 
 import Colors from '../../constants/Colors';
@@ -27,39 +28,57 @@ import Fonts from '../../constants/Fonts';
  * @param {Object}   props
  * @param {string}   props.activeTab    - Currently active tab id
  * @param {function} props.onTabChange  - Callback when tab is pressed
- * @param {string}   [props.userType]   - Optional: 'admin' | 'member'
+ * @param {string}   [props.userType]   - Optional: 'admin' | 'member' | 'trainer'
  */
 const BottomNav = ({ activeTab, onTabChange, userType }) => {
   const route = useRoute();
 
   // ── Auto-detect user type from route name ──────────────────
-  const isAdminScreen = useMemo(() => {
-    if (userType) return userType === 'admin';
-    return route.name?.startsWith('Admin') || false;
+  const detectedType = useMemo(() => {
+    if (userType) return userType;
+    if (route.name?.startsWith('Admin')) return 'admin';
+    if (route.name?.startsWith('Trainer')) return 'trainer';
+    return 'member';
   }, [route.name, userType]);
 
   // ── Tab configurations ──────────────────────────────────────
   const adminTabs = useMemo(
     () => [
-      { id: 'dashboard',  icon: Home01Icon,         label: 'Home'     },
-      { id: 'plans',      icon: CreditCardIcon,      label: 'Plans'    },
-      { id: 'members',    icon: UserMultipleIcon,    label: 'Members'  },
-      { id: 'settings',   icon: SettingsIcon,        label: 'Settings' },
+      { id: 'dashboard', icon: Home01Icon,        label: 'Home'     },
+      { id: 'plans',     icon: CreditCardIcon,    label: 'Plans'    },
+      { id: 'members',   icon: UserMultipleIcon,  label: 'Members'  },
+      { id: 'settings',  icon: SettingsIcon,      label: 'Settings' },
     ],
     []
   );
 
   const memberTabs = useMemo(
     () => [
-      { id: 'home',       icon: Home01Icon,          label: 'Home'     },
-      { id: 'membership', icon: CreditCardIcon,       label: 'Plans'   },
-      { id: 'friends',    icon: UserMultipleIcon,     label: 'Friends' },
-      { id: 'profile',    icon: User02Icon,           label: 'Profile' },
+      { id: 'home',       icon: Home01Icon,        label: 'Home'    },
+      { id: 'membership', icon: CreditCardIcon,    label: 'Plans'   },
+      { id: 'friends',    icon: UserMultipleIcon,  label: 'Friends' },
+      { id: 'profile',    icon: User02Icon,        label: 'Profile' },
     ],
     []
   );
 
-  const tabs = isAdminScreen ? adminTabs : memberTabs;
+  // ✅ NEW: Trainer tabs - Attendance replaces Plans
+  const trainerTabs = useMemo(
+    () => [
+      { id: 'home',       icon: Home01Icon,        label: 'Home'       },
+      { id: 'attendance', icon: Calendar03Icon,     label: 'Attendance' },
+      { id: 'friends',    icon: UserMultipleIcon,  label: 'Members'    },
+      { id: 'profile',    icon: User02Icon,        label: 'Profile'    },
+    ],
+    []
+  );
+
+  const tabs =
+    detectedType === 'admin'
+      ? adminTabs
+      : detectedType === 'trainer'
+      ? trainerTabs
+      : memberTabs;
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
@@ -91,16 +110,16 @@ const BottomNav = ({ activeTab, onTabChange, userType }) => {
                     color={isActive ? Colors.white : Colors.zinc[500]}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  
+
                   {/* Subtle glow behind active icon */}
                   {isActive && <View style={styles.iconGlow} />}
                 </View>
 
                 {/* Label */}
-                <Text 
+                <Text
                   style={[
-                    styles.label, 
-                    isActive && styles.labelActive
+                    styles.label,
+                    isActive && styles.labelActive,
                   ]}
                   numberOfLines={1}
                 >

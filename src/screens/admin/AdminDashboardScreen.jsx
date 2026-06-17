@@ -358,55 +358,85 @@ const AdminDashboardScreen = ({ navigation }) => {
             {/* ═══════════════════════════════════════════════════════════════ */}
             {/* REVENUE CARD */}
             {/* ═══════════════════════════════════════════════════════════════ */}
-            <GlassCard>
-              <View style={styles.revenueHeader}>
-                <View style={styles.revenueTitle}>
-                  <HugeiconsIcon
-                    icon={MoneyReceiveCircleIcon}
-                    size={moderateScale(16)}
-                    color={Colors.gold}
-                  />
-                  <Text style={styles.revenueTitleText}>Today's Revenue</Text>
-                </View>
-                <View style={styles.cardLogoContainer}>
-                  <Image
-                    source={gymlogoimg}
-                    style={styles.cardLogo}
-                    resizeMode="contain"
-                  />
-                </View>
-              </View>
-              <Text style={styles.revenueLabel}>Total Collection</Text>
-            
-              <View style={styles.revenueStats}>
-                <Text style={styles.revenueNumber}>₹45,200</Text>
-                <View style={styles.trendBadge}>
-                  <Text style={styles.trendText}>+12%</Text>
-                </View>
-              </View>
+          <TouchableOpacity
+  activeOpacity={0.9}
+  onPress={() => navigation.navigate('AdminExpenses')}
+>
+  <GlassCard>
+    <View style={styles.revenueHeader}>
+      <View style={styles.revenueTitle}>
+        <HugeiconsIcon
+          icon={MoneyReceiveCircleIcon}
+          size={moderateScale(16)}
+          color={Colors.gold}
+        />
+        <Text style={styles.revenueTitleText}>Today's Revenue</Text>
+      </View>
+      {/* ✅ Arrow to show it's clickable */}
+      <View style={styles.revenueArrow}>
+        <HugeiconsIcon
+          icon={ArrowRight01Icon}
+          size={moderateScale(14)}
+          color="rgba(255,255,255,0.3)"
+        />
+      </View>
+      <View style={styles.cardLogoContainer}>
+        <Image
+          source={gymlogoimg}
+          style={styles.cardLogo}
+          resizeMode="contain"
+        />
+      </View>
+    </View>
+    <Text style={styles.revenueLabel}>Total Collection</Text>
 
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '75%' }]} />
-              </View>
+    <View style={styles.revenueStats}>
+      <Text style={styles.revenueNumber}>₹45,200</Text>
+      <View style={styles.trendBadge}>
+        <Text style={styles.trendText}>+12%</Text>
+      </View>
+    </View>
 
-              <View style={styles.revenueBreakdown}>
-                <View style={styles.breakdownDivider} />
-                <View style={styles.breakdownContent}>
-                  <View style={styles.breakdownItem}>
-                    <Text style={styles.breakdownValue}>₹32K</Text>
-                    <Text style={styles.breakdownLabel}>Memberships</Text>
-                  </View>
-                  <View style={styles.breakdownItem}>
-                    <Text style={styles.breakdownValue}>₹8K</Text>
-                    <Text style={styles.breakdownLabel}>Renewals</Text>
-                  </View>
-                  <View style={styles.breakdownItem}>
-                    <Text style={styles.breakdownValue}>₹5K</Text>
-                    <Text style={styles.breakdownLabel}>Others</Text>
-                  </View>
-                </View>
-              </View>
-            </GlassCard>
+    <View style={styles.progressBar}>
+      <View style={[styles.progressFill, { width: '75%' }]} />
+    </View>
+
+    <View style={styles.revenueBreakdown}>
+      <View style={styles.breakdownDivider} />
+      <View style={styles.breakdownContent}>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownValue}>₹32K</Text>
+          <Text style={styles.breakdownLabel}>Memberships</Text>
+        </View>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownValue}>₹8K</Text>
+          <Text style={styles.breakdownLabel}>Renewals</Text>
+        </View>
+        <View style={styles.breakdownItem}>
+          <Text style={styles.breakdownValue}>₹5K</Text>
+          <Text style={styles.breakdownLabel}>Others</Text>
+        </View>
+      </View>
+    </View>
+
+    {/* ✅ Tap to view details hint */}
+    <View style={styles.revenueTapHint}>
+      <HugeiconsIcon
+        icon={MoneyReceiveCircleIcon}
+        size={moderateScale(12)}
+        color={Colors.gold}
+      />
+      <Text style={styles.revenueTapHintText}>
+        Tap to view expenses & details
+      </Text>
+      <HugeiconsIcon
+        icon={ArrowRight01Icon}
+        size={moderateScale(12)}
+        color="rgba(255,255,255,0.3)"
+      />
+    </View>
+  </GlassCard>
+</TouchableOpacity>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
             {/* COMMAND CENTER - UPDATED WITH TRAINERS BUTTON */}
@@ -1153,6 +1183,29 @@ const styles = StyleSheet.create({
   actionButtonTextInactive: {
     color: Colors.zinc[500],
   },
+  // Add to AdminDashboardScreen styles:
+revenueArrow: {
+  position: 'absolute',
+  right: 0,
+  top: 0,
+  padding: scale(4),
+},
+revenueTapHint: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: scale(5),
+  marginTop: verticalScale(14),
+  paddingTop: verticalScale(10),
+  borderTopWidth: 1,
+  borderTopColor: 'rgba(255,255,255,0.05)',
+},
+revenueTapHintText: {
+  fontFamily: Fonts.rajdhani.regular,
+  fontSize: RFValue(7.5),
+  color: 'rgba(255,255,255,0.3)',
+  letterSpacing: scale(0.5),
+},
 });
 
 export default AdminDashboardScreen;

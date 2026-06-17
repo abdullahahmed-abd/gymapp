@@ -1,10 +1,4 @@
 // src/screens/user/UserDashboardScreen.js
-// ✅ KEY CHANGES:
-// 1. Import useTrainer
-// 2. Check trainer request status
-// 3. Show trainer request card (Accept/Reject)
-// 4. Replace trial card with TRAINER card when accepted
-
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -41,7 +35,6 @@ import {
   Tick02Icon,
   Medal02Icon,
   Time01Icon,
-  Cancel01Icon,
 } from '@hugeicons/core-free-icons';
 import { useRoute } from '@react-navigation/native';
 
@@ -56,7 +49,7 @@ import { usePlans } from '../../context/PlansContext';
 import { useMembershipRequests } from '../../context/MembershipRequestsContext';
 import { useTrainer } from '../../context/TrainerContext';
 
-const s = (size) => scale(size);
+const s  = (size) => scale(size);
 const ms = (size) => moderateScale(size, 0.25);
 const vs = (size) => verticalScale(size);
 const rf = (size) => RFValue(size);
@@ -77,17 +70,28 @@ const DEFAULT_TEMPLATES = {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ✅ TRAINER ROLE CARD - When user is NOW a trainer
+// TRAINER ROLE CARD
 // ═══════════════════════════════════════════════════════════════
-const TrainerRoleCard = ({ acceptedAt }) => {
-  const daysSince = acceptedAt
-    ? Math.max(0, Math.floor((Date.now() - new Date(acceptedAt).getTime()) / (1000 * 60 * 60 * 24)))
+const TrainerRoleCard = ({ assignedAt }) => {
+  const daysSince = assignedAt
+    ? Math.max(
+        0,
+        Math.floor(
+          (Date.now() - new Date(assignedAt).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      )
     : 0;
 
   return (
-    <View style={[trainerCardStyles.card]}>
+    <View style={trainerCardStyles.card}>
       <View style={trainerCardStyles.bgIcon}>
-        <HugeiconsIcon icon={Dumbbell01Icon} size={ms(90)} color={`${TRAINER_COLOR}10`} strokeWidth={0.5} />
+        <HugeiconsIcon
+          icon={Dumbbell01Icon}
+          size={ms(90)}
+          color={`${TRAINER_COLOR}10`}
+          strokeWidth={0.5}
+        />
       </View>
       <View style={trainerCardStyles.logoBox}>
         <Image source={gymlogoimg} style={trainerCardStyles.logoImg} />
@@ -101,8 +105,14 @@ const TrainerRoleCard = ({ acceptedAt }) => {
           </View>
           <Text style={trainerCardStyles.title}>GYM TRAINER</Text>
           <View style={trainerCardStyles.workoutBadge}>
-            <HugeiconsIcon icon={Dumbbell01Icon} size={ms(10)} color={TRAINER_COLOR} />
-            <Text style={trainerCardStyles.workoutText}>PERSONAL TRAINER</Text>
+            <HugeiconsIcon
+              icon={Dumbbell01Icon}
+              size={ms(10)}
+              color={TRAINER_COLOR}
+            />
+            <Text style={trainerCardStyles.workoutText}>
+              PERSONAL TRAINER
+            </Text>
           </View>
         </View>
         <View style={trainerCardStyles.daysBox}>
@@ -115,11 +125,21 @@ const TrainerRoleCard = ({ acceptedAt }) => {
 
       <View style={trainerCardStyles.footer}>
         <Text style={trainerCardStyles.footerText}>
-          Joined {acceptedAt ? new Date(acceptedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Today'}
+          Joined{' '}
+          {assignedAt
+            ? new Date(assignedAt).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'Today'}
         </Text>
         <View style={trainerCardStyles.activeChip}>
-          <CheckmarkCircle02Icon />
-          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={ms(12)} color={TRAINER_COLOR} />
+          <HugeiconsIcon
+            icon={CheckmarkCircle02Icon}
+            size={ms(12)}
+            color={TRAINER_COLOR}
+          />
           <Text style={trainerCardStyles.activeChipText}>ACTIVE</Text>
         </View>
       </View>
@@ -128,89 +148,7 @@ const TrainerRoleCard = ({ acceptedAt }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ✅ TRAINER REQUEST CARD - Pending request from admin
-// ═══════════════════════════════════════════════════════════════
-const TrainerRequestCard = ({ request, onAccept, onReject }) => {
-  return (
-    <View style={trainerRequestStyles.card}>
-      <LinearGradient
-        colors={[`${TRAINER_COLOR}12`, `${TRAINER_COLOR}04`, 'transparent']}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={trainerRequestStyles.bgIcon}>
-        <HugeiconsIcon icon={Dumbbell01Icon} size={ms(80)} color={`${TRAINER_COLOR}10`} strokeWidth={0.5} />
-      </View>
-
-      {/* Header */}
-      <View style={trainerRequestStyles.header}>
-        <View style={trainerRequestStyles.iconBox}>
-          <HugeiconsIcon icon={Dumbbell01Icon} size={ms(24)} color={TRAINER_COLOR} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <View style={trainerRequestStyles.badge}>
-            <View style={trainerRequestStyles.badgeDot} />
-            <Text style={trainerRequestStyles.badgeText}>TRAINER REQUEST</Text>
-          </View>
-          <Text style={trainerRequestStyles.title}>
-            Admin wants you to be a Trainer!
-          </Text>
-          <Text style={trainerRequestStyles.subtitle}>
-            You've been selected to join the gym's trainer team
-          </Text>
-        </View>
-      </View>
-
-      <View style={trainerRequestStyles.divider} />
-
-      {/* Info */}
-      <View style={trainerRequestStyles.infoRow}>
-        <HugeiconsIcon icon={InformationCircleIcon} size={ms(14)} color={Colors.zinc[500]} />
-        <Text style={trainerRequestStyles.infoText}>
-          Accept to become a gym trainer. Your trial membership will be replaced with a trainer role.
-        </Text>
-      </View>
-
-      {/* Time */}
-      <View style={trainerRequestStyles.timeRow}>
-        <HugeiconsIcon icon={Clock01Icon} size={ms(11)} color={Colors.zinc[600]} />
-        <Text style={trainerRequestStyles.timeText}>
-          Requested {request?.sentAt ? new Date(request.sentAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : 'Today'}
-        </Text>
-      </View>
-
-      {/* Buttons */}
-      <View style={trainerRequestStyles.btnsRow}>
-        <TouchableOpacity
-          style={trainerRequestStyles.rejectBtn}
-          onPress={onReject}
-          activeOpacity={0.8}
-        >
-          <HugeiconsIcon icon={Cancel01Icon} size={ms(14)} color="#EF4444" />
-          <Text style={trainerRequestStyles.rejectText}>DECLINE</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={trainerRequestStyles.acceptBtn}
-          onPress={onAccept}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={[TRAINER_COLOR, '#0ea5e9']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={trainerRequestStyles.acceptGrad}
-          >
-            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={ms(14)} color="#fff" />
-            <Text style={trainerRequestStyles.acceptText}>ACCEPT TRAINER ROLE</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════════
-// TRIAL MEMBERSHIP CARD (unchanged)
+// TRIAL MEMBERSHIP CARD
 // ═══════════════════════════════════════════════════════════════
 const TrialMembershipCard = ({ daysLeft, onViewPlans }) => (
   <View style={styles.membershipCard}>
@@ -221,23 +159,42 @@ const TrialMembershipCard = ({ daysLeft, onViewPlans }) => (
       <View style={{ flex: 1 }}>
         <View style={styles.liveBadge}>
           <View style={[styles.liveDot, { backgroundColor: Colors.blue }]} />
-          <Text style={[styles.liveBadgeText, { color: Colors.blue }]}>Trial Period</Text>
+          <Text style={[styles.liveBadgeText, { color: Colors.blue }]}>
+            Trial Period
+          </Text>
         </View>
         <Text style={styles.membershipTitle}>TRIAL ACCESS</Text>
-        <View style={[styles.workoutBadge, { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
-          <HugeiconsIcon icon={Clock01Icon} size={ms(10)} color={Colors.zinc[500]} />
-          <Text style={[styles.workoutBadgeText, { color: Colors.zinc[200] }]}>LIMITED FEATURES</Text>
+        <View
+          style={[
+            styles.workoutBadge,
+            { backgroundColor: 'rgba(255,255,255,0.06)' },
+          ]}
+        >
+          <HugeiconsIcon
+            icon={Clock01Icon}
+            size={ms(10)}
+            color={Colors.zinc[500]}
+          />
+          <Text style={[styles.workoutBadgeText, { color: Colors.zinc[200] }]}>
+            LIMITED FEATURES
+          </Text>
         </View>
       </View>
       <View style={styles.daysContainer}>
-        <Text style={[styles.daysNumber, { color: Colors.white }]}>{daysLeft}</Text>
+        <Text style={[styles.daysNumber, { color: Colors.white }]}>
+          {daysLeft}
+        </Text>
         <Text style={styles.daysLabel}>Days Left</Text>
       </View>
     </View>
     <View style={styles.cardDivider} />
     <View style={styles.membershipFooter}>
       <Text style={styles.expiryText}>{7 - daysLeft} of 7 days used</Text>
-      <TouchableOpacity style={styles.actionBtn} onPress={onViewPlans} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.actionBtn}
+        onPress={onViewPlans}
+        activeOpacity={0.8}
+      >
         <Text style={styles.actionBtnText}>View Plans</Text>
       </TouchableOpacity>
     </View>
@@ -245,12 +202,15 @@ const TrialMembershipCard = ({ daysLeft, onViewPlans }) => (
 );
 
 // ═══════════════════════════════════════════════════════════════
-// REQUEST PENDING CARD (unchanged)
+// REQUEST PENDING CARD
 // ═══════════════════════════════════════════════════════════════
 const RequestPendingCard = ({ request }) => {
-  const template = request?.planTemplate || DEFAULT_TEMPLATES[request?.workoutType] || DEFAULT_TEMPLATES['cardio_weights'];
+  const template =
+    request?.planTemplate ||
+    DEFAULT_TEMPLATES[request?.workoutType] ||
+    DEFAULT_TEMPLATES['cardio_weights'];
   const accentColor = template?.iconColor || Colors.gold;
-  const textColor = template?.textColor || Colors.gold;
+  const textColor   = template?.textColor || Colors.gold;
 
   return (
     <View style={[styles.membershipCard, { borderColor: `${accentColor}35` }]}>
@@ -261,14 +221,19 @@ const RequestPendingCard = ({ request }) => {
         <View style={{ flex: 1 }}>
           <View style={styles.liveBadge}>
             <HugeiconsIcon icon={Loading03Icon} size={ms(15)} color={accentColor} />
-            <Text style={[styles.liveBadgeText, { color: accentColor }]}>Approval Pending</Text>
+            <Text style={[styles.liveBadgeText, { color: accentColor }]}>
+              Approval Pending
+            </Text>
           </View>
-          <Text style={[styles.membershipTitle, { color: textColor }]}>{request?.planName || 'Plan'}</Text>
+          <Text style={[styles.membershipTitle, { color: textColor }]}>
+            {request?.planName || 'Plan'}
+          </Text>
           {request?.workoutType && (
             <View style={[styles.workoutBadge, { backgroundColor: `${accentColor}15` }]}>
               <HugeiconsIcon
                 icon={request.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
-                size={ms(10)} color={accentColor}
+                size={ms(10)}
+                color={accentColor}
               />
               <Text style={[styles.workoutBadgeText, { color: accentColor }]}>
                 {request.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
@@ -288,7 +253,9 @@ const RequestPendingCard = ({ request }) => {
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Amount</Text>
-          <Text style={[styles.infoValue, { color: textColor }]}>${request?.planPrice || '0'}</Text>
+          <Text style={[styles.infoValue, { color: textColor }]}>
+            ${request?.planPrice || '0'}
+          </Text>
         </View>
       </View>
       <View style={[styles.cardDivider, { backgroundColor: `${accentColor}20` }]} />
@@ -301,10 +268,13 @@ const RequestPendingCard = ({ request }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ELITE MEMBERSHIP CARD (unchanged)
+// ELITE MEMBERSHIP CARD
 // ═══════════════════════════════════════════════════════════════
 const EliteMembershipCard = ({ membershipData, onExtend }) => {
-  const template = membershipData?.template || DEFAULT_TEMPLATES[membershipData?.workoutType] || DEFAULT_TEMPLATES['cardio_weights'];
+  const template =
+    membershipData?.template ||
+    DEFAULT_TEMPLATES[membershipData?.workoutType] ||
+    DEFAULT_TEMPLATES['cardio_weights'];
 
   return (
     <View style={[styles.membershipCard, { borderColor: `${template.iconColor}40` }]}>
@@ -315,31 +285,48 @@ const EliteMembershipCard = ({ membershipData, onExtend }) => {
         <View style={{ flex: 1 }}>
           <View style={styles.liveBadge}>
             <View style={[styles.liveDot, { backgroundColor: template.iconColor }]} />
-            <Text style={[styles.liveBadgeText, { color: template.iconColor }]}>Active Plan</Text>
+            <Text style={[styles.liveBadgeText, { color: template.iconColor }]}>
+              Active Plan
+            </Text>
           </View>
-          <Text style={[styles.membershipTitle, { color: template.textColor }]}>{membershipData?.tierName || 'Premium'}</Text>
+          <Text style={[styles.membershipTitle, { color: template.textColor }]}>
+            {membershipData?.tierName || 'Premium'}
+          </Text>
           {membershipData?.workoutType && (
             <View style={[styles.workoutBadge, { backgroundColor: `${template.iconColor}15` }]}>
               <HugeiconsIcon
                 icon={membershipData.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
-                size={ms(10)} color={template.iconColor}
+                size={ms(10)}
+                color={template.iconColor}
               />
               <Text style={[styles.workoutBadgeText, { color: template.iconColor }]}>
-                {membershipData.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHT LIFTING' : 'WEIGHT LIFTING ONLY'}
+                {membershipData.workoutType === 'cardio_weights'
+                  ? 'CARDIO + WEIGHT LIFTING'
+                  : 'WEIGHT LIFTING ONLY'}
               </Text>
             </View>
           )}
         </View>
         <View style={styles.daysContainer}>
-          <Text style={[styles.daysNumber, { color: template.textColor }]}>{membershipData?.daysLeft || 0}</Text>
+          <Text style={[styles.daysNumber, { color: template.textColor }]}>
+            {membershipData?.daysLeft || 0}
+          </Text>
           <Text style={styles.daysLabel}>Days Left</Text>
         </View>
       </View>
       <View style={[styles.cardDivider, { backgroundColor: `${template.iconColor}25` }]} />
       <View style={styles.membershipFooter}>
-        <Text style={styles.expiryText}>Exp. {membershipData?.expiryDate || '-'}</Text>
-        <TouchableOpacity style={[styles.actionBtn, { borderColor: `${template.iconColor}40` }]} onPress={onExtend} activeOpacity={0.8}>
-          <Text style={[styles.actionBtnText, { color: template.textColor }]}>Extend</Text>
+        <Text style={styles.expiryText}>
+          Exp. {membershipData?.expiryDate || '-'}
+        </Text>
+        <TouchableOpacity
+          style={[styles.actionBtn, { borderColor: `${template.iconColor}40` }]}
+          onPress={onExtend}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.actionBtnText, { color: template.textColor }]}>
+            Extend
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -347,31 +334,58 @@ const EliteMembershipCard = ({ membershipData, onExtend }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// PLAN CARD (unchanged)
+// PLAN CARD
 // ═══════════════════════════════════════════════════════════════
 const PlanCard = ({ plan, onSelect, submitting }) => {
-  const template = plan?.template || DEFAULT_TEMPLATES[plan?.workoutType] || DEFAULT_TEMPLATES['cardio_weights'];
+  const template =
+    plan?.template ||
+    DEFAULT_TEMPLATES[plan?.workoutType] ||
+    DEFAULT_TEMPLATES['cardio_weights'];
   if (!plan) return null;
 
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={() => onSelect(plan)} disabled={submitting} style={submitting && { opacity: 0.5 }}>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => onSelect(plan)}
+      disabled={submitting}
+      style={submitting && { opacity: 0.5 }}
+    >
       <View style={[styles.planCard, { borderColor: `${template.iconColor}40` }]}>
-        <LinearGradient colors={[`${template.iconColor}12`, `${template.iconColor}06`, 'transparent']} style={StyleSheet.absoluteFill} />
+        <LinearGradient
+          colors={[`${template.iconColor}12`, `${template.iconColor}06`, 'transparent']}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.planBgIconContainer}>
-          <HugeiconsIcon icon={Shield01Icon} size={ms(80)} color={`${template.iconColor}18`} strokeWidth={0.5} />
+          <HugeiconsIcon
+            icon={Shield01Icon}
+            size={ms(80)}
+            color={`${template.iconColor}18`}
+            strokeWidth={0.5}
+          />
         </View>
         <View style={styles.planCardHeader}>
           <View style={{ flex: 1, marginRight: s(12) }}>
             <View style={[styles.planBadge, { backgroundColor: `${template.iconColor}20` }]}>
               <View style={[styles.planBadgeDot, { backgroundColor: template.iconColor }]} />
-              <Text style={[styles.planBadgeText, { color: template.iconColor }]}>{plan.template?.badge || 'PLAN'}</Text>
+              <Text style={[styles.planBadgeText, { color: template.iconColor }]}>
+                {plan.template?.badge || 'PLAN'}
+              </Text>
             </View>
-            <Text style={[styles.planName, { color: template.textColor }]} numberOfLines={2}>{plan.name || 'Plan'}</Text>
+            <Text
+              style={[styles.planName, { color: template.textColor }]}
+              numberOfLines={2}
+            >
+              {plan.name || 'Plan'}
+            </Text>
           </View>
           <View style={styles.planPriceContainer}>
-            {plan.hasOffer && plan.offer && <Text style={styles.planOriginalPrice}>${plan.price}</Text>}
+            {plan.hasOffer && plan.offer && (
+              <Text style={styles.planOriginalPrice}>${plan.price}</Text>
+            )}
             <Text style={[styles.planPrice, { color: template.textColor }]}>
-              ${plan.hasOffer && plan.finalPrice ? plan.finalPrice.toFixed(2) : plan.price || '0'}
+              ${plan.hasOffer && plan.finalPrice
+                ? plan.finalPrice.toFixed(2)
+                : plan.price || '0'}
             </Text>
             <Text style={styles.planDuration}>/{plan.duration || 'month'}</Text>
           </View>
@@ -379,7 +393,8 @@ const PlanCard = ({ plan, onSelect, submitting }) => {
         <View style={[styles.workoutTypeBadge, { backgroundColor: `${template.iconColor}20` }]}>
           <HugeiconsIcon
             icon={plan.workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
-            size={ms(10)} color={template.iconColor}
+            size={ms(10)}
+            color={template.iconColor}
           />
           <Text style={[styles.workoutTypeText, { color: template.iconColor }]}>
             {plan.workoutType === 'cardio_weights' ? 'CARDIO + WEIGHTS' : 'WEIGHTS ONLY'}
@@ -418,12 +433,25 @@ const PlanCard = ({ plan, onSelect, submitting }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// MEMBERSHIP PLANS MODAL (unchanged)
+// MEMBERSHIP PLANS MODAL
 // ═══════════════════════════════════════════════════════════════
-const MembershipPlansModal = ({ visible, onClose, plans, onSelectPlan, loading, submitting }) => {
+const MembershipPlansModal = ({
+  visible,
+  onClose,
+  plans,
+  onSelectPlan,
+  loading,
+  submitting,
+}) => {
   const safePlans = Array.isArray(plans) ? plans.filter(Boolean) : [];
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
         <Pressable style={styles.modalContent} onPress={() => {}}>
           <BlurView
@@ -439,7 +467,11 @@ const MembershipPlansModal = ({ visible, onClose, plans, onSelectPlan, loading, 
               {safePlans.length > 0 ? 'Choose your fitness journey' : 'No plans available'}
             </Text>
           </View>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.plansScrollContent} bounces={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.plansScrollContent}
+            bounces={false}
+          >
             {loading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={Colors.white} />
@@ -453,7 +485,12 @@ const MembershipPlansModal = ({ visible, onClose, plans, onSelectPlan, loading, 
               </View>
             ) : (
               safePlans.map((plan, index) => (
-                <PlanCard key={plan?.id || index} plan={plan} onSelect={onSelectPlan} submitting={submitting} />
+                <PlanCard
+                  key={plan?.id || index}
+                  plan={plan}
+                  onSelect={onSelectPlan}
+                  submitting={submitting}
+                />
               ))
             )}
           </ScrollView>
@@ -476,18 +513,11 @@ const UserDashboardScreen = ({ navigation }) => {
     submitRequest,
     getUserRequestStatus,
     getMemberById,
-    loading: requestsLoading,
     refreshData,
   } = useMembershipRequests();
 
-  // ✅ Trainer Context
-  const {
-    getTrainerRequest,
-    isUserTrainer,
-    hasPendingTrainerRequest,
-    acceptTrainerRequest,
-    rejectTrainerRequest,
-  } = useTrainer();
+  // ✅ Simplified trainer context
+  const { isTrainer, getTrainer } = useTrainer();
 
   const currentUser = {
     id: 'user_001',
@@ -497,26 +527,25 @@ const UserDashboardScreen = ({ navigation }) => {
     photo: null,
   };
 
-  const [activePlans, setActivePlans] = useState([]);
+  const [activePlans, setActivePlans]     = useState([]);
   const [showPlansModal, setShowPlansModal] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting]       = useState(false);
 
   const approvedMember = getMemberById(currentUser.id);
   const pendingRequest = getUserRequestStatus(currentUser.id);
-  const hasPending = pendingRequest?.status === 'pending';
+  const hasPending     = pendingRequest?.status === 'pending';
 
-  // ✅ Trainer checks
-  const trainerRequest = getTrainerRequest(currentUser.id);
-  const isTrainer = isUserTrainer(currentUser.id);
-  const hasTrainerPending = hasPendingTrainerRequest(currentUser.id);
+  // ✅ Trainer check
+  const isMemberTrainer = isTrainer(currentUser.id);
+  const trainerData     = getTrainer(currentUser.id);
 
-  const isTrialMember = !approvedMember || !approvedMember.isActive;
+  const isTrialMember    = !approvedMember || !approvedMember.isActive;
   const isPendingApproval = hasPending;
-  const trialData = { daysLeft: 5 };
+  const trialData        = { daysLeft: 5 };
 
-  const pendingTemplate = pendingRequest?.planTemplate || DEFAULT_TEMPLATES[pendingRequest?.workoutType] || DEFAULT_TEMPLATES['cardio_weights'];
+  const pendingTemplate    = pendingRequest?.planTemplate || DEFAULT_TEMPLATES[pendingRequest?.workoutType] || DEFAULT_TEMPLATES['cardio_weights'];
   const pendingAccentColor = pendingTemplate?.iconColor || Colors.gold;
-  const pendingTextColor = pendingTemplate?.textColor || Colors.gold;
+  const pendingTextColor   = pendingTemplate?.textColor || Colors.gold;
 
   const safeLoadPlans = useCallback(() => {
     try {
@@ -542,6 +571,13 @@ const UserDashboardScreen = ({ navigation }) => {
     }
   }, [route.params?.openPlans, navigation]);
 
+  // ✅ Auto redirect to TrainerDashboard when assigned as trainer
+  useEffect(() => {
+    if (isMemberTrainer) {
+      navigation.replace('TrainerDashboard');
+    }
+  }, [isMemberTrainer, navigation]);
+
   const handleSelectPlan = async (plan) => {
     if (!plan) return;
     if (hasPending) {
@@ -550,42 +586,24 @@ const UserDashboardScreen = ({ navigation }) => {
       return;
     }
     const price = plan.hasOffer ? plan.finalPrice?.toFixed(2) : plan.price;
-    Alert.alert('Confirm Request', `Request "${plan.name}" for $${price}/${plan.duration || 'month'}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Submit Request',
-        onPress: async () => {
-          setSubmitting(true);
-          try {
-            await submitRequest(currentUser, plan);
-            setShowPlansModal(false);
-            Alert.alert('Request Submitted! 🎉', 'Sent to admin for approval.');
-            await refreshData();
-          } catch (error) {
-            Alert.alert('Error', 'Failed to submit request.');
-          } finally {
-            setSubmitting(false);
-          }
-        },
-      },
-    ]);
-  };
-
-  // ✅ Trainer Accept / Reject
-  const handleAcceptTrainer = () => {
     Alert.alert(
-      'Accept Trainer Role',
-      'Are you sure you want to become a gym trainer?\n\nYour trial membership will be replaced.',
+      'Confirm Request',
+      `Request "${plan.name}" for $${price}/${plan.duration || 'month'}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Accept',
+          text: 'Submit Request',
           onPress: async () => {
+            setSubmitting(true);
             try {
-              await acceptTrainerRequest(currentUser.id);
-              Alert.alert('Congratulations! 🎉', 'You are now a Gym Trainer!');
+              await submitRequest(currentUser, plan);
+              setShowPlansModal(false);
+              Alert.alert('Request Submitted! 🎉', 'Sent to admin for approval.');
+              await refreshData();
             } catch (error) {
-              Alert.alert('Error', 'Failed to accept request');
+              Alert.alert('Error', 'Failed to submit request.');
+            } finally {
+              setSubmitting(false);
             }
           },
         },
@@ -593,64 +611,31 @@ const UserDashboardScreen = ({ navigation }) => {
     );
   };
 
-  const handleRejectTrainer = () => {
-    Alert.alert(
-      'Decline Trainer Role',
-      'Are you sure you want to decline the trainer request?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await rejectTrainerRequest(currentUser.id);
-              Alert.alert('Declined', 'Trainer request has been declined.');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to decline request');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  // ✅ Determine which membership card to show
+  // ✅ Membership card based on state
   const renderMembershipCard = () => {
-    // Priority 1: User is a trainer (accepted)
-    if (isTrainer) {
-      return <TrainerRoleCard acceptedAt={trainerRequest?.respondedAt} />;
+    if (isMemberTrainer) {
+      return <TrainerRoleCard assignedAt={trainerData?.assignedAt} />;
     }
-
-    // Priority 2: Trainer request pending
-    if (hasTrainerPending) {
-      return (
-        <TrainerRequestCard
-          request={trainerRequest}
-          onAccept={handleAcceptTrainer}
-          onReject={handleRejectTrainer}
-        />
-      );
-    }
-
-    // Priority 3: Membership pending approval
     if (isPendingApproval) {
       return <RequestPendingCard request={pendingRequest} />;
     }
-
-    // Priority 4: Trial member
     if (isTrialMember) {
-      return <TrialMembershipCard daysLeft={trialData.daysLeft} onViewPlans={() => setShowPlansModal(true)} />;
+      return (
+        <TrialMembershipCard
+          daysLeft={trialData.daysLeft}
+          onViewPlans={() => setShowPlansModal(true)}
+        />
+      );
     }
-
-    // Priority 5: Active membership
     return (
       <EliteMembershipCard
         membershipData={{
           tierName: approvedMember?.tierName,
           daysLeft: approvedMember?.daysLeft,
           expiryDate: approvedMember?.expiryDate
-            ? new Date(approvedMember.expiryDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+            ? new Date(approvedMember.expiryDate).toLocaleDateString('en-US', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              })
             : '-',
           workoutType: approvedMember?.workoutType,
           template: approvedMember?.template,
@@ -660,9 +645,9 @@ const UserDashboardScreen = ({ navigation }) => {
     );
   };
 
-  // ✅ Determine welcome badge
+  // ✅ Welcome badge
   const renderWelcomeBadge = () => {
-    if (isTrainer) {
+    if (isMemberTrainer) {
       return (
         <View style={[styles.userTypeBadge, { backgroundColor: `${TRAINER_COLOR}15`, borderColor: `${TRAINER_COLOR}30` }]}>
           <HugeiconsIcon icon={Dumbbell01Icon} size={ms(10)} color={TRAINER_COLOR} />
@@ -670,16 +655,6 @@ const UserDashboardScreen = ({ navigation }) => {
         </View>
       );
     }
-
-    if (hasTrainerPending) {
-      return (
-        <View style={[styles.userTypeBadge, { backgroundColor: `${TRAINER_COLOR}15`, borderColor: `${TRAINER_COLOR}30` }]}>
-          <HugeiconsIcon icon={Loading03Icon} size={ms(10)} color={TRAINER_COLOR} />
-          <Text style={[styles.userTypeBadgeText, { color: TRAINER_COLOR }]}>TRAINER REQUEST</Text>
-        </View>
-      );
-    }
-
     if (isPendingApproval) {
       return (
         <View style={[styles.userTypeBadge, { backgroundColor: `${pendingAccentColor}15`, borderColor: `${pendingAccentColor}30` }]}>
@@ -688,7 +663,6 @@ const UserDashboardScreen = ({ navigation }) => {
         </View>
       );
     }
-
     if (isTrialMember) {
       return (
         <View style={styles.userTypeBadge}>
@@ -697,9 +671,11 @@ const UserDashboardScreen = ({ navigation }) => {
         </View>
       );
     }
-
     return (
-      <View style={[styles.userTypeBadge, { backgroundColor: `${approvedMember?.template?.iconColor || Colors.gold}15`, borderColor: `${approvedMember?.template?.iconColor || Colors.gold}30` }]}>
+      <View style={[styles.userTypeBadge, {
+        backgroundColor: `${approvedMember?.template?.iconColor || Colors.gold}15`,
+        borderColor: `${approvedMember?.template?.iconColor || Colors.gold}30`,
+      }]}>
         <HugeiconsIcon icon={Medal02Icon} size={ms(10)} color={approvedMember?.template?.iconColor || Colors.gold} />
         <Text style={[styles.userTypeBadgeText, { color: approvedMember?.template?.textColor || Colors.gold }]}>
           {approvedMember?.tierName || 'PREMIUM MEMBER'}
@@ -714,11 +690,18 @@ const UserDashboardScreen = ({ navigation }) => {
       style={styles.background}
       blurRadius={9}
     >
-      <LinearGradient colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000000']} style={styles.gradient}>
+      <LinearGradient
+        colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000000']}
+        style={styles.gradient}
+      >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <Header />
 
-          <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <ScrollView
+            style={styles.container}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
             {/* Welcome */}
             <View style={styles.welcomeSection}>
               <Text style={styles.welcomeLabel}>Welcome back</Text>
@@ -726,8 +709,20 @@ const UserDashboardScreen = ({ navigation }) => {
               {renderWelcomeBadge()}
             </View>
 
-            {/* ✅ Membership Card - Dynamic based on state */}
+            {/* Membership Card */}
             {renderMembershipCard()}
+
+            {/* ✅ TEST BUTTON - Remove after testing */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate('TrainerDashboard')}
+              style={styles.testBtn}
+              activeOpacity={0.8}
+            >
+              <HugeiconsIcon icon={Dumbbell01Icon} size={ms(16)} color="#000" />
+              <Text style={styles.testBtnText}>
+                🧪 TEST: View Trainer Dashboard
+              </Text>
+            </TouchableOpacity>
 
             {/* Facility Status */}
             <GlassCard>
@@ -790,13 +785,15 @@ const UserDashboardScreen = ({ navigation }) => {
                   <View style={[styles.actionIcon, styles.actionIconInactive]}>
                     <HugeiconsIcon icon={LogoutSquare01Icon} size={20} color={Colors.zinc[500]} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextInactive]}>Check Out</Text>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextInactive]}>
+                    Check Out
+                  </Text>
                 </View>
               </GlassButton>
             </View>
 
-            {/* Trial CTA - only show for trial + not trainer */}
-            {isTrialMember && !isPendingApproval && !isTrainer && !hasTrainerPending && (
+            {/* Trial CTA */}
+            {isTrialMember && !isPendingApproval && !isMemberTrainer && (
               <TouchableOpacity activeOpacity={0.85} onPress={() => setShowPlansModal(true)}>
                 <LinearGradient
                   colors={['rgba(234,179,8,0.12)', 'rgba(234,179,8,0.04)', 'transparent']}
@@ -807,7 +804,9 @@ const UserDashboardScreen = ({ navigation }) => {
                     <View style={styles.trialCtaText}>
                       <Text style={styles.trialCtaTitle}>Upgrade Today!</Text>
                       <Text style={styles.trialCtaSubtitle}>
-                        {activePlans.length > 0 ? `${activePlans.length} plans available` : 'Check available plans'}
+                        {activePlans.length > 0
+                          ? `${activePlans.length} plans available`
+                          : 'Check available plans'}
                       </Text>
                     </View>
                   </View>
@@ -842,288 +841,39 @@ const UserDashboardScreen = ({ navigation }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ✅ TRAINER ROLE CARD STYLES
+// TRAINER ROLE CARD STYLES
 // ═══════════════════════════════════════════════════════════════
 const trainerCardStyles = StyleSheet.create({
   card: {
-    borderRadius: ms(16),
-    padding: s(16),
-    borderWidth: 1,
-    borderColor: `${TRAINER_COLOR}40`,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#0a0a0a',
+    borderRadius: ms(16), padding: s(16), borderWidth: 1,
+    borderColor: `${TRAINER_COLOR}40`, overflow: 'hidden',
+    position: 'relative', backgroundColor: '#0a0a0a',
   },
-  bgIcon: {
-    position: 'absolute',
-    top: -ms(10),
-    right: -ms(15),
-    opacity: 0.8,
-  },
+  bgIcon: { position: 'absolute', top: -ms(10), right: -ms(15), opacity: 0.8 },
   logoBox: {
-    position: 'absolute',
-    top: scale(10),
-    right: 0,
-    bottom: 0,
-    left: scale(10),
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingRight: scale(10),
+    position: 'absolute', top: scale(10), right: 0, bottom: 0, left: scale(10),
+    justifyContent: 'center', alignItems: 'center', paddingRight: scale(10),
   },
-  logoImg: {
-    width: moderateScale(300),
-    height: moderateScale(150),
-    opacity: 0.15,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: vs(12),
-    zIndex: 1,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(6),
-    marginBottom: vs(4),
-    alignSelf: 'flex-start',
-  },
-  badgeDot: {
-    width: s(6),
-    height: s(6),
-    borderRadius: s(3),
-    backgroundColor: TRAINER_COLOR,
-  },
-  badgeText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(7),
-    color: TRAINER_COLOR,
-    letterSpacing: s(1.5),
-    textTransform: 'uppercase',
-  },
-  title: {
-    fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(15),
-    color: TRAINER_COLOR,
-    letterSpacing: s(3.5),
-    marginBottom: vs(6),
-  },
-  workoutBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(5),
-    paddingHorizontal: s(8),
-    paddingVertical: vs(3),
-    borderRadius: ms(4),
-    alignSelf: 'flex-start',
-    backgroundColor: `${TRAINER_COLOR}15`,
-  },
-  workoutText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(7),
-    letterSpacing: s(1),
-    color: TRAINER_COLOR,
-  },
+  logoImg: { width: moderateScale(300), height: moderateScale(150), opacity: 0.15 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: vs(12), zIndex: 1 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: s(6), marginBottom: vs(4), alignSelf: 'flex-start' },
+  badgeDot: { width: s(6), height: s(6), borderRadius: s(3), backgroundColor: TRAINER_COLOR },
+  badgeText: { fontFamily: Fonts.rajdhani.semiBold, fontSize: rf(7), color: TRAINER_COLOR, letterSpacing: s(1.5), textTransform: 'uppercase' },
+  title: { fontFamily: Fonts.orbitron.bold, fontSize: rf(15), color: TRAINER_COLOR, letterSpacing: s(3.5), marginBottom: vs(6) },
+  workoutBadge: { flexDirection: 'row', alignItems: 'center', gap: s(5), paddingHorizontal: s(8), paddingVertical: vs(3), borderRadius: ms(4), alignSelf: 'flex-start', backgroundColor: `${TRAINER_COLOR}15` },
+  workoutText: { fontFamily: Fonts.rajdhani.semiBold, fontSize: rf(7), letterSpacing: s(1), color: TRAINER_COLOR },
   daysBox: { alignItems: 'flex-end', zIndex: 1 },
-  daysNumber: {
-    fontFamily: Fonts.orbitron.regular,
-    fontSize: rf(28),
-    lineHeight: rf(36),
-    color: TRAINER_COLOR,
-  },
-  daysLabel: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(8),
-    color: Colors.zinc[500],
-    letterSpacing: s(1.5),
-    textTransform: 'uppercase',
-    textAlign: 'right',
-  },
-  divider: {
-    height: vs(1),
-    backgroundColor: `${TRAINER_COLOR}25`,
-    marginVertical: vs(12),
-    zIndex: 1,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  footerText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
-    color: Colors.zinc[500],
-  },
-  activeChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(4),
-    paddingHorizontal: s(10),
-    paddingVertical: vs(5),
-    borderRadius: ms(6),
-    borderWidth: 1,
-    borderColor: `${TRAINER_COLOR}40`,
-    backgroundColor: `${TRAINER_COLOR}10`,
-  },
-  activeChipText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(8),
-    color: TRAINER_COLOR,
-    letterSpacing: s(1),
-  },
+  daysNumber: { fontFamily: Fonts.orbitron.regular, fontSize: rf(28), lineHeight: rf(36), color: TRAINER_COLOR },
+  daysLabel: { fontFamily: Fonts.rajdhani.regular, fontSize: rf(8), color: Colors.zinc[500], letterSpacing: s(1.5), textTransform: 'uppercase', textAlign: 'right' },
+  divider: { height: vs(1), backgroundColor: `${TRAINER_COLOR}25`, marginVertical: vs(12), zIndex: 1 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 1 },
+  footerText: { fontFamily: Fonts.rajdhani.regular, fontSize: rf(9), color: Colors.zinc[500] },
+  activeChip: { flexDirection: 'row', alignItems: 'center', gap: s(4), paddingHorizontal: s(10), paddingVertical: vs(5), borderRadius: ms(6), borderWidth: 1, borderColor: `${TRAINER_COLOR}40`, backgroundColor: `${TRAINER_COLOR}10` },
+  activeChipText: { fontFamily: Fonts.rajdhani.semiBold, fontSize: rf(8), color: TRAINER_COLOR, letterSpacing: s(1) },
 });
 
 // ═══════════════════════════════════════════════════════════════
-// ✅ TRAINER REQUEST CARD STYLES
-// ═══════════════════════════════════════════════════════════════
-const trainerRequestStyles = StyleSheet.create({
-  card: {
-    borderRadius: ms(16),
-    padding: s(16),
-    borderWidth: 1,
-    borderColor: `${TRAINER_COLOR}35`,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#0a0a0a',
-  },
-  bgIcon: {
-    position: 'absolute',
-    top: -ms(10),
-    right: -ms(15),
-    opacity: 0.5,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: s(12),
-    marginBottom: vs(10),
-    zIndex: 1,
-  },
-  iconBox: {
-    width: ms(48),
-    height: ms(48),
-    borderRadius: ms(14),
-    backgroundColor: `${TRAINER_COLOR}15`,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: `${TRAINER_COLOR}30`,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(5),
-    backgroundColor: `${TRAINER_COLOR}12`,
-    borderRadius: ms(4),
-    paddingHorizontal: s(6),
-    paddingVertical: vs(2),
-    alignSelf: 'flex-start',
-    marginBottom: vs(4),
-  },
-  badgeDot: {
-    width: ms(5),
-    height: ms(5),
-    borderRadius: ms(2.5),
-    backgroundColor: TRAINER_COLOR,
-  },
-  badgeText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(7),
-    color: TRAINER_COLOR,
-    letterSpacing: s(1),
-  },
-  title: {
-    fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(11),
-    color: '#FFFFFF',
-    marginBottom: vs(4),
-  },
-  subtitle: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
-    color: Colors.zinc[500],
-  },
-  divider: {
-    height: 1,
-    backgroundColor: `${TRAINER_COLOR}20`,
-    marginVertical: vs(10),
-    zIndex: 1,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: s(8),
-    marginBottom: vs(8),
-    zIndex: 1,
-  },
-  infoText: {
-    flex: 1,
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
-    color: Colors.zinc[400],
-    lineHeight: rf(14),
-  },
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(4),
-    marginBottom: vs(12),
-    zIndex: 1,
-  },
-  timeText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(8),
-    color: Colors.zinc[600],
-  },
-  btnsRow: {
-    flexDirection: 'row',
-    gap: s(10),
-    zIndex: 1,
-  },
-  rejectBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: s(4),
-    paddingHorizontal: s(14),
-    paddingVertical: vs(10),
-    borderRadius: ms(10),
-    borderWidth: 1,
-    borderColor: 'rgba(239,68,68,0.35)',
-    backgroundColor: 'rgba(239,68,68,0.08)',
-  },
-  rejectText: {
-    fontFamily: Fonts.orbitron.semiBold,
-    fontSize: rf(8),
-    color: '#EF4444',
-    letterSpacing: 0.8,
-  },
-  acceptBtn: {
-    flex: 1,
-    borderRadius: ms(10),
-    overflow: 'hidden',
-  },
-  acceptGrad: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: s(6),
-    paddingVertical: vs(10),
-    borderRadius: ms(10),
-  },
-  acceptText: {
-    fontFamily: Fonts.orbitron.semiBold,
-    fontSize: rf(8),
-    color: '#fff',
-    letterSpacing: 1,
-  },
-});
-
-// ═══════════════════════════════════════════════════════════════
-// MAIN STYLES (unchanged)
+// MAIN STYLES
 // ═══════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
   background: { flex: 1 },
@@ -1137,6 +887,17 @@ const styles = StyleSheet.create({
   welcomeName: { fontFamily: Fonts.orbitron.extraBold, fontSize: rf(18), color: Colors.white, letterSpacing: s(3.6) },
   userTypeBadge: { flexDirection: 'row', alignItems: 'center', gap: s(6), marginTop: vs(8), backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: s(10), paddingVertical: vs(4), borderRadius: ms(6), alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
   userTypeBadgeText: { fontFamily: Fonts.rajdhani.semiBold, fontSize: rf(8), color: Colors.blue, letterSpacing: s(1.5) },
+
+  // ✅ TEST BUTTON STYLE
+  testBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: s(8), backgroundColor: TRAINER_COLOR, padding: vs(14),
+    borderRadius: ms(12),
+  },
+  testBtnText: {
+    fontFamily: Fonts.rajdhani.bold, fontSize: rf(11),
+    color: '#000', letterSpacing: 0.5,
+  },
 
   membershipCard: { borderRadius: ms(16), padding: s(16), borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative', backgroundColor: '#0a0a0a' },
   allmemberLogo: { position: 'absolute', top: scale(10), right: 0, bottom: 0, left: scale(10), justifyContent: 'center', alignItems: 'center', paddingRight: scale(10) },

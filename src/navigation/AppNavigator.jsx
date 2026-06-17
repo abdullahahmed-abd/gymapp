@@ -34,7 +34,9 @@ import AdminAddTrainerScreen from '../screens/admin/trainer/AdminAddTrainerScree
 import AdminTrainersScreen from '../screens/admin/trainer/AdminTrainersScreen';
 import AdminTrainerProfileScreen from '../screens/admin/trainer/AdminTrainerProfileScreen';
 import TrainerDetailScreen from '../screens/admin/trainer/TrainerDetailScreen';
-
+import TrainerAttendanceLogScreen from '../screens/admin/trainer/TrainerAttendanceLogScreen';
+import TrainerDashboardScreen from '../screens/trainerdashboard/TrainerDashboardScreen';
+import AdminExpensesScreen from '../screens/admin/AdminExpensesScreen';
 
 const Stack = createStackNavigator();
 
@@ -161,6 +163,18 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="TrainerDetail" 
           component={TrainerDetailScreen} 
+        />
+           <Stack.Screen 
+          name="TrainerAttendanceLog" 
+          component={TrainerAttendanceLogScreen} 
+        />
+          <Stack.Screen 
+          name="TrainerDashboard" 
+          component={TrainerDashboardScreen} 
+        />
+            <Stack.Screen 
+          name="AdminExpenses" 
+          component={AdminExpensesScreen} 
         />
         
       </Stack.Navigator>

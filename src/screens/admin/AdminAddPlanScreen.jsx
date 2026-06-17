@@ -1,3 +1,4 @@
+// src/screens/admin/AdminAddPlanScreen.js
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -44,7 +45,7 @@ import Colors from '../../constants/Colors';
 import Fonts from '../../constants/Fonts';
 import { usePlans } from '../../context/PlansContext';
 
-const s = (size) => scale(size);
+const s  = (size) => scale(size);
 const ms = (size) => moderateScale(size, 0.25);
 const vs = (size) => verticalScale(size);
 const rf = (size) => RFValue(size);
@@ -53,10 +54,10 @@ const rf = (size) => RFValue(size);
 // TIER TEMPLATES
 // ═══════════════════════════════════════════════════════════════
 const TIER_TEMPLATES = {
-  'cardio_weights': {
+  cardio_weights: {
     name: 'ELITE TIER',
     badge: 'ELITE',
-    colors: ['rgba(234, 179, 8, 0.35)', 'rgba(234, 179, 8, 0.15)', 'rgba(0, 0, 0, 0.95)'],
+    colors: ['rgba(234,179,8,0.35)', 'rgba(234,179,8,0.15)', 'rgba(0,0,0,0.95)'],
     iconColor: Colors.gold,
     textColor: Colors.gold,
     subtitle: 'Cardio + Weight Lifting',
@@ -69,10 +70,10 @@ const TIER_TEMPLATES = {
       'Personal Locker',
     ],
   },
-  'weights_only': {
+  weights_only: {
     name: 'LEGENDARY TIER',
     badge: 'LEGENDARY',
-    colors: ['rgba(168, 85, 247, 0.35)', 'rgba(168, 85, 247, 0.15)', 'rgba(0, 0, 0, 0.95)'],
+    colors: ['rgba(168,85,247,0.35)', 'rgba(168,85,247,0.15)', 'rgba(0,0,0,0.95)'],
     iconColor: '#a855f7',
     textColor: '#c084fc',
     subtitle: 'Weight Lifting Only',
@@ -183,7 +184,7 @@ const BlurDropdown = ({
 };
 
 // ═══════════════════════════════════════════════════════════════
-// WORKOUT TYPE CARD
+// WORKOUT TYPE CARD - ✅ Side by side horizontal layout
 // ═══════════════════════════════════════════════════════════════
 const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
   const template = TIER_TEMPLATES[type];
@@ -209,125 +210,96 @@ const WorkoutTypeCard = ({ type, isSelected, onSelect }) => {
 
         <HugeiconsIcon
           icon={Shield01Icon}
-          size={ms(65)}
+          size={ms(55)}
           color={isSelected ? `${template.iconColor}18` : 'rgba(255,255,255,0.03)'}
           style={styles.workoutCardBgIcon}
           strokeWidth={0.5}
         />
 
+        {/* Icons Row */}
         <View style={styles.workoutCardHeader}>
           <View style={styles.workoutIconsRow}>
             {type === 'cardio_weights' ? (
               <>
-                <View
-                  style={[
-                    styles.workoutIconContainer,
-                    {
-                      backgroundColor: isSelected
-                        ? `${template.iconColor}20`
-                        : 'rgba(255,255,255,0.06)',
-                    },
-                  ]}
-                >
+                <View style={[
+                  styles.workoutIconContainer,
+                  { backgroundColor: isSelected ? `${template.iconColor}20` : 'rgba(255,255,255,0.06)' },
+                ]}>
                   <HugeiconsIcon
                     icon={Activity01Icon}
-                    size={ms(18)}
+                    size={ms(14)}
                     color={isSelected ? template.iconColor : Colors.zinc[400]}
                   />
                 </View>
                 <Text style={[
                   styles.workoutPlusText,
                   isSelected && { color: template.iconColor },
+                ]}>+</Text>
+                <View style={[
+                  styles.workoutIconContainer,
+                  { backgroundColor: isSelected ? `${template.iconColor}20` : 'rgba(255,255,255,0.06)' },
                 ]}>
-                  +
-                </Text>
-                <View
-                  style={[
-                    styles.workoutIconContainer,
-                    {
-                      backgroundColor: isSelected
-                        ? `${template.iconColor}20`
-                        : 'rgba(255,255,255,0.06)',
-                    },
-                  ]}
-                >
                   <HugeiconsIcon
                     icon={Dumbbell01Icon}
-                    size={ms(18)}
+                    size={ms(14)}
                     color={isSelected ? template.iconColor : Colors.zinc[400]}
                   />
                 </View>
               </>
             ) : (
-              <View
-                style={[
-                  styles.workoutIconContainer,
-                  {
-                    backgroundColor: isSelected
-                      ? `${template.iconColor}20`
-                      : 'rgba(255,255,255,0.06)',
-                  },
-                ]}
-              >
+              <View style={[
+                styles.workoutIconContainer,
+                { backgroundColor: isSelected ? `${template.iconColor}20` : 'rgba(255,255,255,0.06)' },
+              ]}>
                 <HugeiconsIcon
                   icon={Dumbbell01Icon}
-                  size={ms(18)}
+                  size={ms(14)}
                   color={isSelected ? template.iconColor : Colors.zinc[400]}
                 />
               </View>
             )}
           </View>
 
+          {/* Selected checkmark */}
           {isSelected && (
             <View style={[styles.selectedBadge, { backgroundColor: template.iconColor }]}>
               <HugeiconsIcon
                 icon={CheckmarkCircle02Icon}
-                size={ms(14)}
+                size={ms(11)}
                 color={Colors.white}
               />
             </View>
           )}
         </View>
 
-        <View style={styles.workoutCardContent}>
-          <View style={[
-            styles.tierBadgeContainer,
-            isSelected && { backgroundColor: `${template.iconColor}15` },
-          ]}>
-            <View style={[styles.tierBadgeDot, { backgroundColor: template.iconColor }]} />
-            <Text style={[
-              styles.tierBadgeText,
-              isSelected && { color: template.iconColor },
-            ]}>
-              {template.badge}
-            </Text>
-          </View>
-
+        {/* Tier Badge */}
+        <View style={[
+          styles.tierBadgeContainer,
+          isSelected && { backgroundColor: `${template.iconColor}15` },
+        ]}>
+          <View style={[styles.tierBadgeDot, { backgroundColor: template.iconColor }]} />
           <Text style={[
-            styles.workoutCardTitle,
-            isSelected && { color: template.textColor },
+            styles.tierBadgeText,
+            isSelected && { color: template.iconColor },
           ]}>
-            {template.name}
-          </Text>
-
-          <Text style={[
-            styles.workoutCardSubtitle,
-            isSelected && { color: `${template.iconColor}90` },
-          ]}>
-            {template.subtitle}
+            {template.badge}
           </Text>
         </View>
 
-        <View style={[
-          styles.workoutDivider,
-          isSelected && { backgroundColor: `${template.iconColor}30` },
-        ]} />
-
+        {/* Title */}
         <Text style={[
-          styles.workoutCardDesc,
-          isSelected && { color: `${template.iconColor}80` },
+          styles.workoutCardTitle,
+          isSelected && { color: template.textColor },
         ]}>
-          {template.description}
+          {template.name}
+        </Text>
+
+        {/* Subtitle */}
+        <Text style={[
+          styles.workoutCardSubtitle,
+          isSelected && { color: `${template.iconColor}90` },
+        ]}>
+          {template.subtitle}
         </Text>
       </View>
     </TouchableOpacity>
@@ -341,18 +313,18 @@ const AdminAddPlanScreen = ({ navigation }) => {
   const { deployPlan } = usePlans();
 
   const [durationOption, setDurationOption] = useState('1 Month');
-  const [customDuration, setCustomDuration] = useState('');
-  const [price, setPrice] = useState('');
-  const [hasOffer, setHasOffer] = useState(false);
-  const [discountType, setDiscountType] = useState('percentage');
-  const [discountValue, setDiscountValue] = useState('');
-  const [workoutType, setWorkoutType] = useState('cardio_weights');
-  const [isDeploying, setIsDeploying] = useState(false);
+  const [customDuration, setCustomDuration]   = useState('');
+  const [price, setPrice]                     = useState('');
+  const [hasOffer, setHasOffer]               = useState(false);
+  const [discountType, setDiscountType]       = useState('percentage');
+  const [discountValue, setDiscountValue]     = useState('');
+  const [workoutType, setWorkoutType]         = useState('cardio_weights');
+  const [isDeploying, setIsDeploying]         = useState(false);
 
   const currentTemplate = TIER_TEMPLATES[workoutType];
 
   const durationOptions = [
-    { label: '1 Month', value: '1 Month' },
+    { label: '1 Month',  value: '1 Month'  },
     { label: '3 Months', value: '3 Months' },
     { label: '6 Months', value: '6 Months' },
     { label: '12 Months', value: '12 Months' },
@@ -360,7 +332,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
   ];
 
   const discountOptions = [
-    { label: 'PERCENTAGE (%)', value: 'percentage' },
+    { label: 'PERCENTAGE (%)',   value: 'percentage' },
     { label: 'FIXED AMOUNT (₹)', value: 'fixed' },
   ];
 
@@ -394,23 +366,23 @@ const AdminAddPlanScreen = ({ navigation }) => {
       const finalPrice = calculateFinalPrice();
 
       const planData = {
-        name: currentTemplate.name,
-        duration: planDuration,
-        price: parseFloat(price),
+        name:       currentTemplate.name,
+        duration:   planDuration,
+        price:      parseFloat(price),
         finalPrice: finalPrice || parseFloat(price),
-        workoutType: workoutType,
+        workoutType,
         template: {
-          id: workoutType,
-          name: currentTemplate.name,
-          colors: currentTemplate.colors,
+          id:        workoutType,
+          name:      currentTemplate.name,
+          colors:    currentTemplate.colors,
           iconColor: currentTemplate.iconColor,
           textColor: currentTemplate.textColor,
-          badge: currentTemplate.badge,
+          badge:     currentTemplate.badge,
         },
-        hasOffer: hasOffer,
+        hasOffer,
         offer: hasOffer
           ? {
-              type: discountType,
+              type:  discountType,
               value: parseFloat(discountValue) || 0,
               text:
                 discountType === 'percentage'
@@ -444,7 +416,6 @@ const AdminAddPlanScreen = ({ navigation }) => {
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to deploy plan.');
-      console.error('Deploy error:', error);
     } finally {
       setIsDeploying(false);
     }
@@ -452,9 +423,7 @@ const AdminAddPlanScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={{
-        uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
-      }}
+      source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48' }}
       style={styles.background}
       blurRadius={10}
     >
@@ -469,31 +438,29 @@ const AdminAddPlanScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Back Button */}
+          {/* ── Back Button ── */}
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('AdminPlans')}
             activeOpacity={0.8}
           >
             <View style={styles.backIconContainer}>
-              <HugeiconsIcon
-                icon={ArrowLeft01Icon}
-                size={ms(14)}
-                color={Colors.zinc[400]}
-              />
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={ms(14)} color={Colors.zinc[400]} />
             </View>
             <Text style={styles.backText}>Back to Plans</Text>
           </TouchableOpacity>
 
-          {/* SELECT TIER SECTION */}
-          <View style={styles.tierSection}>
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* SELECT TIER */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <HugeiconsIcon
                 icon={Layers01Icon}
-                size={ms(16)}
+                size={ms(14)}
                 color={currentTemplate.iconColor}
               />
-              <Text style={[styles.sectionTitleWithIcon, { color: currentTemplate.iconColor }]}>
+              <Text style={[styles.sectionTitle, { color: currentTemplate.iconColor }]}>
                 Select Membership Tier
               </Text>
             </View>
@@ -501,7 +468,8 @@ const AdminAddPlanScreen = ({ navigation }) => {
               Choose the tier type — design auto-assigned
             </Text>
 
-            <View style={styles.workoutCardsContainer}>
+            {/* ✅ Side by side cards */}
+            <View style={styles.workoutCardsRow}>
               <WorkoutTypeCard
                 type="cardio_weights"
                 isSelected={workoutType === 'cardio_weights'}
@@ -515,23 +483,25 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* PRICING SECTION */}
-          <View style={styles.pricingSection}>
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* PRICING */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <HugeiconsIcon
                 icon={DollarCircleIcon}
-                size={ms(16)}
+                size={ms(14)}
                 color={currentTemplate.iconColor}
               />
-              <Text style={[styles.sectionTitleWithIcon, { color: currentTemplate.iconColor }]}>
+              <Text style={[styles.sectionTitle, { color: currentTemplate.iconColor }]}>
                 Pricing & Duration
               </Text>
             </View>
 
-            <View style={styles.pricingCard}>
+            <View style={styles.card}>
               <LinearGradient
-                colors={[`${currentTemplate.iconColor}20`, 'transparent']}
-                style={styles.pricingCardTopGlow}
+                colors={[`${currentTemplate.iconColor}12`, 'transparent']}
+                style={styles.cardTopGlow}
               />
 
               <BlurDropdown
@@ -549,7 +519,6 @@ const AdminAddPlanScreen = ({ navigation }) => {
                 />
               )}
 
-              {/* ✅ $ → ₹ in label */}
               <GlassInput
                 label="Price (₹)"
                 placeholder="0.00"
@@ -560,15 +529,13 @@ const AdminAddPlanScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* PROMOTIONAL OFFER SECTION */}
-          <View style={styles.offerSection}>
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* PROMOTIONAL OFFER */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <View style={styles.section}>
             <View style={styles.offerHeader}>
               <View style={styles.offerHeaderLeft}>
-                <HugeiconsIcon
-                  icon={FlashIcon}
-                  size={ms(16)}
-                  color={Colors.gold}
-                />
+                <HugeiconsIcon icon={FlashIcon} size={ms(14)} color={Colors.gold} />
                 <Text style={styles.offerTitle}>Promotional Offer</Text>
               </View>
               <Switch
@@ -591,21 +558,24 @@ const AdminAddPlanScreen = ({ navigation }) => {
                   options={discountOptions}
                 />
 
-                {/* ✅ $ → ₹ in label */}
                 <GlassInput
-                  label={discountType === 'percentage' ? 'Percentage Off (%)' : 'Amount Deducted (₹)'}
-                  placeholder={discountType === 'percentage' ? '20' : '15.00'}
+                  label={
+                    discountType === 'percentage'
+                      ? 'Percentage Off (%)'
+                      : 'Amount Deducted (₹)'
+                  }
+                  placeholder={discountType === 'percentage' ? '20' : '150'}
                   value={discountValue}
                   onChangeText={setDiscountValue}
                   keyboardType="decimal-pad"
                 />
 
+                {/* Final Price Calc */}
                 <View style={styles.calculationRow}>
-                  <HugeiconsIcon icon={FlashIcon} size={ms(14)} color={Colors.gold} />
+                  <HugeiconsIcon icon={FlashIcon} size={ms(13)} color={Colors.gold} />
                   <Text style={styles.calculationText}>
                     Final Price:{' '}
                     <Text style={styles.calculationHighlight}>
-                      {/* ✅ $ → ₹ */}
                       ₹{calculateFinalPrice()?.toFixed(2) || '0.00'}
                     </Text>
                   </Text>
@@ -614,29 +584,30 @@ const AdminAddPlanScreen = ({ navigation }) => {
             )}
           </View>
 
+          {/* ═══════════════════════════════════════════════════════════════ */}
           {/* LIVE PREVIEW */}
-          <View style={styles.previewSection}>
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <HugeiconsIcon icon={ViewIcon} size={ms(16)} color={Colors.zinc[400]} />
-              <Text style={styles.sectionTitleWithIcon}>Live Preview</Text>
+              <HugeiconsIcon icon={ViewIcon} size={ms(14)} color={Colors.zinc[400]} />
+              <Text style={styles.sectionTitle}>Live Preview</Text>
             </View>
 
-            <View style={styles.membershipCard}>
+            <View style={styles.previewCard}>
               <LinearGradient
                 colors={[`${currentTemplate.iconColor}18`, `${currentTemplate.iconColor}08`, 'transparent']}
                 style={StyleSheet.absoluteFill}
               />
-
-              <View style={styles.cardBgContainer}>
+              <View style={styles.previewBgIcon}>
                 <HugeiconsIcon
                   icon={Shield01Icon}
-                  size={ms(100)}
+                  size={ms(90)}
                   color={`${currentTemplate.iconColor}18`}
                   strokeWidth={0.5}
                 />
               </View>
 
-              <View style={styles.membershipHeader}>
+              <View style={styles.previewHeader}>
                 <View style={{ flex: 1 }}>
                   <View style={[styles.activeBadge, { backgroundColor: `${currentTemplate.iconColor}20` }]}>
                     <View style={[styles.activeDot, { backgroundColor: currentTemplate.iconColor }]} />
@@ -644,96 +615,103 @@ const AdminAddPlanScreen = ({ navigation }) => {
                       Active Plan
                     </Text>
                   </View>
-
-                  <Text style={[styles.membershipTier, { color: currentTemplate.textColor }]}>
+                  <Text style={[styles.previewTier, { color: currentTemplate.textColor }]}>
                     {currentTemplate.name}
                   </Text>
-
-                  <View style={[styles.eliteWorkoutBadge, { backgroundColor: `${currentTemplate.iconColor}20` }]}>
+                  <View style={[styles.previewWorkoutBadge, { backgroundColor: `${currentTemplate.iconColor}20` }]}>
                     <HugeiconsIcon
                       icon={workoutType === 'cardio_weights' ? Activity01Icon : Dumbbell01Icon}
                       size={ms(10)}
                       color={currentTemplate.iconColor}
                     />
-                    <Text style={[styles.eliteWorkoutText, { color: currentTemplate.iconColor }]}>
+                    <Text style={[styles.previewWorkoutText, { color: currentTemplate.iconColor }]}>
                       {currentTemplate.subtitle.toUpperCase()}
                     </Text>
                   </View>
                 </View>
-
-                <View style={styles.daysContainer}>
-                  <Text style={[styles.daysNumber, { color: currentTemplate.textColor }]}>25</Text>
-                  <Text style={styles.daysLabel}>Days Left</Text>
+                <View style={styles.previewDaysBox}>
+                  <Text style={[styles.previewDaysNumber, { color: currentTemplate.textColor }]}>25</Text>
+                  <Text style={styles.previewDaysLabel}>Days Left</Text>
                 </View>
               </View>
 
-              <View style={[styles.divider, { backgroundColor: `${currentTemplate.iconColor}30` }]} />
+              <View style={[styles.previewDivider, { backgroundColor: `${currentTemplate.iconColor}30` }]} />
 
-              <View style={styles.membershipFooter}>
-                <Text style={styles.expiryText}>
-                  Exp. {new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
+              <View style={styles.previewFooter}>
+                <Text style={styles.previewExpiry}>
+                  Exp.{' '}
+                  {new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toLocaleDateString(
+                    'en-US', { day: 'numeric', month: 'short', year: 'numeric' }
+                  )}
                 </Text>
-                <View style={[styles.extendButtonPreview, { borderColor: `${currentTemplate.iconColor}40` }]}>
-                  <Text style={[styles.extendButtonText, { color: currentTemplate.textColor }]}>Extend</Text>
+                <View style={[styles.previewExtendBtn, { borderColor: `${currentTemplate.iconColor}40` }]}>
+                  <Text style={[styles.previewExtendText, { color: currentTemplate.textColor }]}>
+                    Extend
+                  </Text>
                 </View>
               </View>
 
               {(price || hasOffer) && (
                 <>
-                  <View style={[styles.divider, { backgroundColor: `${currentTemplate.iconColor}30` }]} />
-                  <View style={styles.previewPriceInfo}>
-                    <View style={styles.previewPriceRow}>
-                      <Text style={styles.previewPriceLabel}>Plan Price:</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: s(6) }}>
-                        {hasOffer && calculateFinalPrice() !== null && price ? (
-                          <>
-                            {/* ✅ $ → ₹ */}
-                            <Text style={styles.previewOriginalPrice}>₹{price}</Text>
-                            <Text style={[styles.previewFinalPrice, { color: currentTemplate.textColor }]}>
-                              ₹{calculateFinalPrice()?.toFixed(2)}
-                            </Text>
-                          </>
-                        ) : (
-                          // ✅ $ → ₹
+                  <View style={[styles.previewDivider, { backgroundColor: `${currentTemplate.iconColor}30` }]} />
+                  <View style={styles.previewPriceRow}>
+                    <Text style={styles.previewPriceLabel}>Plan Price:</Text>
+                    <View style={styles.previewPriceRight}>
+                      {hasOffer && calculateFinalPrice() !== null && price ? (
+                        <>
+                          <Text style={styles.previewOriginalPrice}>₹{price}</Text>
                           <Text style={[styles.previewFinalPrice, { color: currentTemplate.textColor }]}>
-                            ₹{price || '0'}
+                            ₹{calculateFinalPrice()?.toFixed(2)}
                           </Text>
-                        )}
-                        <Text style={styles.previewPriceDuration}>
-                          /{durationOption === 'custom' ? customDuration || 'duration' : durationOption}
+                        </>
+                      ) : (
+                        <Text style={[styles.previewFinalPrice, { color: currentTemplate.textColor }]}>
+                          ₹{price || '0'}
                         </Text>
-                      </View>
+                      )}
+                      <Text style={styles.previewPriceDuration}>
+                        /{durationOption === 'custom' ? customDuration || 'duration' : durationOption}
+                      </Text>
                     </View>
-
-                    {hasOffer && discountValue && (
-                      <View style={styles.previewOfferBadge}>
-                        <HugeiconsIcon icon={FlashIcon} size={ms(10)} color={Colors.gold} />
-                        <Text style={styles.previewOfferText}>
-                          {/* ✅ $ → ₹ */}
-                          {discountType === 'percentage' ? `${discountValue}% OFF` : `₹${discountValue} OFF`}
-                        </Text>
-                      </View>
-                    )}
                   </View>
+                  {hasOffer && discountValue && (
+                    <View style={styles.previewOfferBadge}>
+                      <HugeiconsIcon icon={FlashIcon} size={ms(10)} color={Colors.gold} />
+                      <Text style={styles.previewOfferText}>
+                        {discountType === 'percentage'
+                          ? `${discountValue}% OFF`
+                          : `₹${discountValue} OFF`}
+                      </Text>
+                    </View>
+                  )}
                 </>
               )}
             </View>
           </View>
 
-          {/* ACTION BUTTONS */}
-          <View style={styles.actionButtons}>
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* ✅ ACTION BUTTONS - Compact inline row */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <View style={styles.actionRow}>
+            {/* Cancel Button */}
             <TouchableOpacity
-              style={[styles.deployButton, isDeploying && styles.deployButtonDisabled]}
+              style={styles.cancelButton}
+              onPress={() => navigation.navigate('AdminPlans')}
+              activeOpacity={0.8}
+            >
+              <HugeiconsIcon icon={Cancel01Icon} size={ms(13)} color={Colors.zinc[500]} />
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+
+            {/* Deploy Button */}
+            <TouchableOpacity
+              style={[styles.deployButton, isDeploying && { opacity: 0.6 }]}
               onPress={handleDeployPlan}
               disabled={isDeploying}
               activeOpacity={0.85}
             >
               <LinearGradient
-                colors={[currentTemplate.iconColor, `${currentTemplate.iconColor}80`]}
+                colors={[currentTemplate.iconColor, `${currentTemplate.iconColor}90`]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.deployButtonGradient}
@@ -742,24 +720,11 @@ const AdminAddPlanScreen = ({ navigation }) => {
                   <ActivityIndicator color={Colors.white} size="small" />
                 ) : (
                   <>
-                    <HugeiconsIcon icon={Upload04Icon} size={ms(20)} color={Colors.white} />
-                    <Text style={styles.deployButtonText}>
-                      DEPLOY {currentTemplate.name}
-                    </Text>
+                    <HugeiconsIcon icon={Upload04Icon} size={ms(14)} color={Colors.white} />
+                    <Text style={styles.deployButtonText}>DEPLOY</Text>
                   </>
                 )}
               </LinearGradient>
-            </TouchableOpacity>
-
-            <View style={styles.buttonSpacer} />
-
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => navigation.navigate('AdminPlans')}
-              activeOpacity={0.8}
-            >
-              <HugeiconsIcon icon={Cancel01Icon} size={ms(14)} color={Colors.zinc[500]} />
-              <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -779,21 +744,24 @@ const AdminAddPlanScreen = ({ navigation }) => {
   );
 };
 
+// ═══════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  gradient: { flex: 1 },
-  container: { flex: 1 },
+  gradient:   { flex: 1 },
+  container:  { flex: 1 },
   scrollContent: {
-    paddingHorizontal: s(18),
-    paddingTop: vs(10),
+    paddingHorizontal: s(16),
+    paddingTop: vs(8),
     paddingBottom: vs(120),
+    gap: vs(20),
   },
 
-  // Back Button
+  // ── Back Button ──
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: vs(20),
   },
   backIconContainer: {
     width: ms(28),
@@ -813,154 +781,146 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  // Section Styles
-  tierSection: { marginBottom: vs(24) },
-  pricingSection: { marginBottom: vs(24) },
+  // ── Section ──
+  section: { gap: vs(10) },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: vs(8),
+    gap: s(6),
   },
-  sectionTitleWithIcon: {
+  sectionTitle: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(10),
+    fontSize: rf(9),
     color: Colors.zinc[400],
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginLeft: s(8),
   },
   sectionSubtitle: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: rf(8),
     color: Colors.zinc[600],
     letterSpacing: 0.8,
-    marginBottom: vs(14),
-    paddingLeft: s(2),
   },
 
-  // Workout Card
-  workoutCardsContainer: { gap: vs(12) },
-  workoutCardWrapper: { width: '100%' },
+  // ── Workout Cards - Side by side ──
+  workoutCardsRow: {
+    flexDirection: 'row',
+    gap: s(10),
+  },
+  workoutCardWrapper: {
+    flex: 1,
+  },
   workoutCard: {
-    borderRadius: ms(16),
-    padding: ms(16),
+    borderRadius: ms(14),
+    padding: ms(12),
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.06)',
     overflow: 'hidden',
     backgroundColor: '#000000',
     position: 'relative',
+    minHeight: vs(130),
   },
   workoutCardBgIcon: {
     position: 'absolute',
-    right: -ms(12),
-    top: -ms(8),
+    right: -ms(8),
+    top: -ms(6),
   },
   workoutCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: vs(10),
+    marginBottom: vs(8),
   },
-  workoutIconsRow: { flexDirection: 'row', alignItems: 'center' },
+  workoutIconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   workoutIconContainer: {
-    width: ms(38),
-    height: ms(38),
-    borderRadius: ms(11),
+    width: ms(28),
+    height: ms(28),
+    borderRadius: ms(8),
     alignItems: 'center',
     justifyContent: 'center',
   },
   workoutPlusText: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(14),
+    fontSize: rf(10),
     color: Colors.zinc[500],
-    marginHorizontal: s(6),
+    marginHorizontal: s(3),
   },
   selectedBadge: {
-    width: ms(26),
-    height: ms(26),
-    borderRadius: ms(13),
+    width: ms(20),
+    height: ms(20),
+    borderRadius: ms(10),
     alignItems: 'center',
     justifyContent: 'center',
   },
   tierBadgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(6),
-    paddingHorizontal: s(10),
-    paddingVertical: vs(3),
-    borderRadius: ms(6),
+    gap: s(4),
+    paddingHorizontal: s(6),
+    paddingVertical: vs(2),
+    borderRadius: ms(4),
     alignSelf: 'flex-start',
-    marginBottom: vs(6),
+    marginBottom: vs(4),
     backgroundColor: 'rgba(255,255,255,0.04)',
   },
-  tierBadgeDot: { width: s(5), height: s(5), borderRadius: s(3) },
+  tierBadgeDot: { width: s(4), height: s(4), borderRadius: s(2) },
   tierBadgeText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(7),
+    fontSize: rf(6),
     color: Colors.zinc[500],
-    letterSpacing: 1.5,
+    letterSpacing: 1,
   },
-  workoutCardContent: { marginBottom: vs(8) },
   workoutCardTitle: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(13),
+    fontSize: rf(9),
     color: Colors.white,
-    letterSpacing: 2,
+    letterSpacing: 1,
     marginBottom: vs(2),
   },
   workoutCardSubtitle: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(8),
-    color: Colors.zinc[500],
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
-  workoutDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    marginBottom: vs(8),
-  },
-  workoutCardDesc: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(8),
+    fontSize: rf(7),
     color: Colors.zinc[500],
     letterSpacing: 0.5,
   },
 
-  // Pricing Card
-  pricingCard: {
-    borderRadius: ms(16),
-    padding: ms(16),
+  // ── Card (Pricing) ──
+  card: {
+    borderRadius: ms(14),
+    padding: ms(14),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
     backgroundColor: '#000000',
     overflow: 'hidden',
     position: 'relative',
   },
-  pricingCardTopGlow: {
+  cardTopGlow: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: vs(60),
+    height: vs(50),
   },
 
-  // Field
-  fieldBlock: { marginBottom: vs(12) },
+  // ── Field ──
+  fieldBlock: { marginBottom: vs(10) },
   fieldLabel: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: rf(7),
     color: Colors.zinc[400],
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    marginBottom: vs(6),
+    marginBottom: vs(5),
     paddingHorizontal: s(3),
   },
 
-  // Dropdown
+  // ── Dropdown ──
   dropdownTrigger: {
-    height: vs(38),
-    borderRadius: ms(12),
+    height: vs(36),
+    borderRadius: ms(10),
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
@@ -968,18 +928,18 @@ const styles = StyleSheet.create({
   },
   dropdownTriggerInner: {
     flex: 1,
-    paddingHorizontal: s(14),
+    paddingHorizontal: s(12),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   dropdownTriggerText: {
     flex: 1,
-    marginRight: s(10),
+    marginRight: s(8),
     color: Colors.white,
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(9),
-    letterSpacing: 1.5,
+    fontSize: rf(8),
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   dropdownModalOverlay: {
@@ -990,33 +950,33 @@ const styles = StyleSheet.create({
   },
   dropdownModalCenter: { width: '100%' },
   dropdownModalCard: {
-    borderRadius: ms(16),
+    borderRadius: ms(14),
     overflow: 'hidden',
-    paddingVertical: vs(10),
-    paddingHorizontal: s(10),
+    paddingVertical: vs(8),
+    paddingHorizontal: s(8),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: '#000000',
-    maxHeight: vs(300),
+    maxHeight: vs(280),
   },
   dropdownModalTitle: {
     fontFamily: Fonts.orbitron.semiBold,
-    fontSize: rf(9),
+    fontSize: rf(8),
     color: Colors.zinc[300],
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     paddingHorizontal: s(8),
-    paddingTop: vs(6),
-    paddingBottom: vs(10),
+    paddingTop: vs(4),
+    paddingBottom: vs(8),
   },
   dropdownOption: {
-    minHeight: vs(44),
-    borderRadius: ms(10),
-    paddingHorizontal: s(14),
+    minHeight: vs(40),
+    borderRadius: ms(8),
+    paddingHorizontal: s(12),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: vs(6),
+    marginBottom: vs(4),
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
@@ -1030,253 +990,262 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.zinc[300],
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(9),
+    fontSize: rf(8),
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   dropdownOptionTextSelected: { color: Colors.white },
 
-  // Offer Section
-  offerSection: { marginBottom: vs(24) },
+  // ── Offer ──
   offerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: vs(12),
-    paddingHorizontal: s(3),
   },
   offerHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(8),
+    gap: s(6),
   },
   offerTitle: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(10),
+    fontSize: rf(9),
     color: Colors.gold,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   offerCard: {
-    borderRadius: ms(16),
-    padding: ms(16),
+    borderRadius: ms(14),
+    padding: ms(14),
     borderWidth: 1,
     borderColor: 'rgba(234,179,8,0.15)',
     backgroundColor: '#000000',
+    gap: vs(2),
   },
   calculationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: vs(8),
-    paddingHorizontal: s(6),
-    paddingVertical: vs(10),
-    backgroundColor: 'rgba(234,179,8,0.08)',
+    paddingHorizontal: s(10),
+    paddingVertical: vs(8),
+    backgroundColor: 'rgba(234,179,8,0.06)',
     borderRadius: ms(8),
     borderWidth: 1,
-    borderColor: 'rgba(234,179,8,0.15)',
+    borderColor: 'rgba(234,179,8,0.12)',
+    marginTop: vs(4),
   },
   calculationText: {
-    marginLeft: s(8),
+    marginLeft: s(6),
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
+    fontSize: rf(8),
     color: Colors.zinc[400],
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
   calculationHighlight: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(11),
+    fontSize: rf(10),
     color: Colors.gold,
   },
 
-  // Live Preview
-  previewSection: { marginBottom: vs(24) },
-  membershipCard: {
-    borderRadius: ms(16),
-    padding: s(16),
+  // ── Preview Card ──
+  previewCard: {
+    borderRadius: ms(14),
+    padding: s(14),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
     position: 'relative',
     backgroundColor: '#000000',
   },
-  cardBgContainer: {
+  previewBgIcon: {
     position: 'absolute',
-    top: -ms(10),
-    right: -ms(15),
+    top: -ms(8),
+    right: -ms(12),
     opacity: 0.8,
   },
-  membershipHeader: {
+  previewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: vs(12),
+    marginBottom: vs(10),
     zIndex: 1,
   },
   activeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(6),
+    gap: s(5),
     marginBottom: vs(4),
-    paddingHorizontal: s(8),
-    paddingVertical: vs(3),
+    paddingHorizontal: s(7),
+    paddingVertical: vs(2),
     borderRadius: ms(4),
     alignSelf: 'flex-start',
   },
-  activeDot: {
-    width: s(6),
-    height: s(6),
-    borderRadius: s(3),
-  },
+  activeDot: { width: s(5), height: s(5), borderRadius: s(3) },
   activeBadgeText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(7),
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-  },
-  membershipTier: {
-    fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(15),
-    letterSpacing: 4,
-    marginBottom: vs(6),
-  },
-  eliteWorkoutBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: s(6),
-    paddingHorizontal: s(8),
-    paddingVertical: vs(3),
-    borderRadius: ms(4),
-    alignSelf: 'flex-start',
-  },
-  eliteWorkoutText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(7),
-    letterSpacing: 1,
-  },
-  daysContainer: {
-    alignItems: 'flex-end',
-    zIndex: 1,
-  },
-  daysNumber: {
-    fontFamily: Fonts.orbitron.regular,
-    fontSize: rf(26),
-    lineHeight: rf(36),
-  },
-  daysLabel: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
-    color: Colors.zinc[400],
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-  },
-  divider: {
-    height: vs(1),
-    marginVertical: vs(12),
-    zIndex: 1,
-  },
-  membershipFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  expiryText: {
-    fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(10),
-    color: Colors.zinc[400],
-  },
-  extendButtonPreview: {
-    paddingHorizontal: s(16),
-    paddingVertical: vs(8),
-    borderRadius: ms(8),
-    borderWidth: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-  extendButtonText: {
-    fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(9),
+    fontSize: rf(6.5),
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
-  previewPriceInfo: { gap: vs(8), zIndex: 1 },
+  previewTier: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(13),
+    letterSpacing: 3,
+    marginBottom: vs(5),
+  },
+  previewWorkoutBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: s(5),
+    paddingHorizontal: s(7),
+    paddingVertical: vs(2),
+    borderRadius: ms(4),
+    alignSelf: 'flex-start',
+  },
+  previewWorkoutText: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: rf(6.5),
+    letterSpacing: 0.8,
+  },
+  previewDaysBox: { alignItems: 'flex-end', zIndex: 1 },
+  previewDaysNumber: {
+    fontFamily: Fonts.orbitron.regular,
+    fontSize: rf(22),
+    lineHeight: rf(28),
+  },
+  previewDaysLabel: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: rf(7),
+    color: Colors.zinc[400],
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  previewDivider: {
+    height: vs(1),
+    marginVertical: vs(10),
+    zIndex: 1,
+  },
+  previewFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  previewExpiry: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: rf(8.5),
+    color: Colors.zinc[400],
+  },
+  previewExtendBtn: {
+    paddingHorizontal: s(12),
+    paddingVertical: vs(5),
+    borderRadius: ms(6),
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  previewExtendText: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: rf(8),
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
   previewPriceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    zIndex: 1,
   },
   previewPriceLabel: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
+    fontSize: rf(8),
     color: Colors.zinc[400],
-    letterSpacing: 1,
+    letterSpacing: 0.8,
+  },
+  previewPriceRight: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: s(4),
   },
   previewOriginalPrice: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(10),
+    fontSize: rf(9),
     color: Colors.zinc[500],
     textDecorationLine: 'line-through',
   },
   previewFinalPrice: {
     fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(14),
+    fontSize: rf(13),
   },
   previewPriceDuration: {
     fontFamily: Fonts.rajdhani.regular,
-    fontSize: rf(9),
+    fontSize: rf(8),
     color: Colors.zinc[500],
   },
   previewOfferBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: s(6),
-    backgroundColor: 'rgba(234,179,8,0.15)',
-    paddingHorizontal: s(10),
-    paddingVertical: vs(6),
-    borderRadius: ms(6),
+    gap: s(5),
+    backgroundColor: 'rgba(234,179,8,0.12)',
+    paddingHorizontal: s(8),
+    paddingVertical: vs(4),
+    borderRadius: ms(5),
     alignSelf: 'flex-start',
+    marginTop: vs(8),
+    zIndex: 1,
   },
   previewOfferText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(8),
+    fontSize: rf(7.5),
     color: Colors.gold,
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
 
-  // Action Buttons
-  actionButtons: { marginTop: vs(8), marginBottom: vs(20) },
-  deployButton: { borderRadius: ms(14), overflow: 'hidden' },
-  deployButtonDisabled: { opacity: 0.6 },
-  deployButtonGradient: {
+  // ✅ ACTION ROW - Compact inline buttons
+  actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: s(12),
-    paddingVertical: vs(18),
+    gap: s(10),
+    marginBottom: vs(10),
   },
-  deployButtonText: {
-    fontFamily: Fonts.orbitron.bold,
-    fontSize: rf(10),
-    color: Colors.white,
-    letterSpacing: 2,
-  },
-  buttonSpacer: { height: vs(12) },
+
+  // ✅ Cancel - Small compact
   cancelButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: s(8),
-    paddingVertical: vs(14),
-    borderRadius: ms(12),
+    gap: s(5),
+    paddingVertical: vs(10),
+    paddingHorizontal: s(16),
+    borderRadius: ms(10),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   cancelButtonText: {
     fontFamily: Fonts.rajdhani.semiBold,
-    fontSize: rf(10),
+    fontSize: rf(8.5),
     color: Colors.zinc[500],
-    letterSpacing: 1.5,
+    letterSpacing: 1,
     textTransform: 'uppercase',
+  },
+
+  // ✅ Deploy - Compact flex button
+  deployButton: {
+    flex: 1,
+    borderRadius: ms(10),
+    overflow: 'hidden',
+  },
+  deployButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: s(8),
+    paddingVertical: vs(11),
+  },
+  deployButtonText: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: rf(9),
+    color: Colors.white,
+    letterSpacing: 2,
   },
 });
 
