@@ -14,10 +14,10 @@ import { HugeiconsIcon } from '@hugeicons/react-native';
 import {
   Home01Icon,
   CreditCardIcon,
-  User02Icon,
   UserMultipleIcon,
   SettingsIcon,
   Calendar03Icon,
+  User02Icon,
 } from '@hugeicons/core-free-icons';
 
 import Colors from '../../constants/Colors';
@@ -28,7 +28,7 @@ import Fonts from '../../constants/Fonts';
  * @param {Object}   props
  * @param {string}   props.activeTab    - Currently active tab id
  * @param {function} props.onTabChange  - Callback when tab is pressed
- * @param {string}   [props.userType]   - Optional: 'admin' | 'member' | 'trainer'
+ * @param {string}   [props.userType]   - Optional: 'admin' | 'trainer'
  */
 const BottomNav = ({ activeTab, onTabChange, userType }) => {
   const route = useRoute();
@@ -38,47 +38,31 @@ const BottomNav = ({ activeTab, onTabChange, userType }) => {
     if (userType) return userType;
     if (route.name?.startsWith('Admin')) return 'admin';
     if (route.name?.startsWith('Trainer')) return 'trainer';
-    return 'member';
+    return 'admin';
   }, [route.name, userType]);
 
   // ── Tab configurations ──────────────────────────────────────
   const adminTabs = useMemo(
     () => [
-      { id: 'dashboard', icon: Home01Icon,        label: 'Home'     },
-      { id: 'plans',     icon: CreditCardIcon,    label: 'Plans'    },
-      { id: 'members',   icon: UserMultipleIcon,  label: 'Members'  },
-      { id: 'settings',  icon: SettingsIcon,      label: 'Settings' },
+      { id: 'dashboard', icon: Home01Icon, label: 'Home' },
+      { id: 'plans', icon: CreditCardIcon, label: 'Plans' },
+      { id: 'members', icon: UserMultipleIcon, label: 'Members' },
+      { id: 'settings', icon: SettingsIcon, label: 'Settings' },
     ],
     []
   );
 
-  const memberTabs = useMemo(
-    () => [
-      { id: 'home',       icon: Home01Icon,        label: 'Home'    },
-      { id: 'membership', icon: CreditCardIcon,    label: 'Plans'   },
-      { id: 'friends',    icon: UserMultipleIcon,  label: 'Friends' },
-      { id: 'profile',    icon: User02Icon,        label: 'Profile' },
-    ],
-    []
-  );
-
-  // ✅ NEW: Trainer tabs - Attendance replaces Plans
   const trainerTabs = useMemo(
     () => [
-      { id: 'home',       icon: Home01Icon,        label: 'Home'       },
-      { id: 'attendance', icon: Calendar03Icon,     label: 'Attendance' },
-      { id: 'friends',    icon: UserMultipleIcon,  label: 'Members'    },
-      { id: 'profile',    icon: User02Icon,        label: 'Profile'    },
+      { id: 'home', icon: Home01Icon, label: 'Home' },
+      { id: 'attendance', icon: Calendar03Icon, label: 'Attendance' },
+      { id: 'friends', icon: UserMultipleIcon, label: 'Members' },
+      { id: 'profile', icon: User02Icon, label: 'Profile' },
     ],
     []
   );
 
-  const tabs =
-    detectedType === 'admin'
-      ? adminTabs
-      : detectedType === 'trainer'
-      ? trainerTabs
-      : memberTabs;
+  const tabs = detectedType === 'admin' ? adminTabs : trainerTabs;
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
@@ -139,10 +123,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: '#000000',
   },
   container: {
-    backgroundColor: Colors.surfaceHeavy,
+    backgroundColor: '#000000',
     paddingTop: 0,
     paddingBottom: verticalScale(4),
     paddingHorizontal: scale(12),

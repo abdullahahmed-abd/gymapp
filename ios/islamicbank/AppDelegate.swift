@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "islamicbank",
+      withModuleName: "gymforadmin",
       in: window,
       launchOptions: launchOptions
     )

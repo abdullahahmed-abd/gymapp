@@ -61,8 +61,8 @@
 # 🔵 BLUETOOTH
 # ═══════════════════════════════════════════════════════════════
 
--keep class com.islamicbank.newapp.bluetooth.** { *; }
--keep class com.islamicbank.newapp.BluetoothModule { *; }
+-keep class com.gymforadmin.newapp.bluetooth.** { *; }
+-keep class com.gymforadmin.newapp.BluetoothModule { *; }
 
 # ═══════════════════════════════════════════════════════════════
 # 🔧 GENERAL

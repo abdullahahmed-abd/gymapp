@@ -1,4 +1,4 @@
-// AdminDashboardScreen.js - TRAINER ADDED VERSION
+// AdminDashboardScreen.js - WITH NEW HEADER
 
 import React from 'react';
 import { 
@@ -15,7 +15,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
-import Header from '../../components/shared/Header';
 import GlassCard from '../../components/shared/GlassCard';
 import GlassButton from '../../components/shared/GlassButton';
 import BottomNav from '../../components/shared/BottomNav';
@@ -28,14 +27,196 @@ import {
   ArrowRight01Icon,
   UserAdd01Icon,
   Package01Icon,
-  PercentIcon,
   UserGroupIcon,
   AlertCircleIcon,
   Clock01Icon,
   CheckmarkCircle02Icon,
   MoneyReceiveCircleIcon,
   Dumbbell01Icon,
+  Notification01Icon,
 } from "@hugeicons/core-free-icons";
+
+const GOLD = '#C5A059';
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD HEADER COMPONENT
+// ═══════════════════════════════════════════════════════════════
+const DashboardHeader = ({ navigation, userName = 'Admin' }) => {
+  const initials = userName
+    ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'AD';
+
+  return (
+    <View style={headerStyles.wrapper}>
+      <View style={headerStyles.bottomBorder} />
+      <View style={headerStyles.inner}>
+        {/* Left Side - Logo & Gym Name */}
+        <View style={headerStyles.left}>
+          <View style={headerStyles.logoBox}>
+            <View style={headerStyles.logoGlowRing} />
+            <Image
+              source={gymlogoimg}
+              style={headerStyles.logoImg}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={headerStyles.gymTextWrap}>
+            <Text style={headerStyles.gymName}>GYMVERSE</Text>
+            <View style={headerStyles.gymSubRow}>
+              <View style={headerStyles.gymSubDot} />
+              <Text style={headerStyles.gymSub}>FITNESS CENTER</Text>
+              <View style={headerStyles.gymSubDot} />
+            </View>
+          </View>
+        </View>
+
+        {/* Right Side - Notification & Avatar */}
+        <View style={headerStyles.right}>
+          <TouchableOpacity
+            style={headerStyles.iconBtn}
+            activeOpacity={0.7}
+            onPress={() => {}}>
+            <HugeiconsIcon
+              icon={Notification01Icon}
+              size={moderateScale(17)}
+              color={Colors.zinc[300]}
+            />
+            <View style={headerStyles.notifDot} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={headerStyles.avatarBtn}
+            activeOpacity={0.8}
+            onPress={() => navigation?.navigate('AdminSettings')}>
+            <LinearGradient
+              colors={[`${GOLD}50`, `${GOLD}18`]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={headerStyles.avatarGrad}>
+              <Text style={headerStyles.avatarText}>{initials}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const LOGO_SIZE = moderateScale(46);
+
+const headerStyles = StyleSheet.create({
+  wrapper: {
+    paddingHorizontal: scale(18),
+    paddingTop: verticalScale(8),
+    paddingBottom: verticalScale(12),
+    position: 'relative',
+  },
+  bottomBorder: {
+    position: 'absolute',
+    bottom: 0,
+    left: scale(18),
+    right: scale(18),
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  left: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: scale(12) 
+  },
+  logoBox: {
+    width: LOGO_SIZE,
+    height: LOGO_SIZE,
+    borderRadius: moderateScale(13),
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+    position: 'relative',
+  },
+  logoGlowRing: { position: 'absolute' },
+  logoImg: { 
+    width: '310%', 
+    height: '170%', 
+    top: verticalScale(2) 
+  },
+  gymTextWrap: { gap: verticalScale(1) },
+  gymName: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(13.5),
+    color: Colors.white,
+    letterSpacing: scale(3.5),
+    lineHeight: RFValue(18),
+  },
+  gymSubRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: scale(5) 
+  },
+  gymSubDot: {
+    width: scale(3),
+    height: scale(3),
+    borderRadius: scale(2),
+    backgroundColor: `${GOLD}70`,
+  },
+  gymSub: {
+    fontFamily: Fonts.rajdhani.semiBold,
+    fontSize: RFValue(7),
+    color: `${GOLD}90`,
+    letterSpacing: scale(2.2),
+    textTransform: 'uppercase',
+  },
+  right: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: scale(10) 
+  },
+  iconBtn: {
+    width: moderateScale(38),
+    height: moderateScale(38),
+    borderRadius: moderateScale(19),
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.09)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  notifDot: {
+    position: 'absolute',
+    top: verticalScale(7),
+    right: scale(8),
+    width: scale(7),
+    height: scale(7),
+    borderRadius: scale(4),
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#000',
+  },
+  avatarBtn: {
+    width: moderateScale(38),
+    height: moderateScale(38),
+    borderRadius: moderateScale(19),
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: `${GOLD}55`,
+  },
+  avatarGrad: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  avatarText: {
+    fontFamily: Fonts.orbitron.bold,
+    fontSize: RFValue(10),
+    color: GOLD,
+    letterSpacing: scale(0.8),
+  },
+});
 
 // ═══════════════════════════════════════════════════════════════
 // LIVE ROSTER DATA
@@ -80,11 +261,12 @@ const AdminDashboardScreen = ({ navigation }) => {
       blurRadius={9}
     >
       <LinearGradient
-        colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000000']}
+        colors={['rgba(0,0,0,0.82)', 'rgba(0,0,0,0.94)', '#000000']}
         style={styles.gradient}
       >
-        <SafeAreaView style={styles.safeArea} edges={['']}>
-          <Header />
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          {/* ✅ NEW HEADER */}
+          <DashboardHeader navigation={navigation} userName="Admin Panel" />
           
           <ScrollView 
             style={styles.container}
@@ -358,88 +540,86 @@ const AdminDashboardScreen = ({ navigation }) => {
             {/* ═══════════════════════════════════════════════════════════════ */}
             {/* REVENUE CARD */}
             {/* ═══════════════════════════════════════════════════════════════ */}
-          <TouchableOpacity
-  activeOpacity={0.9}
-  onPress={() => navigation.navigate('AdminExpenses')}
->
-  <GlassCard>
-    <View style={styles.revenueHeader}>
-      <View style={styles.revenueTitle}>
-        <HugeiconsIcon
-          icon={MoneyReceiveCircleIcon}
-          size={moderateScale(16)}
-          color={Colors.gold}
-        />
-        <Text style={styles.revenueTitleText}>Today's Revenue</Text>
-      </View>
-      {/* ✅ Arrow to show it's clickable */}
-      <View style={styles.revenueArrow}>
-        <HugeiconsIcon
-          icon={ArrowRight01Icon}
-          size={moderateScale(14)}
-          color="rgba(255,255,255,0.3)"
-        />
-      </View>
-      <View style={styles.cardLogoContainer}>
-        <Image
-          source={gymlogoimg}
-          style={styles.cardLogo}
-          resizeMode="contain"
-        />
-      </View>
-    </View>
-    <Text style={styles.revenueLabel}>Total Collection</Text>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => navigation.navigate('AdminExpenses')}
+            >
+              <GlassCard>
+                <View style={styles.revenueHeader}>
+                  <View style={styles.revenueTitle}>
+                    <HugeiconsIcon
+                      icon={MoneyReceiveCircleIcon}
+                      size={moderateScale(16)}
+                      color={Colors.gold}
+                    />
+                    <Text style={styles.revenueTitleText}>Today's Revenue</Text>
+                  </View>
+                  <View style={styles.revenueArrow}>
+                    <HugeiconsIcon
+                      icon={ArrowRight01Icon}
+                      size={moderateScale(14)}
+                      color="rgba(255,255,255,0.3)"
+                    />
+                  </View>
+                  <View style={styles.cardLogoContainer}>
+                    <Image
+                      source={gymlogoimg}
+                      style={styles.cardLogo}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </View>
+                <Text style={styles.revenueLabel}>Total Collection</Text>
 
-    <View style={styles.revenueStats}>
-      <Text style={styles.revenueNumber}>₹45,200</Text>
-      <View style={styles.trendBadge}>
-        <Text style={styles.trendText}>+12%</Text>
-      </View>
-    </View>
+                <View style={styles.revenueStats}>
+                  <Text style={styles.revenueNumber}>₹45,200</Text>
+                  <View style={styles.trendBadge}>
+                    <Text style={styles.trendText}>+12%</Text>
+                  </View>
+                </View>
 
-    <View style={styles.progressBar}>
-      <View style={[styles.progressFill, { width: '75%' }]} />
-    </View>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: '75%' }]} />
+                </View>
 
-    <View style={styles.revenueBreakdown}>
-      <View style={styles.breakdownDivider} />
-      <View style={styles.breakdownContent}>
-        <View style={styles.breakdownItem}>
-          <Text style={styles.breakdownValue}>₹32K</Text>
-          <Text style={styles.breakdownLabel}>Memberships</Text>
-        </View>
-        <View style={styles.breakdownItem}>
-          <Text style={styles.breakdownValue}>₹8K</Text>
-          <Text style={styles.breakdownLabel}>Renewals</Text>
-        </View>
-        <View style={styles.breakdownItem}>
-          <Text style={styles.breakdownValue}>₹5K</Text>
-          <Text style={styles.breakdownLabel}>Others</Text>
-        </View>
-      </View>
-    </View>
+                <View style={styles.revenueBreakdown}>
+                  <View style={styles.breakdownDivider} />
+                  <View style={styles.breakdownContent}>
+                    <View style={styles.breakdownItem}>
+                      <Text style={styles.breakdownValue}>₹32K</Text>
+                      <Text style={styles.breakdownLabel}>Memberships</Text>
+                    </View>
+                    <View style={styles.breakdownItem}>
+                      <Text style={styles.breakdownValue}>₹8K</Text>
+                      <Text style={styles.breakdownLabel}>Renewals</Text>
+                    </View>
+                    <View style={styles.breakdownItem}>
+                      <Text style={styles.breakdownValue}>₹5K</Text>
+                      <Text style={styles.breakdownLabel}>Others</Text>
+                    </View>
+                  </View>
+                </View>
 
-    {/* ✅ Tap to view details hint */}
-    <View style={styles.revenueTapHint}>
-      <HugeiconsIcon
-        icon={MoneyReceiveCircleIcon}
-        size={moderateScale(12)}
-        color={Colors.gold}
-      />
-      <Text style={styles.revenueTapHintText}>
-        Tap to view expenses & details
-      </Text>
-      <HugeiconsIcon
-        icon={ArrowRight01Icon}
-        size={moderateScale(12)}
-        color="rgba(255,255,255,0.3)"
-      />
-    </View>
-  </GlassCard>
-</TouchableOpacity>
+                <View style={styles.revenueTapHint}>
+                  <HugeiconsIcon
+                    icon={MoneyReceiveCircleIcon}
+                    size={moderateScale(12)}
+                    color={Colors.gold}
+                  />
+                  <Text style={styles.revenueTapHintText}>
+                    Tap to view expenses & details
+                  </Text>
+                  <HugeiconsIcon
+                    icon={ArrowRight01Icon}
+                    size={moderateScale(12)}
+                    color="rgba(255,255,255,0.3)"
+                  />
+                </View>
+              </GlassCard>
+            </TouchableOpacity>
 
             {/* ═══════════════════════════════════════════════════════════════ */}
-            {/* COMMAND CENTER - UPDATED WITH TRAINERS BUTTON */}
+            {/* COMMAND CENTER */}
             {/* ═══════════════════════════════════════════════════════════════ */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Command Center</Text>
@@ -466,7 +646,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                   </LinearGradient>
                 </TouchableOpacity>
 
-                {/* ✅ TRAINERS BUTTON - Replaces Offers */}
+                {/* Trainers Button */}
                 <TouchableOpacity
                   style={styles.commandCard}
                   onPress={() => navigation.navigate('AdminTrainers')}
@@ -572,27 +752,31 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   container: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: scale(24),
-    gap: verticalScale(16),
+    paddingHorizontal: scale(20),
+    gap: verticalScale(14),
     paddingBottom: verticalScale(100),
   },
 
   // Welcome
-  welcomeSection: { marginBottom: verticalScale(0) },
+  welcomeSection: { 
+    paddingTop: verticalScale(4),
+    paddingBottom: verticalScale(4),
+  },
   welcomeLabel: {
     fontFamily: Fonts.rajdhani.regular,
     fontSize: RFValue(8),
-    color: Colors.zinc[400],
-    letterSpacing: scale(2),
+    color: Colors.zinc[500],
+    letterSpacing: scale(2.5),
     textTransform: 'uppercase',
-    marginBottom: verticalScale(4),
+    marginBottom: verticalScale(3),
     fontWeight: '600',
   },
   welcomeName: {
     fontFamily: Fonts.orbitron.extraBold,
-    fontSize: RFValue(18),
+    fontSize: RFValue(19),
     color: Colors.white,
-    letterSpacing: scale(3.6),
+    letterSpacing: scale(3.5),
+    lineHeight: RFValue(26),
   },
 
   // Members Stats Card
@@ -1102,6 +1286,28 @@ const styles = StyleSheet.create({
     letterSpacing: scale(1),
     textTransform: 'uppercase',
   },
+  revenueArrow: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    padding: scale(4),
+  },
+  revenueTapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: scale(5),
+    marginTop: verticalScale(14),
+    paddingTop: verticalScale(10),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+  },
+  revenueTapHintText: {
+    fontFamily: Fonts.rajdhani.regular,
+    fontSize: RFValue(7.5),
+    color: 'rgba(255,255,255,0.3)',
+    letterSpacing: scale(0.5),
+  },
 
   // Command Center
   section: { gap: verticalScale(12) },
@@ -1183,29 +1389,6 @@ const styles = StyleSheet.create({
   actionButtonTextInactive: {
     color: Colors.zinc[500],
   },
-  // Add to AdminDashboardScreen styles:
-revenueArrow: {
-  position: 'absolute',
-  right: 0,
-  top: 0,
-  padding: scale(4),
-},
-revenueTapHint: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: scale(5),
-  marginTop: verticalScale(14),
-  paddingTop: verticalScale(10),
-  borderTopWidth: 1,
-  borderTopColor: 'rgba(255,255,255,0.05)',
-},
-revenueTapHintText: {
-  fontFamily: Fonts.rajdhani.regular,
-  fontSize: RFValue(7.5),
-  color: 'rgba(255,255,255,0.3)',
-  letterSpacing: scale(0.5),
-},
 });
 
 export default AdminDashboardScreen;

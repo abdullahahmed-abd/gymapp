@@ -1,5 +1,5 @@
 // src/screens/admin/TrainerDetailScreen.js
-import React, { useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,882 +7,676 @@ import {
   ScrollView,
   ImageBackground,
   TouchableOpacity,
-  Platform,
-  Linking,
   Alert,
+  Linking,
+  Animated,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 import { HugeiconsIcon } from '@hugeicons/react-native';
-import {
-  ArrowLeft01Icon,
-  Call02Icon,
-  WhatsappIcon,
-  SmartPhone01Icon,
-  Clock01Icon,
-  Calendar03Icon,
-  Dumbbell01Icon,
-  CheckmarkCircle02Icon,
-  Mail01Icon,
-  Login01Icon,
-  Logout01Icon,
-  Cancel01Icon,
-  ArrowRight01Icon,
-} from '@hugeicons/core-free-icons';
+import * as HugeIcons from '@hugeicons/core-free-icons';
 
 import Header from '../../../components/shared/Header';
+import BottomNav from '../../../components/shared/BottomNav';
 import Colors from '../../../constants/Colors';
 import Fonts from '../../../constants/Fonts';
-import { useTrainer } from '../../../context/TrainerContext';
 
-const s  = (size) => scale(size * 0.9);
-const ms = (size) => moderateScale(size * 0.85, 0.2);
-const vs = (size) => verticalScale(size * 0.85);
+const s  = (size) => scale(size);
+const ms = (size) => moderateScale(size, 0.25);
+const vs = (size) => verticalScale(size);
 const rf = (size) => RFValue(size);
 
-const TRAINER_COLOR = '#22D3EE';
+// ═══════════════════════════════════════════════════════════════
+// SAFE ICON RESOLVER
+// ═══════════════════════════════════════════════════════════════
+const resolveIcon = (...names) => {
+  for (const n of names) {
+    if (HugeIcons[n]) return HugeIcons[n];
+  }
+  if (__DEV__) console.warn(`⚠️ No icon found for: ${names.join(', ')}`);
+  return null;
+};
+
+const Icons = {
+  arrowLeft:    resolveIcon('ArrowLeft01Icon', 'ArrowLeftIcon'),
+  arrowRight:   resolveIcon('ArrowRight01Icon', 'ArrowRightIcon'),
+  cancel:       resolveIcon('Cancel01Icon', 'CancelIcon', 'MultiplicationSignIcon'),
+  shield:       resolveIcon('SecurityIcon', 'Shield01Icon', 'ShieldIcon'),
+  checkCircle:  resolveIcon('CheckmarkCircle02Icon', 'CheckmarkCircleIcon', 'CheckmarkCircle01Icon'),
+  clock:        resolveIcon('Clock01Icon', 'ClockIcon'),
+  calendar:     resolveIcon('Calendar03Icon', 'Calendar01Icon', 'CalendarIcon'),
+  clipboard:    resolveIcon('ClipboardIcon', 'TaskDaily01Icon', 'Note01Icon'),
+  dumbbell:     resolveIcon('Dumbbell01Icon', 'DumbbellIcon', 'Dumbbell02Icon'),
+  call:         resolveIcon('Call02Icon', 'Call01Icon', 'CallIcon'),
+  whatsapp:     resolveIcon('WhatsappIcon', 'MessageMultiple01Icon', 'Message01Icon'),
+  view:         resolveIcon('ViewIcon', 'EyeIcon', 'View01Icon'),
+  target:       resolveIcon('Target02Icon', 'Target01Icon', 'TargetIcon'),
+  star:         resolveIcon('StarIcon', 'Star02Icon', 'Star01Icon'),
+  user:         resolveIcon('User02Icon', 'UserIcon', 'User01Icon'),
+  hash:         resolveIcon('Hash01Icon', 'HashtagIcon', 'HashIcon'),
+  wifi:         resolveIcon('WifiIcon', 'Wifi01Icon', 'WifiFullSignalIcon'),
+  chevronRight: resolveIcon('ArrowRight01Icon', 'ChevronRight01Icon'),
+};
 
 // ═══════════════════════════════════════════════════════════════
-// DUMMY ATTENDANCE DATA
+// SAFE ICON COMPONENT
 // ═══════════════════════════════════════════════════════════════
-const ATTENDANCE_DATA = {
-  todayStatus: 'present',
-  todayCheckin: '6:15 AM',
-  todayCheckout: null,
-  todayDuration: '2h 30m',
+const SafeIcon = ({ icon, size = 16, color = '#fff', strokeWidth, style }) => {
+  if (!icon) return <View style={[{ width: size, height: size }, style]} />;
+  return (
+    <HugeiconsIcon icon={icon} size={size} color={color} strokeWidth={strokeWidth} style={style} />
+  );
+};
 
-  thisWeekPresent: 5,
-  thisWeekAbsent: 1,
-  thisWeekTotal: 6,
+// ═══════════════════════════════════════════════════════════════
+// DESIGN TOKENS
+// ═══════════════════════════════════════════════════════════════
+const CYAN  = '#22D3EE';
+const GOLD  = '#C5A059';
+const GREEN = '#22C55E';
+const RED   = '#EF4444';
 
-  thisMonthPresent: 22,
-  thisMonthAbsent: 4,
-  thisMonthTotal: 26,
-
-  thisYearPresent: 220,
-  thisYearAbsent: 45,
-  thisYearTotal: 265,
-
-  avgCheckinTime: '6:20 AM',
-  avgCheckoutTime: '2:45 PM',
-  avgSessionDuration: '8h 25m',
-
-  totalDaysPresent: 124,
-  totalDaysAbsent: 18,
+// ═══════════════════════════════════════════════════════════════
+// DUMMY TRAINER (fallback)
+// ═══════════════════════════════════════════════════════════════
+const DUMMY_TRAINER = {
+  id: 'm1',
+  name: 'Abdullah Ahmed',
+  memberId: 'GYM001',
+  phone: '+918817159218',
+  assignedAt: '2024-12-01T00:00:00Z',
 };
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+const fmtDate = (d) =>
+  new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+// ═══════════════════════════════════════════════════════════════
+// PULSE DOT
+// ═══════════════════════════════════════════════════════════════
+const PulseDot = ({ color = GREEN, size = 6 }) => {
+  const anim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, { toValue: 1.8, duration: 1000, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 1,   duration: 1000, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+  return (
+    <View style={{ width: size * 3, height: size * 3, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View style={{
+        position: 'absolute', width: size * 2, height: size * 2,
+        borderRadius: size, backgroundColor: `${color}30`,
+        transform: [{ scale: anim }],
+      }} />
+      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }} />
+    </View>
+  );
 };
 
-const formatPhone = (phone) => {
-  const c = phone?.replace(/\D/g, '') || '';
-  return c.length === 12
-    ? `+${c.slice(0, 2)} ${c.slice(2, 7)} ${c.slice(7)}`
-    : phone;
+// ═══════════════════════════════════════════════════════════════
+// GLASS PANEL
+// ═══════════════════════════════════════════════════════════════
+const GlassPanel = ({ children, style: customStyle, borderColor, glow, onPress }) => {
+  const Wrapper = onPress ? TouchableOpacity : View;
+  return (
+    <Wrapper
+      onPress={onPress}
+      activeOpacity={0.85}
+      style={[
+        gpSt.panel,
+        borderColor && { borderColor },
+        glow && { shadowColor: glow, shadowOpacity: 0.2, shadowRadius: 16, elevation: 6 },
+        customStyle,
+      ]}
+    >
+      {children}
+    </Wrapper>
+  );
 };
+
+const gpSt = StyleSheet.create({
+  panel: {
+    backgroundColor: '#000000',
+    borderRadius: ms(20),
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════
+// STAT CARD
+// ═══════════════════════════════════════════════════════════════
+const StatCard = ({ icon, label, value, color, sub, pulse }) => (
+  <GlassPanel glow={`${color}08`} style={scSt.card}>
+    <View style={scSt.inner}>
+      <View style={scSt.topRow}>
+        <View style={[scSt.iconBox, { backgroundColor: `${color}15`, borderColor: `${color}20` }]}>
+          <SafeIcon icon={icon} size={ms(15)} color={color} />
+        </View>
+        {pulse && <PulseDot color={color} size={5} />}
+      </View>
+      <Text style={scSt.value} numberOfLines={1}>{value}</Text>
+      <Text style={scSt.label}>{label}</Text>
+      {sub && (
+        <>
+          <View style={scSt.divider} />
+          <View style={scSt.subRow}>
+            <View style={[scSt.subDot, { backgroundColor: `${color}80` }]} />
+            <Text style={scSt.subText}>{sub}</Text>
+          </View>
+        </>
+      )}
+    </View>
+  </GlassPanel>
+);
+
+const scSt = StyleSheet.create({
+  card:    { flex: 1 },
+  inner:   { padding: ms(12) },
+  topRow:  { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: vs(10) },
+  iconBox: { width: ms(36), height: ms(36), borderRadius: ms(12), alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  value:   { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(13), color: '#fff', marginBottom: vs(3) },
+  label:   { fontFamily: Fonts.rajdhani?.semiBold || 'System', fontSize: rf(7), color: 'rgba(161,161,170,1)', letterSpacing: 1.2, textTransform: 'uppercase' },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginVertical: vs(7) },
+  subRow:  { flexDirection: 'row', alignItems: 'center', gap: s(5) },
+  subDot:  { width: ms(3), height: ms(3), borderRadius: ms(1.5) },
+  subText: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(6.5), color: 'rgba(113,113,122,1)', letterSpacing: 0.8, textTransform: 'uppercase' },
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INFO ROW
+// ═══════════════════════════════════════════════════════════════
+const InfoRow = ({ icon, label, value, valueColor, color = CYAN, last }) => (
+  <View style={[irSt.row, !last && irSt.rowDivider]}>
+    <View style={irSt.left}>
+      <View style={[irSt.iconBox, { backgroundColor: `${color}10`, borderColor: `${color}15` }]}>
+        <SafeIcon icon={icon} size={ms(11)} color={color} />
+      </View>
+      <Text style={irSt.label}>{label}</Text>
+    </View>
+    <Text style={[irSt.value, { color: valueColor || 'rgba(255,255,255,0.90)' }]} numberOfLines={1}>
+      {value}
+    </Text>
+  </View>
+);
+
+const irSt = StyleSheet.create({
+  row:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: vs(10) },
+  rowDivider:  { borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  left:        { flexDirection: 'row', alignItems: 'center', gap: s(10), flex: 1 },
+  iconBox:     { width: ms(28), height: ms(28), borderRadius: ms(8), borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  label:       { fontFamily: Fonts.rajdhani?.semiBold || 'System', fontSize: rf(8.5), color: 'rgba(113,113,122,1)', letterSpacing: 1.2, textTransform: 'uppercase' },
+  value:       { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(9), letterSpacing: 0.5, marginLeft: s(8), flexShrink: 1, textAlign: 'right' },
+});
+
+// ═══════════════════════════════════════════════════════════════
+// ACTION BUTTON
+// ═══════════════════════════════════════════════════════════════
+const ActionBtn = ({ icon, label, sub, color, onPress, badge }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    activeOpacity={0.85}
+    style={abSt.btn}
+  >
+    <View style={[abSt.iconBox, {
+      backgroundColor: `${color}10`,
+      borderColor: `${color}18`,
+      shadowColor: color,
+    }]}>
+      <SafeIcon icon={icon} size={ms(15)} color={color} />
+    </View>
+    <View style={abSt.textBlock}>
+      <Text style={abSt.label}>{label}</Text>
+      {sub && <Text style={abSt.sub} numberOfLines={1}>{sub}</Text>}
+    </View>
+    {badge && (
+      <View style={[abSt.badge, { backgroundColor: `${color}12`, borderColor: `${color}22` }]}>
+        <Text style={[abSt.badgeText, { color }]}>{badge}</Text>
+      </View>
+    )}
+    <SafeIcon icon={Icons.chevronRight} size={ms(13)} color="rgba(255,255,255,0.15)" />
+  </TouchableOpacity>
+);
+
+const abSt = StyleSheet.create({
+  btn:       { flexDirection: 'row', alignItems: 'center', gap: s(12), paddingHorizontal: s(14), paddingVertical: vs(12), borderRadius: ms(16), backgroundColor: '#000', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
+  iconBox:   { width: ms(40), height: ms(40), borderRadius: ms(12), borderWidth: 1, alignItems: 'center', justifyContent: 'center', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 },
+  textBlock: { flex: 1, minWidth: 0 },
+  label:     { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(10), color: '#fff', letterSpacing: 1, textTransform: 'uppercase' },
+  sub:       { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(8), color: 'rgba(113,113,122,1)', letterSpacing: 0.3, marginTop: vs(2) },
+  badge:     { paddingHorizontal: s(7), paddingVertical: vs(3), borderRadius: ms(7), borderWidth: 1 },
+  badgeText: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(6.5), letterSpacing: 0.5 },
+});
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN SCREEN
 // ═══════════════════════════════════════════════════════════════
 const TrainerDetailScreen = ({ navigation, route }) => {
-  const trainer = route?.params?.trainer;
-  const { removeTrainer } = useTrainer();
-  const [activeFilter, setActiveFilter] = useState('week');
+  const trainer = route?.params?.trainer || DUMMY_TRAINER;
 
+  // ── Not found state ──
   if (!trainer) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#000',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48' }}
+        style={st.bg}
+        blurRadius={9}
       >
-        <Text style={{ color: '#fff' }}>Trainer not found</Text>
-      </View>
+        <LinearGradient
+          colors={['rgba(0,0,0,0.88)', 'rgba(0,0,0,0.95)', '#000000']}
+          style={st.gradient}
+        >
+          <SafeAreaView style={st.safe} edges={['top']}>
+            <Header title="TRAINER DETAIL" showMenu={false} />
+            <View style={st.notFoundContainer}>
+              <GlassPanel style={st.notFoundCard}>
+                <View style={st.notFoundIcon}>
+                  <SafeIcon icon={Icons.user} size={ms(28)} color="rgba(63,63,70,1)" strokeWidth={1.5} />
+                </View>
+                <Text style={st.notFoundText}>TRAINER NOT FOUND</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.goBack()}
+                  activeOpacity={0.85}
+                  style={[st.notFoundBtn, { borderColor: `${CYAN}30` }]}
+                >
+                  <SafeIcon icon={Icons.arrowLeft} size={ms(13)} color={CYAN} />
+                  <Text style={[st.notFoundBtnText, { color: CYAN }]}>Back to Trainers</Text>
+                </TouchableOpacity>
+              </GlassPanel>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+      </ImageBackground>
     );
   }
 
-  const daysAsTrainer = trainer.assignedAt
-    ? Math.floor(
-        (Date.now() - new Date(trainer.assignedAt).getTime()) /
-          (1000 * 60 * 60 * 24)
-      )
+  const daysActive = trainer.assignedAt
+    ? Math.floor((Date.now() - new Date(trainer.assignedAt).getTime()) / 86400000)
     : 0;
 
-  const isToday = ATTENDANCE_DATA.todayStatus === 'present';
-  const isOngoing = isToday && !ATTENDANCE_DATA.todayCheckout;
-
-  const weekRate = Math.round(
-    (ATTENDANCE_DATA.thisWeekPresent / ATTENDANCE_DATA.thisWeekTotal) * 100
-  );
-  const monthRate = Math.round(
-    (ATTENDANCE_DATA.thisMonthPresent / ATTENDANCE_DATA.thisMonthTotal) * 100
-  );
-  const yearRate = Math.round(
-    (ATTENDANCE_DATA.thisYearPresent / ATTENDANCE_DATA.thisYearTotal) * 100
-  );
-
-  const getPresentCount = () => {
-    if (activeFilter === 'week') return ATTENDANCE_DATA.thisWeekPresent;
-    if (activeFilter === 'month') return ATTENDANCE_DATA.thisMonthPresent;
-    return ATTENDANCE_DATA.thisYearPresent;
-  };
-
-  const getAbsentCount = () => {
-    if (activeFilter === 'week') return ATTENDANCE_DATA.thisWeekAbsent;
-    if (activeFilter === 'month') return ATTENDANCE_DATA.thisMonthAbsent;
-    return ATTENDANCE_DATA.thisYearAbsent;
-  };
-
-  const getRate = () => {
-    if (activeFilter === 'week') return weekRate;
-    if (activeFilter === 'month') return monthRate;
-    return yearRate;
-  };
-
-  // Handlers
-  const handleGoBack = () => {
-    if (navigation?.canGoBack()) navigation.goBack();
-    else navigation?.navigate('AdminTrainers');
-  };
-
-  const handleCall = () => {
-    if (trainer.phone)
-      Linking.openURL(`tel:${trainer.phone.replace(/\D/g, '')}`);
-  };
-
-  const handleWhatsApp = () => {
-    if (trainer.phone)
-      Linking.openURL(
-        `whatsapp://send?phone=${trainer.phone.replace(/\D/g, '')}`
-      );
-  };
-
-  const handleEmail = () => {
-    if (trainer.email) Linking.openURL(`mailto:${trainer.email}`);
-  };
-
-  const handleRemoveTrainer = () => {
+  const handleRemove = () => {
     Alert.alert(
       'Remove Trainer',
-      `Remove ${trainer.name} from trainer role?\n\nThey will return to regular member dashboard.`,
+      `Remove ${trainer.name} from trainer role?\nThey will return to regular member status.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Remove Trainer',
+          text: 'Remove',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await removeTrainer(trainer.id);
-              Alert.alert(
-                'Removed ✅',
-                `${trainer.name} is no longer a trainer.`
-              );
-              navigation.goBack();
-            } catch (e) {
-              Alert.alert('Error', 'Failed to remove trainer');
-            }
-          },
+          onPress: () => navigation.goBack(),
         },
       ]
     );
   };
 
-  // ✅ Navigate to Attendance Log Screen
-  const handleViewAttendanceLog = () => {
+  const handleAttendance = () => {
     navigation.navigate('TrainerAttendanceLog', { trainer });
+  };
+
+  const handleCall = () => {
+    if (trainer.phone) {
+      Linking.openURL(`tel:${trainer.phone.replace(/\D/g, '')}`);
+    } else {
+      Alert.alert('No Phone', 'Phone number not available');
+    }
+  };
+
+  const handleWA = () => {
+    if (trainer.phone) {
+      Linking.openURL(`https://wa.me/${trainer.phone.replace(/\D/g, '')}`);
+    } else {
+      Alert.alert('No Phone', 'Phone number not available');
+    }
   };
 
   return (
     <ImageBackground
-      source={{
-        uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
-      }}
-      style={st.background}
-      blurRadius={Platform.OS === 'ios' ? 8 : 12}
+      source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48' }}
+      style={st.bg}
+      blurRadius={9}
     >
       <LinearGradient
-        colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.92)', '#000']}
+        colors={['rgba(0,0,0,0.88)', 'rgba(0,0,0,0.95)', '#000000']}
         style={st.gradient}
       >
-        <Header title="TRAINER DETAILS" showMenu={false} />
+        <SafeAreaView style={st.safe} edges={['top']}>
+          <Header title="TRAINER DETAIL" showMenu={false} />
 
-        <ScrollView
-          style={st.container}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={st.scroll}
-        >
-          {/* Back */}
-          <TouchableOpacity
-            style={st.backBtn}
-            onPress={handleGoBack}
-            activeOpacity={0.7}
+          <ScrollView
+            style={st.scroll}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={st.scrollContent}
           >
-            <View style={st.backIcon}>
-              <HugeiconsIcon
-                icon={ArrowLeft01Icon}
-                size={ms(16)}
-                color="rgba(255,255,255,0.6)"
+            {/* ══════════════════════════════════ HEADER */}
+            <View style={st.headerArea}>
+              <TouchableOpacity
+                style={st.backBtn}
+                onPress={() => navigation.goBack()}
+                activeOpacity={0.7}
+              >
+                <SafeIcon icon={Icons.arrowLeft} size={ms(14)} color="rgba(161,161,170,1)" />
+                <Text style={st.backText}>Back</Text>
+              </TouchableOpacity>
+
+              <View style={st.headerBadges}>
+                <View style={[st.liveBadge, { backgroundColor: 'rgba(34,197,94,0.08)', borderColor: 'rgba(34,197,94,0.18)' }]}>
+                  <PulseDot color={GREEN} size={4} />
+                  <SafeIcon icon={Icons.wifi} size={ms(10)} color={GREEN} />
+                  <Text style={[st.liveBadgeText, { color: GREEN }]}>ACTIVE</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* ══════════════════════════════════ HERO CARD */}
+            <GlassPanel borderColor={`${CYAN}20`} glow={`${CYAN}06`}>
+              {/* Top accent line */}
+              <LinearGradient
+                colors={['transparent', `${CYAN}50`, 'transparent']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={st.heroTopAccent}
+              />
+
+              {/* Watermark */}
+              <View style={st.heroWatermark} pointerEvents="none">
+                <SafeIcon icon={Icons.dumbbell} size={ms(120)} color={CYAN} />
+              </View>
+
+              <View style={st.heroInner}>
+                {/* Top Row: Avatar + Remove */}
+                <View style={st.heroTopRow}>
+                  {/* Avatar */}
+                  <View style={st.avatarWrap}>
+                    <View style={[st.avatar, {
+                      backgroundColor: `${CYAN}15`,
+                      borderColor: `${CYAN}35`,
+                    }]}>
+                      <Text style={[st.avatarText, { color: CYAN }]}>
+                        {trainer.name?.slice(0, 2).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={st.avatarLiveDot}>
+                      <View style={st.avatarLiveDotInner} />
+                    </View>
+                  </View>
+
+                  {/* Remove button */}
+                  <TouchableOpacity
+                    onPress={handleRemove}
+                    activeOpacity={0.85}
+                    style={st.removeBtn}
+                  >
+                    <SafeIcon icon={Icons.cancel} size={ms(14)} color={RED} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Badges */}
+                <View style={st.heroBadgesRow}>
+                  <View style={[st.heroBadge, { backgroundColor: `${CYAN}12`, borderColor: `${CYAN}22` }]}>
+                    <SafeIcon icon={Icons.dumbbell} size={ms(10)} color={CYAN} />
+                    <Text style={[st.heroBadgeText, { color: CYAN }]}>TRAINER</Text>
+                  </View>
+                  <View style={[st.heroBadge, { backgroundColor: 'rgba(34,197,94,0.08)', borderColor: 'rgba(34,197,94,0.18)' }]}>
+                    <PulseDot color={GREEN} size={3} />
+                    <Text style={[st.heroBadgeText, { color: GREEN }]}>ACTIVE</Text>
+                  </View>
+                  <View style={[st.heroBadge, { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }]}>
+                    <SafeIcon icon={Icons.calendar} size={ms(9)} color="rgba(113,113,122,1)" />
+                    <Text style={[st.heroBadgeText, { color: 'rgba(113,113,122,1)' }]}>
+                      {fmtDate(trainer.assignedAt)}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Name */}
+                <Text style={st.heroName} numberOfLines={2}>{trainer.name}</Text>
+
+                {/* Sub info row */}
+                <View style={st.heroSubRow}>
+                  <View style={st.heroSubItem}>
+                    <SafeIcon icon={Icons.hash} size={ms(10)} color="rgba(82,82,91,1)" />
+                    <Text style={st.heroSubText}>{trainer.memberId}</Text>
+                  </View>
+                  <View style={st.heroSubDivider} />
+                  <View style={st.heroSubItem}>
+                    <SafeIcon icon={Icons.star} size={ms(10)} color="rgba(251,191,36,0.6)" />
+                    <Text style={st.heroSubText}>{daysActive} days as trainer</Text>
+                  </View>
+                </View>
+              </View>
+            </GlassPanel>
+
+            {/* ══════════════════════════════════ STAT CARDS */}
+            <View style={st.statRow}>
+              <StatCard
+                icon={Icons.target}
+                label="Days Active"
+                value={`${daysActive}d`}
+                color={CYAN}
+              />
+              <StatCard
+                icon={Icons.checkCircle}
+                label="Status"
+                value="Active"
+                color={GREEN}
+                pulse
               />
             </View>
-            <Text style={st.backText}>Back to Trainers</Text>
-          </TouchableOpacity>
-
-          {/* ═══════════════════════════════════════════════════ */}
-          {/* HERO CARD */}
-          {/* ═══════════════════════════════════════════════════ */}
-          <View style={st.heroCard}>
-            <View style={st.heroBgIcon}>
-              <HugeiconsIcon
-                icon={Dumbbell01Icon}
-                size={ms(100)}
-                color={`${TRAINER_COLOR}08`}
-                strokeWidth={0.5}
+            <View style={st.statRow}>
+              <StatCard
+                icon={Icons.calendar}
+                label="Assigned"
+                value={fmtDate(trainer.assignedAt)}
+                color={GOLD}
+              />
+              <StatCard
+                icon={Icons.dumbbell}
+                label="Role"
+                value="Trainer"
+                color={CYAN}
+                sub="gym staff"
               />
             </View>
-            <LinearGradient
-              colors={[
-                'rgba(34,211,238,0.08)',
-                'rgba(34,211,238,0.02)',
-                'transparent',
-              ]}
-              style={StyleSheet.absoluteFill}
-            />
 
-            <View style={st.heroContent}>
-              <View style={st.heroTopRow}>
-                {/* Avatar */}
-                <View style={st.avatarWrap}>
-                  <LinearGradient
-                    colors={[`${TRAINER_COLOR}20`, `${TRAINER_COLOR}08`]}
-                    style={st.avatarGrad}
-                  >
-                    <Text style={st.avatarText}>
-                      {trainer.name?.slice(0, 2).toUpperCase()}
-                    </Text>
-                  </LinearGradient>
-                  {isOngoing && (
-                    <View style={st.liveDotWrap}>
-                      <View style={st.liveDot} />
+            {/* ══════════════════════════════════ ATTENDANCE CTA */}
+            <GlassPanel
+              onPress={handleAttendance}
+              borderColor={`${CYAN}20`}
+              glow={`${CYAN}06`}
+            >
+              <LinearGradient
+                colors={['transparent', `${CYAN}40`, 'transparent']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={st.heroTopAccent}
+              />
+
+              <View style={st.attendancePad}>
+                <View style={st.attendanceTopRow}>
+                  <View style={[st.attendanceIconBox, {
+                    backgroundColor: `${CYAN}12`,
+                    borderColor: `${CYAN}22`,
+                  }]}>
+                    <SafeIcon icon={Icons.clipboard} size={ms(20)} color={CYAN} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={st.attendanceTitle}>ATTENDANCE LOG</Text>
+                    <Text style={st.attendanceSub}>Weekly · Monthly · Yearly</Text>
+                  </View>
+                </View>
+
+                {/* Preview Stats */}
+                <View style={st.attendancePreviewRow}>
+                  {[
+                    { label: 'This Week',  value: '5 days' },
+                    { label: 'This Month', value: '22 days' },
+                    { label: 'Total',      value: `${daysActive}d` },
+                  ].map((item) => (
+                    <View key={item.label} style={st.attendancePreviewBox}>
+                      <Text style={[st.attendancePreviewVal, { color: CYAN }]}>{item.value}</Text>
+                      <Text style={st.attendancePreviewLabel}>{item.label}</Text>
                     </View>
-                  )}
-                </View>
-
-                {/* Info */}
-                <View style={{ flex: 1 }}>
-                  <View style={st.badgeRow}>
-                    <View style={st.trainerBadge}>
-                      <View style={st.trainerBadgeDot} />
-                      <Text style={st.trainerBadgeText}>ACTIVE TRAINER</Text>
-                    </View>
-                    {isOngoing ? (
-                      <View style={st.inGymChip}>
-                        <View style={st.inGymDot} />
-                        <Text style={st.inGymText}>IN GYM</Text>
-                      </View>
-                    ) : isToday ? (
-                      <View style={st.presentChip}>
-                        <Text style={st.presentChipText}>PRESENT</Text>
-                      </View>
-                    ) : (
-                      <View style={st.absentChip}>
-                        <Text style={st.absentChipText}>ABSENT</Text>
-                      </View>
-                    )}
-                  </View>
-
-                  <Text style={st.trainerName} numberOfLines={1}>
-                    {trainer.name}
-                  </Text>
-
-                  <View style={st.metaRow}>
-                    <Text style={st.trainerId}>ID: {trainer.memberId}</Text>
-                    <View style={st.daysBadge}>
-                      <HugeiconsIcon
-                        icon={Calendar03Icon}
-                        size={ms(10)}
-                        color={TRAINER_COLOR}
-                      />
-                      <Text style={st.daysText}>{daysAsTrainer} days</Text>
-                    </View>
-                  </View>
-
-                  {isToday && (
-                    <View style={st.todayTimeRow}>
-                      <HugeiconsIcon
-                        icon={Login01Icon}
-                        size={ms(11)}
-                        color="#22C55E"
-                      />
-                      <Text style={st.todayTimeText}>
-                        Checked in at {ATTENDANCE_DATA.todayCheckin}
-                      </Text>
-                      {isOngoing && (
-                        <>
-                          <View style={st.timeSep} />
-                          <HugeiconsIcon
-                            icon={Clock01Icon}
-                            size={ms(11)}
-                            color={TRAINER_COLOR}
-                          />
-                          <Text
-                            style={[st.todayTimeText, { color: TRAINER_COLOR }]}
-                          >
-                            {ATTENDANCE_DATA.todayDuration}
-                          </Text>
-                        </>
-                      )}
-                    </View>
-                  )}
-                </View>
-              </View>
-
-              <View style={st.heroDivider} />
-
-              <View style={st.heroBottomRow}>
-                <View style={st.phoneRow}>
-                  <View style={st.phoneIconBox}>
-                    <HugeiconsIcon
-                      icon={SmartPhone01Icon}
-                      size={ms(14)}
-                      color={TRAINER_COLOR}
-                    />
-                  </View>
-                  <View>
-                    <Text style={st.phoneLabel}>CONTACT</Text>
-                    <Text style={st.phoneNumber}>
-                      {formatPhone(trainer.phone || '+910000000000')}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={st.quickActions}>
-                  <TouchableOpacity
-                    style={st.qaBtn}
-                    onPress={handleCall}
-                    activeOpacity={0.7}
-                  >
-                    <LinearGradient
-                      colors={['black', 'black']}
-                      style={st.qaGrad}
-                    >
-                      <HugeiconsIcon
-                        icon={Call02Icon}
-                        size={ms(18)}
-                        color="#22C55E"
-                      />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={st.qaBtn}
-                    onPress={handleWhatsApp}
-                    activeOpacity={0.7}
-                  >
-                    <LinearGradient
-                      colors={['black', 'black']}
-                      style={st.qaGrad}
-                    >
-                      <HugeiconsIcon
-                        icon={WhatsappIcon}
-                        size={ms(18)}
-                        color="#25D366"
-                      />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={st.qaBtn}
-                    onPress={handleEmail}
-                    activeOpacity={0.7}
-                  >
-                    <LinearGradient
-                      colors={['black', 'black']}
-                      style={st.qaGrad}
-                    >
-                      <HugeiconsIcon
-                        icon={Mail01Icon}
-                        size={ms(18)}
-                        color="#3B82F6"
-                      />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* ═══════════════════════════════════════════════════ */}
-          {/* TODAY CARD */}
-          {/* ═══════════════════════════════════════════════════ */}
-          <View
-            style={[
-              st.infoCard,
-              {
-                borderColor: isToday
-                  ? `${TRAINER_COLOR}25`
-                  : 'rgba(239,68,68,0.2)',
-              },
-            ]}
-          >
-            <LinearGradient
-              colors={
-                isToday
-                  ? ['rgba(34,211,238,0.06)', 'transparent']
-                  : ['rgba(239,68,68,0.05)', 'transparent']
-              }
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={st.infoCardPad}>
-              <View style={st.cardTitleRow}>
-                <View style={st.cardTitleLeft}>
-                  <HugeiconsIcon
-                    icon={Calendar03Icon}
-                    size={ms(14)}
-                    color={isToday ? TRAINER_COLOR : '#EF4444'}
-                  />
-                  <Text style={st.infoCardTitle}>TODAY'S ATTENDANCE</Text>
-                </View>
-                <View
-                  style={[
-                    st.todayStatusBadge,
-                    {
-                      backgroundColor: isToday
-                        ? 'rgba(34,197,94,0.10)'
-                        : 'rgba(239,68,68,0.10)',
-                      borderColor: isToday
-                        ? 'rgba(34,197,94,0.25)'
-                        : 'rgba(239,68,68,0.25)',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      st.todayStatusText,
-                      { color: isToday ? '#22C55E' : '#EF4444' },
-                    ]}
-                  >
-                    {isToday ? 'PRESENT' : 'ABSENT'}
-                  </Text>
-                </View>
-              </View>
-
-              {isToday ? (
-                <View style={st.todayGrid}>
-                  <View style={st.todayItem}>
-                    <View
-                      style={[
-                        st.todayIconBox,
-                        { backgroundColor: 'rgba(34,197,94,0.12)' },
-                      ]}
-                    >
-                      <HugeiconsIcon
-                        icon={Login01Icon}
-                        size={ms(16)}
-                        color="#22C55E"
-                      />
-                    </View>
-                    <Text style={st.todayItemLabel}>Check In</Text>
-                    <Text style={st.todayItemValue}>
-                      {ATTENDANCE_DATA.todayCheckin}
-                    </Text>
-                    <Text style={st.todayItemSub}>Today</Text>
-                  </View>
-
-                  <View style={st.todayDivider} />
-
-                  <View style={st.todayItem}>
-                    <View
-                      style={[
-                        st.todayIconBox,
-                        {
-                          backgroundColor: isOngoing
-                            ? `${TRAINER_COLOR}12`
-                            : 'rgba(239,68,68,0.12)',
-                        },
-                      ]}
-                    >
-                      <HugeiconsIcon
-                        icon={Logout01Icon}
-                        size={ms(16)}
-                        color={isOngoing ? TRAINER_COLOR : '#EF4444'}
-                      />
-                    </View>
-                    <Text style={st.todayItemLabel}>Check Out</Text>
-                    <Text
-                      style={[
-                        st.todayItemValue,
-                        isOngoing && {
-                          color: TRAINER_COLOR,
-                          fontSize: rf(9),
-                        },
-                      ]}
-                    >
-                      {isOngoing
-                        ? 'Still in gym'
-                        : ATTENDANCE_DATA.todayCheckout}
-                    </Text>
-                    <Text style={st.todayItemSub}>Today</Text>
-                  </View>
-
-                  <View style={st.todayDivider} />
-
-                  <View style={st.todayItem}>
-                    <View
-                      style={[
-                        st.todayIconBox,
-                        { backgroundColor: 'rgba(234,179,8,0.12)' },
-                      ]}
-                    >
-                      <HugeiconsIcon
-                        icon={Clock01Icon}
-                        size={ms(16)}
-                        color="#EAB308"
-                      />
-                    </View>
-                    <Text style={st.todayItemLabel}>Duration</Text>
-                    <Text style={st.todayItemValue}>
-                      {ATTENDANCE_DATA.todayDuration}
-                    </Text>
-                    <Text
-                      style={[
-                        st.todayItemSub,
-                        isOngoing && { color: TRAINER_COLOR },
-                      ]}
-                    >
-                      {isOngoing ? 'Ongoing' : 'Completed'}
-                    </Text>
-                  </View>
-                </View>
-              ) : (
-                <View style={st.absentTodayBox}>
-                  <HugeiconsIcon
-                    icon={Cancel01Icon}
-                    size={ms(28)}
-                    color="rgba(239,68,68,0.4)"
-                  />
-                  <Text style={st.absentTodayTitle}>Not Checked In</Text>
-                  <Text style={st.absentTodaySubtitle}>
-                    Trainer has not checked in today
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* ═══════════════════════════════════════════════════ */}
-          {/* AVERAGE TIMES */}
-          {/* ═══════════════════════════════════════════════════ */}
-          <View style={st.infoCard}>
-            <View style={st.infoCardPad}>
-              <View style={[st.cardTitleLeft, { marginBottom: vs(12) }]}>
-                <HugeiconsIcon
-                  icon={Clock01Icon}
-                  size={ms(14)}
-                  color={TRAINER_COLOR}
-                />
-                <Text style={st.infoCardTitle}>AVERAGE TIMES</Text>
-              </View>
-
-              <View style={st.avgGrid}>
-                <View style={st.avgItem}>
-                  <LinearGradient
-                    colors={['rgba(34,197,94,0.08)', 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <View
-                    style={[
-                      st.avgIconBox,
-                      { backgroundColor: 'rgba(34,197,94,0.12)' },
-                    ]}
-                  >
-                    <HugeiconsIcon
-                      icon={Login01Icon}
-                      size={ms(16)}
-                      color="#22C55E"
-                    />
-                  </View>
-                  <Text style={st.avgLabel}>Avg Check In</Text>
-                  <Text style={st.avgValue}>
-                    {ATTENDANCE_DATA.avgCheckinTime}
-                  </Text>
-                </View>
-
-                <View style={st.avgItem}>
-                  <LinearGradient
-                    colors={['rgba(239,68,68,0.08)', 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <View
-                    style={[
-                      st.avgIconBox,
-                      { backgroundColor: 'rgba(239,68,68,0.12)' },
-                    ]}
-                  >
-                    <HugeiconsIcon
-                      icon={Logout01Icon}
-                      size={ms(16)}
-                      color="#EF4444"
-                    />
-                  </View>
-                  <Text style={st.avgLabel}>Avg Check Out</Text>
-                  <Text style={st.avgValue}>
-                    {ATTENDANCE_DATA.avgCheckoutTime}
-                  </Text>
-                </View>
-
-                <View style={[st.avgItem, { width: '100%' }]}>
-                  <LinearGradient
-                    colors={[`${TRAINER_COLOR}08`, 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <View
-                    style={[
-                      st.avgIconBox,
-                      { backgroundColor: `${TRAINER_COLOR}12` },
-                    ]}
-                  >
-                    <HugeiconsIcon
-                      icon={Clock01Icon}
-                      size={ms(16)}
-                      color={TRAINER_COLOR}
-                    />
-                  </View>
-                  <Text style={st.avgLabel}>Avg Session Duration</Text>
-                  <Text style={[st.avgValue, { color: TRAINER_COLOR }]}>
-                    {ATTENDANCE_DATA.avgSessionDuration}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* ═══════════════════════════════════════════════════ */}
-          {/* ATTENDANCE SUMMARY + View Log Button */}
-          {/* ═══════════════════════════════════════════════════ */}
-          <View style={st.infoCard}>
-            <View style={st.infoCardPad}>
-              <View style={st.cardTitleRow}>
-                <View style={st.cardTitleLeft}>
-                  <HugeiconsIcon
-                    icon={CheckmarkCircle02Icon}
-                    size={ms(14)}
-                    color={TRAINER_COLOR}
-                  />
-                  <Text style={st.infoCardTitle}>ATTENDANCE</Text>
-                </View>
-                <View style={st.filterTabs}>
-                  {['week', 'month', 'year'].map((f) => (
-                    <TouchableOpacity
-                      key={f}
-                      style={[
-                        st.filterTab,
-                        activeFilter === f && st.filterTabActive,
-                      ]}
-                      onPress={() => setActiveFilter(f)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          st.filterTabText,
-                          activeFilter === f && st.filterTabTextActive,
-                        ]}
-                      >
-                        {f === 'week'
-                          ? 'Week'
-                          : f === 'month'
-                          ? 'Month'
-                          : 'Year'}
-                      </Text>
-                    </TouchableOpacity>
                   ))}
                 </View>
-              </View>
 
-              {/* Present / Absent / Rate */}
-              <View style={st.summaryRow}>
-                <View style={st.summaryItem}>
-                  <LinearGradient
-                    colors={['rgba(34,197,94,0.10)', 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={[st.summaryNumber, { color: '#22C55E' }]}>
-                    {getPresentCount()}
-                  </Text>
-                  <Text style={st.summaryLabel}>Present</Text>
-                  <View
-                    style={[st.summaryDot, { backgroundColor: '#22C55E' }]}
-                  />
-                </View>
-
-                <View style={st.summaryDivider} />
-
-                <View style={st.summaryItem}>
-                  <LinearGradient
-                    colors={['rgba(239,68,68,0.08)', 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={[st.summaryNumber, { color: '#EF4444' }]}>
-                    {getAbsentCount()}
-                  </Text>
-                  <Text style={st.summaryLabel}>Absent</Text>
-                  <View
-                    style={[st.summaryDot, { backgroundColor: '#EF4444' }]}
-                  />
-                </View>
-
-                <View style={st.summaryDivider} />
-
-                <View style={st.summaryItem}>
-                  <LinearGradient
-                    colors={[`${TRAINER_COLOR}08`, 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={[st.summaryNumber, { color: TRAINER_COLOR }]}>
-                    {getRate()}%
-                  </Text>
-                  <Text style={st.summaryLabel}>Rate</Text>
-                  <View
-                    style={[
-                      st.summaryDot,
-                      { backgroundColor: TRAINER_COLOR },
-                    ]}
-                  />
-                </View>
-              </View>
-
-              {/* Progress Bar */}
-              <View style={st.progressTrack}>
+                {/* Divider */}
                 <LinearGradient
-                  colors={['#22C55E', '#22D3EE']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={[st.progressFill, { width: `${getRate()}%` }]}
+                  colors={['transparent', 'rgba(255,255,255,0.08)', 'transparent']}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={st.attendanceDivider}
                 />
-              </View>
 
-              {/* ✅ View Full Log Button */}
-              <TouchableOpacity
-                style={st.viewLogBtn}
-                onPress={handleViewAttendanceLog}
-                activeOpacity={0.8}
-              >
-                <View style={st.viewLogContent}>
-                  <HugeiconsIcon
-                    icon={Login01Icon}
-                    size={ms(14)}
-                    color={TRAINER_COLOR}
-                  />
-                  <Text style={st.viewLogText}>View Full Attendance Log</Text>
-                </View>
-                <View style={st.viewLogArrow}>
-                  <HugeiconsIcon
-                    icon={ArrowRight01Icon}
-                    size={ms(14)}
-                    color="rgba(255,255,255,0.4)"
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* ═══════════════════════════════════════════════════ */}
-          {/* TRAINER INFO */}
-          {/* ═══════════════════════════════════════════════════ */}
-          <View style={[st.infoCard, { borderColor: `${TRAINER_COLOR}20` }]}>
-            <View style={st.infoCardPad}>
-              <View style={[st.cardTitleLeft, { marginBottom: vs(12) }]}>
-                <HugeiconsIcon
-                  icon={Dumbbell01Icon}
-                  size={ms(14)}
-                  color={TRAINER_COLOR}
-                />
-                <Text style={st.infoCardTitle}>TRAINER INFO</Text>
-              </View>
-
-              <View style={st.infoGrid}>
-                <View style={st.infoGridItem}>
-                  <HugeiconsIcon
-                    icon={Calendar03Icon}
-                    size={ms(12)}
-                    color={TRAINER_COLOR}
-                  />
-                  <Text style={st.infoGridLabel}>Days Active</Text>
-                  <Text style={st.infoGridValue}>{daysAsTrainer}</Text>
-                </View>
-                <View style={st.infoGridItem}>
-                  <HugeiconsIcon
-                    icon={CheckmarkCircle02Icon}
-                    size={ms(12)}
-                    color="#22C55E"
-                  />
-                  <Text style={st.infoGridLabel}>Status</Text>
-                  <Text style={[st.infoGridValue, { color: '#22C55E' }]}>
-                    Active
-                  </Text>
+                {/* CTA Row */}
+                <View style={[st.attendanceCtaRow, {
+                  backgroundColor: `${CYAN}05`,
+                  borderColor: `${CYAN}12`,
+                }]}>
+                  <View style={st.attendanceCtaLeft}>
+                    <SafeIcon icon={Icons.view} size={ms(13)} color={`${CYAN}80`} />
+                    <Text style={st.attendanceCtaText}>View Full Attendance Log</Text>
+                  </View>
+                  <SafeIcon icon={Icons.chevronRight} size={ms(14)} color={`${CYAN}60`} />
                 </View>
               </View>
+            </GlassPanel>
 
-              <View style={st.infoGrid}>
-                <View style={st.infoGridItem}>
-                  <HugeiconsIcon
-                    icon={Clock01Icon}
-                    size={ms(12)}
-                    color={Colors.zinc[500]}
-                  />
-                  <Text style={st.infoGridLabel}>Assigned On</Text>
-                  <Text style={st.infoGridValue}>
-                    {trainer.assignedAt
-                      ? formatDate(trainer.assignedAt)
-                      : 'Today'}
-                  </Text>
-                </View>
-                <View style={st.infoGridItem}>
-                  <HugeiconsIcon
-                    icon={Dumbbell01Icon}
-                    size={ms(12)}
-                    color={TRAINER_COLOR}
-                  />
-                  <Text style={st.infoGridLabel}>Member ID</Text>
-                  <Text style={st.infoGridValue}>{trainer.memberId}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* ═══════════════════════════════════════════════════ */}
-          {/* REMOVE TRAINER */}
-          {/* ═══════════════════════════════════════════════════ */}
-          <TouchableOpacity
-            style={st.removeTrainerBtn}
-            onPress={handleRemoveTrainer}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['rgba(239,68,68,0.15)', 'rgba(239,68,68,0.05)']}
-              style={st.removeTrainerGrad}
-            >
-              <HugeiconsIcon
-                icon={Cancel01Icon}
-                size={ms(16)}
-                color="#EF4444"
+            {/* ══════════════════════════════════ TRAINER INFO */}
+            <GlassPanel borderColor={`${CYAN}12`} glow={`${CYAN}05`}>
+              <LinearGradient
+                colors={['transparent', `${CYAN}30`, 'transparent']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={st.heroTopAccent}
               />
-              <Text style={st.removeTrainerText}>Remove Trainer Role</Text>
-            </LinearGradient>
-          </TouchableOpacity>
 
-          <View style={{ height: vs(30) }} />
-        </ScrollView>
+              <View style={st.sectionPad}>
+                <View style={st.sectionHeader}>
+                  <View style={[st.sectionBar, { backgroundColor: CYAN }]} />
+                  <View>
+                    <Text style={st.sectionTitle}>TRAINER INFO</Text>
+                    <Text style={st.sectionSub}>Profile & assignment details</Text>
+                  </View>
+                </View>
+
+                <View style={{ paddingHorizontal: s(2) }}>
+                  <InfoRow icon={Icons.user}        label="Full Name"   value={trainer.name}             color={CYAN} />
+                  <InfoRow icon={Icons.hash}        label="Member ID"   value={trainer.memberId}         color={CYAN} />
+                  <InfoRow icon={Icons.dumbbell}    label="Role"        value="Gym Trainer" valueColor={CYAN} color={CYAN} />
+                  <InfoRow icon={Icons.calendar}    label="Assigned"    value={fmtDate(trainer.assignedAt)} color={GOLD} />
+                  <InfoRow icon={Icons.target}      label="Days Active" value={`${daysActive} days`} valueColor={CYAN} color={CYAN} />
+                  <InfoRow icon={Icons.checkCircle} label="Status"      value="Active" valueColor={GREEN} color={GREEN} last />
+                </View>
+              </View>
+            </GlassPanel>
+
+            {/* ══════════════════════════════════ QUICK ACTIONS */}
+            <GlassPanel>
+              <View style={st.sectionPad}>
+                <View style={st.sectionHeader}>
+                  <View style={[st.sectionBar, { backgroundColor: GOLD }]} />
+                  <View>
+                    <Text style={st.sectionTitle}>QUICK ACTIONS</Text>
+                    <Text style={st.sectionSub}>Frequently used commands</Text>
+                  </View>
+                </View>
+
+                <View style={{ gap: vs(8) }}>
+                  <ActionBtn
+                    icon={Icons.clipboard}
+                    label="Attendance Log"
+                    sub="View check-in / check-out history"
+                    color={CYAN}
+                    onPress={handleAttendance}
+                    badge="VIEW"
+                  />
+                  <ActionBtn
+                    icon={Icons.call}
+                    label="Call Trainer"
+                    sub={trainer.phone || 'No phone set'}
+                    color={GREEN}
+                    onPress={handleCall}
+                  />
+                  <ActionBtn
+                    icon={Icons.whatsapp}
+                    label="WhatsApp"
+                    sub="Send a direct message"
+                    color="#25D366"
+                    onPress={handleWA}
+                  />
+                </View>
+              </View>
+            </GlassPanel>
+
+            {/* ══════════════════════════════════ DANGER ZONE */}
+            <GlassPanel borderColor="rgba(239,68,68,0.15)" glow="rgba(239,68,68,0.04)">
+              <View style={st.sectionPad}>
+                <View style={st.sectionHeader}>
+                  <View style={[st.sectionBar, { backgroundColor: RED }]} />
+                  <View>
+                    <Text style={[st.sectionTitle, { color: RED }]}>DANGER ZONE</Text>
+                    <Text style={st.sectionSub}>Irreversible action</Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleRemove}
+                  activeOpacity={0.85}
+                  style={[st.dangerBtn, { borderColor: 'rgba(239,68,68,0.18)' }]}
+                >
+                  <View style={[st.dangerIconBox, {
+                    backgroundColor: 'rgba(239,68,68,0.10)',
+                    borderColor: 'rgba(239,68,68,0.20)',
+                  }]}>
+                    <SafeIcon icon={Icons.cancel} size={ms(14)} color={RED} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[st.dangerLabel, { color: RED }]}>Remove Trainer</Text>
+                    <Text style={st.dangerSub}>Reverts to regular member role</Text>
+                  </View>
+                  <SafeIcon icon={Icons.chevronRight} size={ms(13)} color="rgba(239,68,68,0.40)" />
+                </TouchableOpacity>
+              </View>
+            </GlassPanel>
+
+            {/* ══════════════════════════════════ FOOTER NOTICE */}
+            <GlassPanel borderColor={`${CYAN}10`}>
+              <View style={st.footer}>
+                <View style={[st.footerIconBox, {
+                  backgroundColor: `${CYAN}08`,
+                  borderColor: `${CYAN}15`,
+                }]}>
+                  <SafeIcon icon={Icons.shield} size={ms(13)} color={CYAN} />
+                </View>
+                <View style={st.footerText}>
+                  <Text style={st.footerTitle}>Trainer Access Active</Text>
+                  <Text style={st.footerSub} numberOfLines={2}>
+                    {trainer.name} has full dashboard access · Removing revokes immediately
+                  </Text>
+                </View>
+                <View style={st.footerBadge}>
+                  <View style={st.footerBadgeDot} />
+                  <Text style={st.footerBadgeText}>Active</Text>
+                </View>
+              </View>
+            </GlassPanel>
+          </ScrollView>
+
+          <BottomNav
+            activeTab="members"
+            onTabChange={(tab) => {
+              if (tab === 'dashboard') navigation.navigate('AdminDashboard');
+              if (tab === 'plans')     navigation.navigate('AdminPlans');
+              if (tab === 'members')   navigation.navigate('AdminUsersDetail');
+              if (tab === 'settings')  navigation.navigate('AdminSettings');
+            }}
+            userType="admin"
+          />
+        </SafeAreaView>
       </LinearGradient>
     </ImageBackground>
   );
@@ -892,129 +686,88 @@ const TrainerDetailScreen = ({ navigation, route }) => {
 // STYLES
 // ═══════════════════════════════════════════════════════════════
 const st = StyleSheet.create({
-  background: { flex: 1 },
-  gradient: { flex: 1 },
-  container: { flex: 1 },
-  scroll: { paddingHorizontal: s(14), paddingTop: vs(8), paddingBottom: vs(30), gap: vs(12) },
+  bg:            { flex: 1 },
+  gradient:      { flex: 1 },
+  safe:          { flex: 1 },
+  scroll:        { flex: 1 },
+  scrollContent: { paddingHorizontal: s(16), paddingBottom: vs(120), gap: vs(12) },
 
-  backBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: vs(2) },
-  backIcon: { width: ms(32), height: ms(32), borderRadius: ms(16), backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center', marginRight: s(10) },
-  backText: { fontFamily: Fonts.rajdhani?.semiBold || 'System', fontSize: rf(11), color: 'rgba(255,255,255,0.6)', letterSpacing: 0.8, textTransform: 'uppercase' },
+  // Not Found
+  notFoundContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: s(20) },
+  notFoundCard:      { padding: ms(28), alignItems: 'center', width: '100%', maxWidth: ms(320) },
+  notFoundIcon:      { width: ms(60), height: ms(60), borderRadius: ms(18), backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', marginBottom: vs(16) },
+  notFoundText:      { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(11), color: 'rgba(113,113,122,1)', letterSpacing: 2, marginBottom: vs(18) },
+  notFoundBtn:       { flexDirection: 'row', alignItems: 'center', gap: s(8), paddingHorizontal: s(16), paddingVertical: vs(10), borderRadius: ms(14), borderWidth: 1, backgroundColor: `${CYAN}10` },
+  notFoundBtnText:   { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(9), letterSpacing: 1.5, textTransform: 'uppercase' },
 
-  heroCard: { borderRadius: ms(16), overflow: 'hidden', borderWidth: 1, borderColor: `${TRAINER_COLOR}30`, backgroundColor: '#000', position: 'relative' },
-  heroBgIcon: { position: 'absolute', top: -ms(5), right: -ms(15), opacity: 1 },
-  heroContent: { paddingLeft: ms(14), paddingRight: ms(12), paddingVertical: ms(14) },
-  heroTopRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  avatarWrap: { position: 'relative', marginRight: s(12) },
-  avatarGrad: { width: ms(58), height: ms(58), borderRadius: ms(29), alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: `${TRAINER_COLOR}50` },
-  avatarText: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(15), color: TRAINER_COLOR },
-  liveDotWrap: { position: 'absolute', bottom: 0, right: 0, width: ms(16), height: ms(16), borderRadius: ms(8), backgroundColor: '#000', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#000' },
-  liveDot: { width: ms(10), height: ms(10), borderRadius: ms(5), backgroundColor: '#22C55E' },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: vs(5) },
-  trainerBadge: { flexDirection: 'row', alignItems: 'center', gap: s(5), backgroundColor: `${TRAINER_COLOR}12`, borderRadius: ms(6), borderWidth: 1, borderColor: `${TRAINER_COLOR}25`, paddingHorizontal: s(8), paddingVertical: vs(2) },
-  trainerBadgeDot: { width: ms(5), height: ms(5), borderRadius: ms(2.5), backgroundColor: TRAINER_COLOR },
-  trainerBadgeText: { fontFamily: Fonts.rajdhani?.semiBold || 'System', fontSize: rf(6.5), color: TRAINER_COLOR, letterSpacing: s(1) },
-  inGymChip: { flexDirection: 'row', alignItems: 'center', gap: s(4), backgroundColor: 'rgba(34,197,94,0.10)', borderRadius: ms(6), paddingHorizontal: s(8), paddingVertical: vs(2), borderWidth: 1, borderColor: 'rgba(34,197,94,0.25)' },
-  inGymDot: { width: ms(5), height: ms(5), borderRadius: ms(2.5), backgroundColor: '#22C55E' },
-  inGymText: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(6), color: '#22C55E', letterSpacing: 0.8 },
-  presentChip: { backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: ms(6), paddingHorizontal: s(8), paddingVertical: vs(2), borderWidth: 1, borderColor: 'rgba(34,197,94,0.2)' },
-  presentChipText: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(6), color: '#22C55E', letterSpacing: 0.8 },
-  absentChip: { backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: ms(6), paddingHorizontal: s(8), paddingVertical: vs(2), borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)' },
-  absentChipText: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(6), color: '#EF4444', letterSpacing: 0.8 },
-  trainerName: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(12), color: '#fff', marginBottom: vs(4) },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: s(10), marginBottom: vs(4) },
-  trainerId: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(8), color: Colors.zinc[500], letterSpacing: 0.8 },
-  daysBadge: { flexDirection: 'row', alignItems: 'center', gap: s(3), backgroundColor: `${TRAINER_COLOR}10`, borderRadius: ms(6), paddingHorizontal: s(6), paddingVertical: vs(2) },
-  daysText: { fontFamily: Fonts.rajdhani?.semiBold || 'System', fontSize: rf(7.5), color: TRAINER_COLOR },
-  todayTimeRow: { flexDirection: 'row', alignItems: 'center', gap: s(4) },
-  todayTimeText: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(8), color: Colors.zinc[400] },
-  timeSep: { width: ms(3), height: ms(3), borderRadius: ms(1.5), backgroundColor: 'rgba(255,255,255,0.2)', marginHorizontal: s(2) },
-  heroDivider: { height: 1, backgroundColor: `${TRAINER_COLOR}20`, marginVertical: vs(12) },
-  heroBottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  phoneRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  phoneIconBox: { width: ms(32), height: ms(32), borderRadius: ms(10), backgroundColor: `${TRAINER_COLOR}12`, alignItems: 'center', justifyContent: 'center', marginRight: s(8) },
-  phoneLabel: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(6), color: 'rgba(255,255,255,0.4)', letterSpacing: 1.2, marginBottom: vs(1) },
-  phoneNumber: { fontFamily: Fonts.orbitron?.regular || 'System', fontSize: rf(8), color: '#fff', letterSpacing: 0.5 },
-  quickActions: { flexDirection: 'row', gap: s(6) },
-  qaBtn: { borderRadius: ms(10), overflow: 'hidden' },
-  qaGrad: { width: ms(36), height: ms(36), alignItems: 'center', justifyContent: 'center', borderRadius: ms(10), borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  // Header
+  headerArea:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: vs(8) },
+  backBtn:        { flexDirection: 'row', alignItems: 'center', gap: s(8), paddingHorizontal: s(14), paddingVertical: vs(10), borderRadius: ms(14), backgroundColor: '#000', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  backText:       { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(9), color: 'rgba(161,161,170,1)', letterSpacing: 1.5, textTransform: 'uppercase' },
+  headerBadges:   { flexDirection: 'row', alignItems: 'center', gap: s(6) },
+  liveBadge:      { flexDirection: 'row', alignItems: 'center', gap: s(5), paddingHorizontal: s(10), paddingVertical: vs(6), borderRadius: ms(10), borderWidth: 1 },
+  liveBadgeText:  { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(7), letterSpacing: 1.5 },
 
-  infoCard: { borderRadius: ms(14), overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: '#000' },
-  infoCardPad: { padding: ms(14) },
-  infoCardTitle: { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(9), color: 'rgba(255,255,255,0.5)', letterSpacing: 1.5, textTransform: 'uppercase' },
-  cardTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: vs(14) },
-  cardTitleLeft: { flexDirection: 'row', alignItems: 'center', gap: s(6) },
+  // Hero
+  heroTopAccent:  { position: 'absolute', top: 0, left: s(20), right: s(20), height: 2 },
+  heroWatermark:  { position: 'absolute', right: -ms(20), top: '50%', opacity: 0.03, transform: [{ translateY: -ms(60) }] },
+  heroInner:      { padding: ms(18) },
+  heroTopRow:     { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: vs(12) },
+  avatarWrap:     { position: 'relative' },
+  avatar:         { width: ms(70), height: ms(70), borderRadius: ms(20), borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
+  avatarText:     { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(18), letterSpacing: 1 },
+  avatarLiveDot:  { position: 'absolute', bottom: -ms(3), right: -ms(3), width: ms(20), height: ms(20), borderRadius: ms(10), backgroundColor: '#000', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(34,197,94,0.45)' },
+  avatarLiveDotInner:{ width: ms(9), height: ms(9), borderRadius: ms(4.5), backgroundColor: GREEN },
+  removeBtn:      { width: ms(40), height: ms(40), borderRadius: ms(14), backgroundColor: 'rgba(239,68,68,0.08)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.20)', alignItems: 'center', justifyContent: 'center' },
+  heroBadgesRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: s(6), marginBottom: vs(12) },
+  heroBadge:      { flexDirection: 'row', alignItems: 'center', gap: s(5), paddingHorizontal: s(10), paddingVertical: vs(5), borderRadius: ms(10), borderWidth: 1 },
+  heroBadgeText:  { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(7), letterSpacing: 1, textTransform: 'uppercase' },
+  heroName:       { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(18), color: '#fff', letterSpacing: 1, marginBottom: vs(8) },
+  heroSubRow:     { flexDirection: 'row', alignItems: 'center', gap: s(10) },
+  heroSubItem:    { flexDirection: 'row', alignItems: 'center', gap: s(4) },
+  heroSubText:    { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(8.5), color: 'rgba(113,113,122,1)', letterSpacing: 0.5 },
+  heroSubDivider: { width: 1, height: ms(12), backgroundColor: 'rgba(255,255,255,0.08)' },
 
-  todayStatusBadge: { paddingHorizontal: s(10), paddingVertical: vs(3), borderRadius: ms(8), borderWidth: 1 },
-  todayStatusText: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(7), letterSpacing: 0.8 },
-  todayGrid: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
-  todayItem: { flex: 1, alignItems: 'center', gap: vs(5) },
-  todayIconBox: { width: ms(44), height: ms(44), borderRadius: ms(14), alignItems: 'center', justifyContent: 'center', marginBottom: vs(2) },
-  todayItemLabel: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7.5), color: Colors.zinc[500], textTransform: 'uppercase', letterSpacing: 0.5 },
-  todayItemValue: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(10), color: '#fff', textAlign: 'center' },
-  todayItemSub: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7), color: Colors.zinc[600] },
-  todayDivider: { width: 1, height: vs(50), backgroundColor: 'rgba(255,255,255,0.06)', marginHorizontal: s(8) },
-  absentTodayBox: { alignItems: 'center', gap: vs(6), paddingVertical: vs(20) },
-  absentTodayTitle: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(12), color: Colors.zinc[400] },
-  absentTodaySubtitle: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(9), color: Colors.zinc[600] },
+  // Stat row
+  statRow: { flexDirection: 'row', gap: s(10) },
 
-  avgGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: s(8) },
-  avgItem: { width: '47%', borderRadius: ms(12), overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)', padding: ms(12), alignItems: 'center', gap: vs(5) },
-  avgIconBox: { width: ms(38), height: ms(38), borderRadius: ms(12), alignItems: 'center', justifyContent: 'center' },
-  avgLabel: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7.5), color: Colors.zinc[500], textTransform: 'uppercase', letterSpacing: 0.3, textAlign: 'center' },
-  avgValue: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(13), color: '#fff' },
+  // Section common
+  sectionPad:    { padding: ms(16) },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: s(10), marginBottom: vs(14) },
+  sectionBar:    { width: ms(4), height: ms(24), borderRadius: ms(2) },
+  sectionTitle:  { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(10), color: '#fff', letterSpacing: 1.8 },
+  sectionSub:    { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7.5), color: 'rgba(113,113,122,1)', letterSpacing: 1, textTransform: 'uppercase', marginTop: vs(2) },
 
-  filterTabs: { flexDirection: 'row', gap: s(4), backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: ms(8), padding: s(3) },
-  filterTab: { paddingHorizontal: s(8), paddingVertical: vs(3), borderRadius: ms(6) },
-  filterTabActive: { backgroundColor: 'rgba(255,255,255,0.10)' },
-  filterTabText: { fontFamily: Fonts.rajdhani?.semiBold || 'System', fontSize: rf(8), color: Colors.zinc[500] },
-  filterTabTextActive: { color: Colors.white },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: ms(12), overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', marginBottom: vs(10) },
-  summaryItem: { flex: 1, alignItems: 'center', overflow: 'hidden', paddingVertical: vs(12), gap: vs(3) },
-  summaryNumber: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(20), lineHeight: rf(24) },
-  summaryLabel: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7.5), color: Colors.zinc[500], textTransform: 'uppercase', letterSpacing: 0.5 },
-  summaryDot: { width: ms(5), height: ms(5), borderRadius: ms(2.5) },
-  summaryDivider: { width: 1, height: vs(50), backgroundColor: 'rgba(255,255,255,0.06)' },
-  progressTrack: { height: vs(4), backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: ms(2), overflow: 'hidden', marginBottom: vs(12) },
-  progressFill: { height: '100%', borderRadius: ms(2) },
+  // Attendance CTA
+  attendancePad:        { padding: ms(16) },
+  attendanceTopRow:     { flexDirection: 'row', alignItems: 'center', gap: s(12), marginBottom: vs(14) },
+  attendanceIconBox:    { width: ms(48), height: ms(48), borderRadius: ms(14), borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  attendanceTitle:      { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(11), color: '#fff', letterSpacing: 1.5, marginBottom: vs(2) },
+  attendanceSub:        { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(8), color: 'rgba(113,113,122,1)', letterSpacing: 1, textTransform: 'uppercase' },
+  attendancePreviewRow: { flexDirection: 'row', gap: s(8), marginBottom: vs(14) },
+  attendancePreviewBox: { flex: 1, padding: ms(12), borderRadius: ms(14), backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center' },
+  attendancePreviewVal: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(12), marginBottom: vs(4) },
+  attendancePreviewLabel:{ fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(6.5), color: 'rgba(82,82,91,1)', letterSpacing: 0.8, textTransform: 'uppercase' },
+  attendanceDivider:    { height: 1, marginBottom: vs(12) },
+  attendanceCtaRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: s(14), paddingVertical: vs(12), borderRadius: ms(14), borderWidth: 1 },
+  attendanceCtaLeft:    { flexDirection: 'row', alignItems: 'center', gap: s(8) },
+  attendanceCtaText:    { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(9.5), color: '#fff', letterSpacing: 1, textTransform: 'uppercase' },
 
-  // ✅ View Log Button
-  viewLogBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#000',
-    paddingVertical: vs(10),
-    paddingHorizontal: s(12),
-    borderRadius: ms(10),
-    borderWidth: 1,
-    borderColor: `${TRAINER_COLOR}20`,
-  },
-  viewLogContent: { flexDirection: 'row', alignItems: 'center', gap: s(6) },
-  viewLogText: {
-    fontFamily: Fonts.rajdhani?.bold || 'System',
-    fontSize: rf(9),
-    color: '#FFFFFF',
-    letterSpacing: s(0.8),
-    textTransform: 'uppercase',
-  },
-  viewLogArrow: {
-    width: ms(24),
-    height: ms(24),
-    borderRadius: ms(12),
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // Danger Zone
+  dangerBtn:     { flexDirection: 'row', alignItems: 'center', gap: s(12), paddingHorizontal: s(14), paddingVertical: vs(12), borderRadius: ms(16), backgroundColor: '#000', borderWidth: 1 },
+  dangerIconBox: { width: ms(40), height: ms(40), borderRadius: ms(12), borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  dangerLabel:   { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(10), letterSpacing: 1, textTransform: 'uppercase' },
+  dangerSub:     { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(8), color: 'rgba(239,68,68,0.40)', letterSpacing: 0.3, marginTop: vs(2) },
 
-  infoGrid: { flexDirection: 'row', gap: s(10), marginBottom: vs(8) },
-  infoGridItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: s(6), backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: ms(8), paddingHorizontal: s(10), paddingVertical: vs(8), borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  infoGridLabel: { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7.5), color: Colors.zinc[500], flex: 1 },
-  infoGridValue: { fontFamily: Fonts.orbitron?.bold || 'System', fontSize: rf(8.5), color: '#fff' },
-
-  removeTrainerBtn: { borderRadius: ms(12), overflow: 'hidden' },
-  removeTrainerGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: vs(14), gap: s(8), borderRadius: ms(12), borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)' },
-  removeTrainerText: { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(11), color: '#EF4444', letterSpacing: 0.5 },
+  // Footer
+  footer:          { flexDirection: 'row', alignItems: 'center', gap: s(10), padding: ms(14) },
+  footerIconBox:   { width: ms(34), height: ms(34), borderRadius: ms(12), borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  footerText:      { flex: 1 },
+  footerTitle:     { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(9), color: '#fff', letterSpacing: 1, textTransform: 'uppercase', marginBottom: vs(2) },
+  footerSub:       { fontFamily: Fonts.rajdhani?.regular || 'System', fontSize: rf(7.5), color: 'rgba(113,113,122,1)', letterSpacing: 0.3 },
+  footerBadge:     { flexDirection: 'row', alignItems: 'center', gap: s(5), paddingHorizontal: s(8), paddingVertical: vs(4), borderRadius: ms(10), backgroundColor: 'rgba(34,197,94,0.08)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.15)' },
+  footerBadgeDot:  { width: ms(4), height: ms(4), borderRadius: ms(2), backgroundColor: GREEN },
+  footerBadgeText: { fontFamily: Fonts.rajdhani?.bold || 'System', fontSize: rf(7), color: GREEN, letterSpacing: 0.8, textTransform: 'uppercase' },
 });
 
 export default TrainerDetailScreen;

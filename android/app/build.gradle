@@ -14,14 +14,14 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.islamicbank.newapp"
+    namespace "com.gymforadmin.newapp"
 
     buildFeatures {
         buildConfig true
     }
 
     defaultConfig {
-        applicationId "com.islamicbank.newapp"
+        applicationId "com.gymforadmin.newapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
 
@@ -39,14 +39,14 @@ android {
         }
     }
 
-   signingConfigs {
-    release {
-        storeFile file(MYAPP_UPLOAD_STORE_FILE)
-        storePassword MYAPP_UPLOAD_STORE_PASSWORD
-        keyAlias MYAPP_UPLOAD_KEY_ALIAS
-        keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+    signingConfigs {
+        release {
+            storeFile file(MYAPP_UPLOAD_STORE_FILE)
+            storePassword MYAPP_UPLOAD_STORE_PASSWORD
+            keyAlias MYAPP_UPLOAD_KEY_ALIAS
+            keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+        }
     }
-}
 
     buildTypes {
         debug {

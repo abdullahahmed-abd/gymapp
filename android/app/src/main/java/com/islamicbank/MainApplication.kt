@@ -1,4 +1,4 @@
-package com.islamicbank.newapp
+package com.gymforadmin.newapp
 
 import android.app.Application
 import com.facebook.react.PackageList
